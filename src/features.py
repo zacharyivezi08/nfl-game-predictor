@@ -9,16 +9,38 @@ import numpy as np
 import pandas as pd
 
 ELO_START = 1500
-ELO_K = 20
-ELO_HOME_ADV = 55          # home field is worth ~2 points in Elo terms
+ELO_K = 20                 # how fast ratings move
+ELO_HOME_ADV = 55          # home field edge in Elo points (~2 points on the scoreboard)
 ELO_SEASON_REVERT = 1 / 3  # pull ratings 1/3 back toward average each offseason
 FORM_WINDOW = 5            # "recent form" = last 5 games
+# These settings were tuned in step 3 (see README): the "best" tuned values only improved
+# the validation score by ~0.001 and made the untouched test seasons WORSE, so the simpler
+# standard values are kept.
 
-QB_WINDOW = 16             # QB rating uses his last 16 starts (across seasons)
+QB_WINDOW = 16             # QB rating uses his last 16 games played (across seasons)
 QB_PRIOR_EPA = -0.05       # unknown/new QBs start slightly below average...
 QB_PRIOR_DROPBACKS = 150   # ...until they have ~150 dropbacks of their own
 
+EPA_ALPHA = 0.12           # each new game counts 12% in the running efficiency average
+EPA_SEASON_REVERT = 0.3    # pull efficiency 30% back toward average each offseason
+SR_MEAN = 0.44             # typical success rate (share of plays that "succeed")
+
 INDOOR = {"dome", "closed"}
+
+# Home stadium time zone (hours from UTC, standard time). Arizona doesn't do daylight saving,
+# so during the season it's usually on Pacific time; -7.5 splits the difference.
+TEAM_TZ = {
+    "BUF": -5, "MIA": -5, "NE": -5, "NYJ": -5, "BAL": -5, "CIN": -5, "CLE": -5, "PIT": -5,
+    "IND": -5, "JAX": -5, "NYG": -5, "PHI": -5, "WAS": -5, "DET": -5, "ATL": -5, "CAR": -5, "TB": -5,
+    "HOU": -6, "TEN": -6, "KC": -6, "DAL": -6, "CHI": -6, "GB": -6, "MIN": -6, "NO": -6,
+    "DEN": -7, "ARI": -7.5, "LV": -8, "LAC": -8, "SF": -8, "SEA": -8, "LA": -8,
+}
+
+
+def team_tz(team, season):
+    if team == "LA" and season < 2016:  # the Rams were in St. Louis (Central) until 2016
+        return -6
+    return TEAM_TZ.get(team, -5)
 
 # Feature groups (train.py tests which groups actually help)
 BASE_FEATURES = [
@@ -33,7 +55,20 @@ BASE_FEATURES = [
 ]
 QB_FEATURES = ["qb_diff"]                       # starting QB EPA per dropback (home minus away)
 WEATHER_FEATURES = ["wind", "cold", "dome_team_in_cold"]
-FEATURE_GROUPS = {"base": BASE_FEATURES, "qb": QB_FEATURES, "weather": WEATHER_FEATURES}
+EPA_FEATURES = [
+    "off_epa_diff",      # offense EPA per play (home minus away)
+    "def_epa_diff",      # defense EPA allowed per play (home minus away, lower is better)
+    "net_sr_diff",       # (offense success rate - defense success rate allowed), home minus away
+]
+TRAVEL_FEATURES = [
+    "tz_travel",         # time zones the away team crossed to get here (0-3)
+    "early_body_clock",  # hours before noon it feels like to the away team (West Coast team at 1 PM ET = 3)
+    "bye_diff",          # coming off a bye week (home minus away)
+    "short_week_diff",   # playing on short rest, e.g. Thursday after Sunday (home minus away)
+]
+INJURY_FEATURES = ["inj_diff"]  # starters' snaps missing to injury, offense + defense (home minus away)
+FEATURE_GROUPS = {"base": BASE_FEATURES, "qb": QB_FEATURES, "weather": WEATHER_FEATURES,
+                  "epa": EPA_FEATURES, "injuries": INJURY_FEATURES, "travel": TRAVEL_FEATURES}
 
 # Short, readable names used when explaining predictions
 FEATURE_LABELS = {
@@ -49,7 +84,20 @@ FEATURE_LABELS = {
     "wind": "Wind",
     "cold": "Cold weather",
     "dome_team_in_cold": "Dome team in the cold",
+    "off_epa_diff": "Offense efficiency (EPA)",
+    "def_epa_diff": "Defense efficiency (EPA)",
+    "net_sr_diff": "Success rate",
+    "inj_diff": "Injuries",
+    "tz_travel": "Travel / time zones",
+    "early_body_clock": "Early body-clock kickoff",
+    "bye_diff": "Coming off a bye",
+    "short_week_diff": "Short week",
 }
+
+
+# Every team's ratings going into each (season, week), plus "latest". Filled by build_features.
+# (Kept out of the DataFrame on purpose: pandas would copy it on every operation.)
+SNAPSHOTS: dict = {}
 
 
 def _elo_expected(r_a: float, r_b: float) -> float:
@@ -81,9 +129,37 @@ def _add_weather(games: pd.DataFrame) -> pd.DataFrame:
     return g
 
 
-def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None) -> pd.DataFrame:
+def _add_travel(g: pd.DataFrame) -> pd.DataFrame:
+    """Time zones crossed, body-clock kickoffs, byes and short weeks."""
+    neutral = g["location"].eq("Neutral")
+    home_tz = np.array([team_tz(t, s) for t, s in zip(g["home_team"], g["season"])])
+    away_tz = np.array([team_tz(t, s) for t, s in zip(g["away_team"], g["season"])])
+    g["tz_travel"] = np.where(neutral, 0, np.abs(home_tz - away_tz))
+    et_hour = pd.to_numeric(g["gametime"].astype(str).str[:2], errors="coerce").fillna(13)
+    et_min = pd.to_numeric(g["gametime"].astype(str).str[3:5], errors="coerce").fillna(0)
+    away_local = et_hour + et_min / 60 + (away_tz - (-5))
+    g["early_body_clock"] = np.where(neutral, 0, np.clip(12 - away_local, 0, None))
+    hr, ar = g["home_rest"].fillna(7), g["away_rest"].fillna(7)
+    g["bye_diff"] = (hr >= 13).astype(int) - (ar >= 13).astype(int)
+    g["short_week_diff"] = (hr <= 5).astype(int) - (ar <= 5).astype(int)
+    return g
+
+
+def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None,
+                   team_epa: pd.DataFrame | None = None,
+                   injury_loads: pd.DataFrame | None = None) -> pd.DataFrame:
     """Return one row per game with pre-game features and (if played) the result."""
-    games = _add_weather(games)
+    games = _add_travel(_add_weather(games))
+
+    # Team efficiency per game: {game_id: {team: (off_epa/play, def_epa/play, off_sr, def_sr)}}
+    epa_by_game = defaultdict(dict)
+    if team_epa is not None and len(team_epa):
+        e = team_epa.dropna(subset=["off_plays", "def_plays"])
+        for r in e.itertuples(index=False):
+            if r.off_plays > 0 and r.def_plays > 0:
+                epa_by_game[r.game_id][r.team] = (r.off_epa / r.off_plays, r.def_epa / r.def_plays,
+                                                  r.off_success / r.off_plays, r.def_success / r.def_plays)
+    eff = defaultdict(lambda: [0.0, 0.0, SR_MEAN, SR_MEAN])  # team -> running [off_epa, def_epa, off_sr, def_sr]
 
     # Index QB stats by game so we can update each QB's history after every game
     qb_by_game = defaultdict(list)
@@ -98,10 +174,20 @@ def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None) ->
     qb_hist = defaultdict(lambda: deque(maxlen=QB_WINDOW))  # player_id -> [(dropbacks, epa)]
     last_qb = {}                                            # team -> most recent starter
     current_season = None
+    current_week = None
     rows = []
+    snapshots = {}  # (season, week) -> every team's ratings going INTO that week
+    recent_totals = deque(maxlen=256)  # last ~1 season of game totals, to track scoring trends
 
     def avg(d):
         return float(np.mean(d)) if len(d) else 0.0
+
+    def team_state(t):
+        pdl = [x - y for x, y in zip(scored[t], allowed[t])]
+        return {"elo": elo[t], "pd": avg(pdl), "off": avg(scored[t]), "def": avg(allowed[t]),
+                "win_pct": avg([1.0 if x > 0 else 0.5 if x == 0 else 0.0 for x in pdl]),
+                "qb": qb_rating(None, t), "qb_id": last_qb.get(t),
+                "off_epa": eff[t][0], "def_epa": eff[t][1], "off_sr": eff[t][2], "def_sr": eff[t][3]}
 
     def qb_rating(qb_id, team):
         qb_id = qb_id if isinstance(qb_id, str) else last_qb.get(team)
@@ -111,11 +197,18 @@ def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None) ->
         return (epa + QB_PRIOR_EPA * QB_PRIOR_DROPBACKS) / (db + QB_PRIOR_DROPBACKS)
 
     for g in games.itertuples(index=False):
+        if (g.season, g.week) != (current_season, current_week) and g.season == current_season:
+            snapshots[(g.season, g.week)] = {t: team_state(t) for t in list(elo)}
         # New season: regress everyone's Elo toward the mean
         if g.season != current_season:
             for team in list(elo):
                 elo[team] = elo[team] + ELO_SEASON_REVERT * (ELO_START - elo[team])
+            for team, v in eff.items():
+                for i, mean in enumerate((0.0, 0.0, SR_MEAN, SR_MEAN)):
+                    v[i] += EPA_SEASON_REVERT * (mean - v[i])
             current_season = g.season
+            snapshots[(g.season, g.week)] = {t: team_state(t) for t in list(elo)}
+        current_week = g.week
 
         h, a = g.home_team, g.away_team
         neutral = 1 if g.location == "Neutral" else 0
@@ -156,6 +249,20 @@ def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None) ->
             "wind": g.wind,
             "cold": g.cold,
             "dome_team_in_cold": g.dome_team_in_cold,
+            "tz_travel": g.tz_travel,
+            "early_body_clock": g.early_body_clock,
+            "bye_diff": g.bye_diff,
+            "short_week_diff": g.short_week_diff,
+            "off_epa_diff": eff[h][0] - eff[a][0],
+            "def_epa_diff": eff[h][1] - eff[a][1],
+            "net_sr_diff": (eff[h][2] - eff[h][3]) - (eff[a][2] - eff[a][3]),
+            "off_epa_sum": eff[h][0] + eff[a][0],
+            "def_epa_sum": eff[h][1] + eff[a][1],
+            "off_form_sum": avg(scored[h]) + avg(scored[a]),
+            "def_form_sum": avg(allowed[h]) + avg(allowed[a]),
+            "league_total_avg": avg(recent_totals) if recent_totals else 42.0,
+            "indoor": int(g.roof in INDOOR),
+            "total_line": g.total_line,
         })
 
         # Game not played yet -> nothing to update
@@ -170,6 +277,12 @@ def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None) ->
         elo[h] += shift
         elo[a] -= shift
 
+        for team, stats in epa_by_game.get(g.game_id, {}).items():
+            v = eff[team]
+            for i in range(4):
+                v[i] += EPA_ALPHA * (stats[i] - v[i])
+
+        recent_totals.append(g.home_score + g.away_score)
         scored[h].append(g.home_score); allowed[h].append(g.away_score)
         scored[a].append(g.away_score); allowed[a].append(g.home_score)
 
@@ -181,11 +294,29 @@ def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None) ->
             if db > 0:
                 qb_hist[pid].append((db, epa))
 
+    snapshots["latest"] = {t: team_state(t) for t in list(elo)}
+
     df = pd.DataFrame(rows)
+    SNAPSHOTS.clear()
+    SNAPSHOTS.update(snapshots)
     df["played"] = df["home_score"].notna() & df["away_score"].notna()
     df["home_win"] = np.where(df["played"], (df["home_score"] > df["away_score"]).astype(float), np.nan)
     df["tie"] = df["played"] & (df["home_score"] == df["away_score"])
     df["vegas_prob"] = vegas_home_prob(df)
+
+    # Injuries: snap share each team is missing this week (0 when no report data, e.g. before 2013)
+    for side in ("home", "away"):
+        for c in ("inj_off", "inj_def"):
+            df[f"{side}_{c}"] = 0.0
+    if injury_loads is not None and len(injury_loads):
+        key = injury_loads.set_index(["season", "week", "team"])
+        for side in ("home", "away"):
+            idx = pd.MultiIndex.from_arrays([df["season"], df["week"], df[f"{side}_team"]])
+            for c in ("inj_off", "inj_def"):
+                df[f"{side}_{c}"] = key[c].reindex(idx).fillna(0.0).values
+    df["inj_off_diff"] = df["home_inj_off"] - df["away_inj_off"]
+    df["inj_def_diff"] = df["home_inj_def"] - df["away_inj_def"]
+    df["inj_diff"] = df["inj_off_diff"] + df["inj_def_diff"]
     return df
 
 

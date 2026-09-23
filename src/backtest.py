@@ -9,7 +9,6 @@ Usage:
 import numpy as np
 import pandas as pd
 
-from features import FEATURE_GROUPS
 from train import get_models, load_all
 
 FIRST_TEST_SEASON = 2016
@@ -20,7 +19,8 @@ def profit_per_dollar(moneyline):
 
 
 def main():
-    feats = FEATURE_GROUPS["base"] + FEATURE_GROUPS["qb"] + FEATURE_GROUPS["weather"]
+    from predict import load_model
+    feats = load_model()["features"]  # same features the current model uses
     df = load_all()
     done = df[df["played"] & ~df["tie"] & (df["season"] >= 2002)]
     last = int(done["season"].max())

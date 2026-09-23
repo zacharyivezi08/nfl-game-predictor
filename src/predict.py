@@ -10,6 +10,7 @@ import argparse
 from pathlib import Path
 
 import joblib
+import numpy as np
 import pandas as pd
 
 from features import FEATURE_LABELS
@@ -58,7 +59,21 @@ def predict_games(saved, games: pd.DataFrame) -> pd.DataFrame:
     games["vegas_correct"] = games.apply(
         lambda r: None if pd.isna(r.winner) or pd.isna(r.vegas_pick) else r.vegas_pick == r.winner, axis=1)
     games["reasons"] = [reasons(saved, r) for _, r in games.iterrows()]
+    if "scores" in saved:
+        from scores import predict_scores
+        m, t, hs, as_ = predict_scores(saved["scores"], games)
+        games["pred_margin"], games["pred_total"] = m, t
+        games["pred_home_pts"], games["pred_away_pts"] = np.round(hs).astype(int), np.round(as_).astype(int)
     return games
+
+
+def spread_text(team_home, team_away, margin):
+    """Turn a home margin into betting-style text, e.g. 'BUF -6.5'."""
+    if pd.isna(margin):
+        return "-"
+    fav, pts = (team_home, margin) if margin >= 0 else (team_away, -margin)
+    pts = round(pts * 2) / 2
+    return "Pick'em" if pts == 0 else f"{fav} -{pts:g}"
 
 
 def time_slot(weekday, gametime) -> str:
@@ -135,6 +150,11 @@ def main():
         if isinstance(r.winner, str):
             line += f"   | final {int(r.away_score)}-{int(r.home_score)} {'correct' if r.correct else 'wrong'}"
         print(line)
+        if "pred_margin" in r:
+            print(f"      score: {r.away_team} {r.pred_away_pts} - {r.home_team} {r.pred_home_pts}"
+                  f"   spread {spread_text(r.home_team, r.away_team, r.pred_margin)}"
+                  f" (Vegas {spread_text(r.home_team, r.away_team, r.spread_line)})"
+                  f"   total {r.pred_total:.1f} (Vegas {r.total_line if pd.notna(r.total_line) else '-'})")
         print("      why: " + "; ".join(f"{lbl} -> {team}" for lbl, team in r.reasons))
 
     if not args.team:
