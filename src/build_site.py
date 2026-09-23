@@ -9,7 +9,7 @@ import html
 from datetime import datetime
 from pathlib import Path
 
-from predict import load_model, pick_week, predict_games, season_record
+from predict import best_picks, load_model, pick_week, predict_games, season_record, time_slot
 from train import load_all
 
 DOCS = Path(__file__).resolve().parent.parent / "docs"
@@ -34,6 +34,12 @@ h1{font-size:28px;margin:0 0 4px}h2{font-size:18px;margin:36px 0 12px}
 .bar i{display:block}.a{background:var(--away)}.h{background:var(--home)}
 .meta{color:var(--muted);font-size:13px}.why{font-size:13px;margin-top:6px}
 .tag{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--warnbg);color:var(--warn)}
+.best{border:2px solid var(--home)}.star{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--home);color:#fff}
+.slots{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.slot{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.slot span{display:block;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.slot b{display:block;font-size:20px;margin:2px 0}.slot small{color:var(--muted)}
+h3{font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:22px 0 4px}
 .ok{color:var(--good);font-weight:700}.no{color:var(--bad);font-weight:700}
 table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 td,th{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
@@ -42,7 +48,14 @@ footer a{color:var(--home)}
 """
 
 
-def game_card(r):
+def slot_card(r):
+    opp = r.home_team if r.pick == r.away_team else r.away_team
+    n = f"best of {r.games_in_slot} games" if r.games_in_slot > 1 else "only game"
+    return (f'<div class="slot"><span>{html.escape(r.slot)}</span><b>{r.pick} {r.confidence:.0%}</b>'
+            f'<small>over {opp} · {n}</small></div>')
+
+
+def game_card(r, is_best=False):
     e = html.escape
     away_pct = round((1 - r.home_prob) * 100)
     disagree = isinstance(r.vegas_pick, str) and r.vegas_pick != r.pick
@@ -50,9 +63,9 @@ def game_card(r):
     qbs = f"{e(str(r.away_qb))} vs {e(str(r.home_qb))}" if isinstance(r.home_qb, str) else ""
     why = " · ".join(f"{e(lbl)} → {e(team)}" for lbl, team in r.reasons)
     return f"""
-<div class="game">
+<div class="game{' best' if is_best else ''}">
   <div class="row"><div class="teams">{e(r.away_team)} <small>@</small> {e(r.home_team)}</div>
-  <div>{'<span class="tag">Disagrees with Vegas</span> ' if disagree else ''}<span class="pick">{e(r.pick)} {r.confidence:.0%}</span></div></div>
+  <div>{'<span class="star">★ Top pick of slot</span> ' if is_best and r.games_in_slot > 1 else ''}{'<span class="tag">Disagrees with Vegas</span> ' if disagree else ''}<span class="pick">{e(r.pick)} {r.confidence:.0%}</span></div></div>
   <div class="bar" title="{e(r.away_team)} {away_pct}% / {e(r.home_team)} {100 - away_pct}%">
     <i class="a" style="width:{away_pct}%"></i><i class="h" style="width:{100 - away_pct}%"></i></div>
   <div class="row meta"><span>{e(r.away_team)} {away_pct}% · {e(r.home_team)} {100 - away_pct}%</span><span>{vegas}</span></div>
@@ -86,7 +99,15 @@ def main():
 
     upcoming = pick_week(df, season)
     week = int(upcoming["week"].min()) if len(upcoming) else int(all_preds["week"].max())
-    this_week = all_preds[all_preds["week"] == week].sort_values(["gameday", "game_id"])
+    this_week = all_preds[all_preds["week"] == week].sort_values(["gameday", "gametime", "game_id"])
+    this_week["slot"] = [time_slot(w, t) for w, t in zip(this_week["weekday"], this_week["gametime"])]
+    this_week["games_in_slot"] = this_week.groupby("slot")["game_id"].transform("count")
+    best = best_picks(this_week)
+    best_ids = set(best["game_id"])
+    cards = []
+    for slot in best["slot"]:
+        cards.append(f"<h3>{html.escape(slot)}</h3>")
+        cards += [game_card(r, r.game_id in best_ids) for _, r in this_week[this_week["slot"] == slot].iterrows()]
     last_week = all_preds[all_preds["week"] == week - 1]
     lw_right = int(last_week["correct"].isin([True]).sum())
     lw_total = int(last_week["correct"].isin([True, False]).sum())
@@ -104,12 +125,16 @@ def main():
 <h1>NFL Game Predictor</h1>
 <p class="sub">Week {week}, {season} · machine learning win probabilities · updated {datetime.now():%b %-d, %Y}</p>
 {stats}
+<h2>Most confident pick of each time slot</h2>
+<div class="slots">{''.join(slot_card(r) for _, r in best.iterrows())}</div>
 <h2>Week {week} picks</h2>
-{''.join(game_card(r) for _, r in this_week.iterrows())}
+{''.join(cards)}
 {f'<h2>Week {week - 1} results</h2>' + results_table(last_week) if lw_total else ''}
 <footer>Model: {saved['name']} using team strength (Elo), recent form, starting QB efficiency (EPA per dropback),
 rest, home field and weather. Blue bar = home team, orange = away. Data from
-<a href="https://github.com/nflverse">nflverse</a>. For fun, not betting advice.</footer>
+<a href="https://github.com/nflverse">nflverse</a>.<br><br><b>Not betting advice.</b> "Most confident" means most likely
+to win, not a good bet: favorites pay less. In a 10-season backtest against real moneyline odds, betting the model's
+picks lost about 2–6% of the money wagered, because Vegas is more accurate than this model.</footer>
 </main></body></html>"""
 
     DOCS.mkdir(exist_ok=True)

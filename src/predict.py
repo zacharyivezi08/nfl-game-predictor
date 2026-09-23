@@ -61,6 +61,32 @@ def predict_games(saved, games: pd.DataFrame) -> pd.DataFrame:
     return games
 
 
+def time_slot(weekday, gametime) -> str:
+    """Group kickoffs into TV windows, e.g. 'Sunday 1 PM', 'Sunday Night' (times are Eastern)."""
+    hour = int(str(gametime)[:2]) if isinstance(gametime, str) and gametime[:2].isdigit() else 13
+    if weekday == "Sunday":
+        if hour < 12:
+            return "Sunday Morning"
+        if hour < 15:
+            return "Sunday 1 PM"
+        if hour < 19:
+            return "Sunday 4 PM"
+        return "Sunday Night"
+    if hour >= 19:
+        return f"{weekday} Night"
+    return f"{weekday} {hour % 12 or 12} {'PM' if hour >= 12 else 'AM'}"
+
+
+def best_picks(preds: pd.DataFrame) -> pd.DataFrame:
+    """The model's most confident pick in each time slot, in kickoff order."""
+    p = preds.copy()
+    p["slot"] = [time_slot(w, t) for w, t in zip(p["weekday"], p["gametime"])]
+    p["games_in_slot"] = p.groupby("slot")["game_id"].transform("count")
+    p = p.sort_values(["gameday", "gametime", "confidence"], ascending=[True, True, False])
+    best = p.loc[p.groupby("slot", sort=False)["confidence"].idxmax()]
+    return best.sort_values(["gameday", "gametime"])
+
+
 def season_record(preds: pd.DataFrame):
     done = preds[preds["correct"].isin([True, False])]
     vegas = done[done["vegas_correct"].isin([True, False])]
@@ -110,6 +136,13 @@ def main():
             line += f"   | final {int(r.away_score)}-{int(r.home_score)} {'correct' if r.correct else 'wrong'}"
         print(line)
         print("      why: " + "; ".join(f"{lbl} -> {team}" for lbl, team in r.reasons))
+
+    if not args.team:
+        print("\nMOST CONFIDENT PICK OF EACH TIME SLOT (not betting advice)")
+        for _, r in best_picks(preds).iterrows():
+            opp = r.home_team if r.pick == r.away_team else r.away_team
+            n = f"(best of {r.games_in_slot})" if r.games_in_slot > 1 else "(only game)"
+            print(f"  {r.slot:<15} {r.pick} over {opp} {r.confidence:.0%}  {n}")
 
     right, total, v_right, v_total = season_record(predict_games(saved, df[df["season"] == season]))
     if total:

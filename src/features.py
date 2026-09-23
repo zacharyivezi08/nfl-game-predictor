@@ -133,6 +133,8 @@ def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None) ->
             "week": g.week,
             "game_type": g.game_type,
             "gameday": g.gameday,
+            "weekday": g.weekday,
+            "gametime": g.gametime,
             "home_team": h,
             "away_team": a,
             "home_qb": g.home_qb_name,

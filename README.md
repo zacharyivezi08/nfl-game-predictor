@@ -55,6 +55,17 @@ The QB feature gives the biggest boost. Weather barely matters for picking winne
 
 Vegas is still better. It uses injury reports, depth charts, and millions of dollars of bets. The model agrees with the Vegas favorite in about 85% of games, and those disagreements are the interesting ones to watch.
 
+**Could you bet on it?** `python src/backtest.py` tests that honestly: for each season since 2016 the model is trained only on earlier seasons, then bets $1 per game at the real closing moneyline odds.
+
+| Strategy | Bets | Win % | Return per $1 |
+|---|---|---|---|
+| Bet every model pick | 2,782 | 64.4% | -3.2% |
+| Only picks the model is >75% sure of | 515 | 79.6% | -1.9% |
+| Model edge over Vegas > 5% | 1,418 | 42.2% | -5.7% |
+| Model edge over Vegas > 10% | 607 | 38.7% | -7.6% |
+
+Every strategy lost money. Picking winners isn't enough, because favorites pay out less, and the bigger the model's "edge" over Vegas, the more likely the model is simply wrong. Beating the betting market takes information the market doesn't have yet, which a model built on public data can't provide.
+
 Log loss and Brier score measure how good the *probabilities* are, not just the picks (lower is better).
 
 ## Run it yourself
@@ -66,6 +77,7 @@ python src/predict.py            # next week's picks + Vegas line + season recor
 python src/predict.py --week 2   # any week (shows if picks were right)
 python src/predict.py --team PHI # one team only
 python src/build_site.py         # builds the picks web page in docs/
+python src/backtest.py           # would betting the picks have made money?
 ```
 
 Each week, run with `--refresh` to pull the newest results:
@@ -81,8 +93,10 @@ git add docs && git commit -m "Week N picks" && git push
 src/data.py      download + load games and QB stats
 src/features.py  build pre-game features (Elo, form, QB, weather) + Vegas probabilities
 src/train.py     test features, compare models and Vegas, save the best
-src/predict.py   predict games and explain the picks
+src/predict.py   predict games, explain picks, most confident pick per time slot
 src/build_site.py  build the weekly picks page (docs/index.html)
+src/backtest.py    test betting the picks against real odds
+.github/workflows  auto-updates the page Wed 7 PM + Sun 12:30/3:30/7:30 PM ET
 ```
 
 Project idea from @ethandojo's NFL Project Ideas list. For fun, not betting advice.
