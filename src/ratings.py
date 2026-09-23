@@ -27,6 +27,7 @@ def matchup_row(state: dict, home: str, away: str, neutral: bool = False) -> dic
         "rest_diff": 0, "home_field": 0 if neutral else 1,
         "div_game": int(TEAM_DIV[home] == TEAM_DIV[away]),
         "qb_diff": h["qb"] - a["qb"],
+        "qb_drop_diff": 0,
         "wind": 0, "cold": 0, "dome_team_in_cold": 0,
         "off_epa_diff": h["off_epa"] - a["off_epa"],
         "def_epa_diff": h["def_epa"] - a["def_epa"],

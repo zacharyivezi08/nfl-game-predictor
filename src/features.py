@@ -25,6 +25,9 @@ EPA_ALPHA = 0.12           # each new game counts 12% in the running efficiency 
 EPA_SEASON_REVERT = 0.3    # pull efficiency 30% back toward average each offseason
 SR_MEAN = 0.44             # typical success rate (share of plays that "succeed")
 
+QB_DROP_WINDOW = 4         # "usual starter" = most common starter over the team's last 4 games (tested 2, 4, 8)
+QB_DROP_ONLY_WORSE = True  # only count it when this week's QB is WORSE than the usual starter (tested both)
+
 INDOOR = {"dome", "closed"}
 
 # Home stadium time zone (hours from UTC, standard time). Arizona doesn't do daylight saving,
@@ -53,7 +56,10 @@ BASE_FEATURES = [
     "home_field",        # 1 = true home game, 0 = neutral site
     "div_game",          # 1 = divisional rivalry
 ]
-QB_FEATURES = ["qb_diff"]                       # starting QB EPA per dropback (home minus away)
+QB_FEATURES = [
+    "qb_diff",           # starting QB EPA per dropback (home minus away)
+    "qb_drop_diff",      # how much worse this week's QB is than the team's usual starter (home minus away)
+]
 WEATHER_FEATURES = ["wind", "cold", "dome_team_in_cold"]
 EPA_FEATURES = [
     "off_epa_diff",      # offense EPA per play (home minus away)
@@ -81,6 +87,7 @@ FEATURE_LABELS = {
     "home_field": "Home field",
     "div_game": "Division game",
     "qb_diff": "Starting QB",
+    "qb_drop_diff": "Backup / new QB",
     "wind": "Wind",
     "cold": "Cold weather",
     "dome_team_in_cold": "Dome team in the cold",
@@ -173,6 +180,7 @@ def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None,
     allowed = defaultdict(lambda: deque(maxlen=FORM_WINDOW))
     qb_hist = defaultdict(lambda: deque(maxlen=QB_WINDOW))  # player_id -> [(dropbacks, epa)]
     last_qb = {}                                            # team -> most recent starter
+    recent_starters = defaultdict(lambda: deque(maxlen=QB_DROP_WINDOW))  # team -> QB ids of recent starts
     current_season = None
     current_week = None
     rows = []
@@ -220,6 +228,24 @@ def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None,
         a_wins = [1.0 if x > 0 else 0.5 if x == 0 else 0.0 for x in a_pd]
         h_qb, a_qb = qb_rating(g.home_qb_id, h), qb_rating(g.away_qb_id, a)
 
+        def qb_drop(team, this_qb):
+            """This week's QB rating minus the team's usual starter's rating.
+
+            Team stats (Elo, EPA, form) were earned with the usual starter, so when a backup
+            plays (injury, benching, resting starters late in the season) this says how much
+            worse off the team is. 0 when the usual starter plays.
+            """
+            starts = recent_starters[team]
+            if not starts or not isinstance(this_qb, str):
+                return 0.0
+            lst = list(starts)  # most common recent starter; ties go to whoever started most recently
+            usual = max(set(lst), key=lambda q: (lst.count(q), max(i for i, x in enumerate(lst) if x == q)))
+            if usual == this_qb:
+                return 0.0
+            drop = qb_rating(this_qb, team) - qb_rating(usual, team)
+            return min(drop, 0.0) if QB_DROP_ONLY_WORSE else drop
+        h_drop, a_drop = qb_drop(h, g.home_qb_id), qb_drop(a, g.away_qb_id)
+
         rows.append({
             "game_id": g.game_id,
             "season": g.season,
@@ -246,6 +272,7 @@ def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None,
             "home_field": 1 - neutral,
             "div_game": int(g.div_game) if pd.notna(g.div_game) else 0,
             "qb_diff": h_qb - a_qb,
+            "qb_drop_diff": h_drop - a_drop,
             "wind": g.wind,
             "cold": g.cold,
             "dome_team_in_cold": g.dome_team_in_cold,
@@ -290,6 +317,7 @@ def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None,
         for team, qb_id in ((h, g.home_qb_id), (a, g.away_qb_id)):
             if isinstance(qb_id, str):
                 last_qb[team] = qb_id
+                recent_starters[team].append(qb_id)
         for pid, team, db, epa in qb_by_game.get(g.game_id, []):
             if db > 0:
                 qb_hist[pid].append((db, epa))

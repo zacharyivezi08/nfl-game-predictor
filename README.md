@@ -26,7 +26,7 @@ It updates itself every Wednesday at 7 PM and Sunday at 12:30, 3:30 and 7:30 PM 
 | Group | What it measures | Kept? |
 |---|---|---|
 | Base | Elo team rating, last-5-games form, rest, home field, division game | ✅ |
-| QB | Starting QB's EPA per dropback over his recent games | ✅ |
+| QB | Starting QB's EPA per dropback, plus a **backup-QB drop-off**: how much worse this week's QB is than the team's usual starter (catches injuries and resting starters) | ✅ |
 | Efficiency (EPA) | Offense and defense EPA per play and success rate, from play-by-play (garbage time removed) | ✅ |
 | Injuries | Snap share of injured starters (Out/Doubtful/Questionable), weighted by their recent role | ✅ |
 | Weather | Wind, cold, dome team playing outside in the cold | ❌ didn't help |
@@ -45,17 +45,17 @@ It updates itself every Wednesday at 7 PM and Sunday at 12:30, 3:30 and 7:30 PM 
 | Features | Validation log loss (lower = better) |
 |---|---|
 | Base only | 0.6348 |
-| + QB | 0.6296 |
+| + QB | 0.6297 |
 | + Efficiency (EPA) | 0.6278 |
-| + Injuries | 0.6273 |
-| + Weather | 0.6286 (worse, skipped) |
-| + Travel | 0.6332 (worse, skipped) |
+| + Injuries | 0.6275 |
+| + Weather | 0.6288 (worse, skipped) |
+| + Travel | 0.6330 (worse, skipped) |
 
 **Model vs Vegas**
 
 | | Accuracy | Log loss | Brier |
 |---|---|---|---|
-| **Our model** (logistic regression) | **64.9%** | 0.625 | 0.218 |
+| **Our model** (logistic regression) | **63.9%** | 0.624 | 0.218 |
 | Basic model (Elo + form only) | 63.2% | 0.635 | 0.223 |
 | Vegas | 67.6% | 0.607 | 0.210 |
 | Always pick home team | 55.4% | 0.688 | 0.247 |
@@ -68,6 +68,28 @@ Vegas is still better. It has real-time injury news, depth charts and millions o
 |---|---|---|
 | Average miss on the margin | 9.9 pts | 9.5 pts |
 | Average miss on total points | 10.4 pts | 10.2 pts |
+
+### Error analysis: where the model loses to Vegas
+
+Predicting 2016–2025 season by season (each season using only earlier data), the model and Vegas pick the same
+winner in 87% of games, and in those games they are **exactly equally accurate (68.1%)**. The whole gap comes from the
+games where the model disagrees with Vegas. The biggest cause was **backup quarterbacks and resting starters**: games
+with a QB change made up 46% of the model's biggest misses. For example, it gave the 2020 Chiefs an 80% chance in
+Week 17, not knowing Mahomes was resting (they lost 38-21).
+
+The **backup-QB drop-off** feature was built to fix this. In 317 games where a clearly worse QB started (2010–2025):
+
+| | Accuracy | Log loss |
+|---|---|---|
+| Before | 64.7% | 0.643 |
+| After | 64.7% | 0.632 |
+| Vegas | 65.9% | 0.617 |
+
+In those games the model's probabilities got much closer to Vegas (the log-loss gap shrank by about 40%), though it
+picks the same winners. Overall, headline accuracy moved slightly *down*, from 64.9% to 63.9% on the test seasons.
+That's about 11 games out of 1,136, which is within luck. Log loss, the more reliable measure, improved from 0.625 to
+0.624, so the feature was kept. Week 18, when playoff teams rest starters, is still the model's worst
+week (59.8% vs Vegas 64.7%).
 
 ### Things that didn't work (and why that matters)
 
@@ -82,10 +104,10 @@ Vegas is still better. It has real-time injury news, depth charts and millions o
 
 | Strategy | Bets | Win % | Return per $1 |
 |---|---|---|---|
-| Bet every model pick | 2,782 | 64.7% | -3.0% |
-| Only picks the model is >75% sure of | 533 | 79.2% | -2.7% |
-| Model edge over Vegas > 5% | 1,398 | 43.3% | -3.4% |
-| Model edge over Vegas > 10% | 560 | 41.1% | -3.9% |
+| Bet every model pick | 2,782 | 64.4% | -3.6% |
+| Only picks the model is >75% sure of | 555 | 79.1% | -3.0% |
+| Model edge over Vegas > 5% | 1,377 | 43.5% | -6.1% |
+| Model edge over Vegas > 10% | 557 | 43.3% | -0.4% |
 
 Every strategy lost money. Against the spread the model hits 48.6%, and on over/unders 50.3%. You need 52.4% just to break even after the sportsbook's cut. Beating the market takes information it doesn't have yet, which a model built on public data can't provide. **Not betting advice.**
 
