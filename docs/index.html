@@ -1,0 +1,186 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>NFL Game Predictor</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#14171c;--muted:#5d6570;--line:#e3e6ea;
+--home:#1f6feb;--away:#d9480f;--good:#1a7f37;--bad:#c2255c;--warn:#9a6700;--warnbg:#fff4d6}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1117;--card:#161b22;--ink:#e6edf3;--muted:#8b949e;
+--line:#30363d;--home:#4c8dff;--away:#ff7b45;--good:#3fb950;--bad:#f778ba;--warn:#e3b341;--warnbg:#2d2410}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:28px 16px 60px}
+h1{font-size:28px;margin:0 0 4px}h2{font-size:18px;margin:36px 0 12px}
+.sub{color:var(--muted);margin:0 0 20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.stat b{display:block;font-size:24px}.stat span{color:var(--muted);font-size:13px}
+.game{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:10px 0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.teams{font-weight:700;font-size:17px}.teams small{color:var(--muted);font-weight:400}
+.pick{font-weight:700}.bar{display:flex;height:8px;border-radius:4px;overflow:hidden;margin:10px 0 8px;background:var(--line)}
+.bar i{display:block}.a{background:var(--away)}.h{background:var(--home)}
+.meta{color:var(--muted);font-size:13px}.why{font-size:13px;margin-top:6px}
+.tag{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--warnbg);color:var(--warn)}
+.ok{color:var(--good);font-weight:700}.no{color:var(--bad);font-weight:700}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+td,th{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
+th{color:var(--muted);font-weight:600}footer{color:var(--muted);font-size:13px;margin-top:40px}
+footer a{color:var(--home)}
+</style></head><body><main>
+<h1>NFL Game Predictor</h1>
+<p class="sub">Week 3, 2026 · machine learning win probabilities · updated Sep 23, 2026</p>
+<div class="stats">
+<div class="stat"><b>19-13</b><span>Model record in 2026 (59%)</span></div>
+<div class="stat"><b>23-9</b><span>Vegas favorites in 2026 (72%)</span></div>
+<div class="stat"><b>10-6</b><span>Model in week 2</span></div>
+<div class="stat"><b>2</b><span>Week 3 picks that disagree with Vegas</span></div></div>
+<h2>Week 3 picks</h2>
+
+<div class="game">
+  <div class="row"><div class="teams">ATL <small>@</small> GB</div>
+  <div><span class="pick">GB 70%</span></div></div>
+  <div class="bar" title="ATL 30% / GB 70%">
+    <i class="a" style="width:30%"></i><i class="h" style="width:70%"></i></div>
+  <div class="row meta"><span>ATL 30% · GB 70%</span><span>Vegas: GB 70%</span></div>
+  <div class="meta">Michael Penix Jr. vs Jordan Love · Thu Sep 24</div>
+  <div class="why"><b>Why:</b> Team strength (Elo) → GB · Starting QB → GB · Recent defense → ATL</div>
+</div>
+<div class="game">
+  <div class="row"><div class="teams">ARI <small>@</small> SF</div>
+  <div><span class="pick">SF 78%</span></div></div>
+  <div class="bar" title="ARI 22% / SF 78%">
+    <i class="a" style="width:22%"></i><i class="h" style="width:78%"></i></div>
+  <div class="row meta"><span>ARI 22% · SF 78%</span><span>Vegas: SF 80%</span></div>
+  <div class="meta">Jacoby Brissett vs Brock Purdy · Sun Sep 27</div>
+  <div class="why"><b>Why:</b> Team strength (Elo) → SF · Starting QB → SF · Division game → ARI</div>
+</div>
+<div class="game">
+  <div class="row"><div class="teams">BAL <small>@</small> DAL</div>
+  <div><span class="pick">BAL 55%</span></div></div>
+  <div class="bar" title="BAL 55% / DAL 45%">
+    <i class="a" style="width:55%"></i><i class="h" style="width:45%"></i></div>
+  <div class="row meta"><span>BAL 55% · DAL 45%</span><span>Vegas: BAL 62%</span></div>
+  <div class="meta">Lamar Jackson vs Dak Prescott · Sun Sep 27</div>
+  <div class="why"><b>Why:</b> Neutral site, no home edge → BAL · Team strength (Elo) → BAL · Starting QB → DAL</div>
+</div>
+<div class="game">
+  <div class="row"><div class="teams">CAR <small>@</small> CLE</div>
+  <div><span class="tag">Disagrees with Vegas</span> <span class="pick">CLE 51%</span></div></div>
+  <div class="bar" title="CAR 49% / CLE 51%">
+    <i class="a" style="width:49%"></i><i class="h" style="width:51%"></i></div>
+  <div class="row meta"><span>CAR 49% · CLE 51%</span><span>Vegas: CAR 57%</span></div>
+  <div class="meta">Bryce Young vs Deshaun Watson · Sun Sep 27</div>
+  <div class="why"><b>Why:</b> Starting QB → CAR · Team strength (Elo) → CAR · Recent defense → CLE</div>
+</div>
+<div class="game">
+  <div class="row"><div class="teams">CIN <small>@</small> PIT</div>
+  <div><span class="pick">CIN 60%</span></div></div>
+  <div class="bar" title="CIN 60% / PIT 40%">
+    <i class="a" style="width:60%"></i><i class="h" style="width:40%"></i></div>
+  <div class="row meta"><span>CIN 60% · PIT 40%</span><span>Vegas: CIN 63%</span></div>
+  <div class="meta">Joe Burrow vs Aaron Rodgers · Sun Sep 27</div>
+  <div class="why"><b>Why:</b> Starting QB → CIN · Recent point differential → CIN · Recent offense → CIN</div>
+</div>
+<div class="game">
+  <div class="row"><div class="teams">HOU <small>@</small> IND</div>
+  <div><span class="pick">HOU 57%</span></div></div>
+  <div class="bar" title="HOU 57% / IND 43%">
+    <i class="a" style="width:57%"></i><i class="h" style="width:43%"></i></div>
+  <div class="row meta"><span>HOU 57% · IND 43%</span><span>Vegas: HOU 57%</span></div>
+  <div class="meta">C.J. Stroud vs Daniel Jones · Sun Sep 27</div>
+  <div class="why"><b>Why:</b> Team strength (Elo) → HOU · Division game → HOU · Recent defense → HOU</div>
+</div>
+<div class="game">
+  <div class="row"><div class="teams">KC <small>@</small> MIA</div>
+  <div><span class="pick">KC 61%</span></div></div>
+  <div class="bar" title="KC 61% / MIA 39%">
+    <i class="a" style="width:61%"></i><i class="h" style="width:39%"></i></div>
+  <div class="row meta"><span>KC 61% · MIA 39%</span><span>Vegas: KC 86%</span></div>
+  <div class="meta">Patrick Mahomes vs Malik Willis · Sun Sep 27</div>
+  <div class="why"><b>Why:</b> Team strength (Elo) → KC · Recent point differential → KC · Starting QB → KC</div>
+</div>
+<div class="game">
+  <div class="row"><div class="teams">LAC <small>@</small> BUF</div>
+  <div><span class="pick">BUF 84%</span></div></div>
+  <div class="bar" title="LAC 16% / BUF 84%">
+    <i class="a" style="width:16%"></i><i class="h" style="width:84%"></i></div>
+  <div class="row meta"><span>LAC 16% · BUF 84%</span><span>Vegas: BUF 74%</span></div>
+  <div class="meta">Justin Herbert vs Josh Allen · Sun Sep 27</div>
+  <div class="why"><b>Why:</b> Team strength (Elo) → BUF · Starting QB → BUF · Recent offense → BUF</div>
+</div>
+<div class="game">
+  <div class="row"><div class="teams">LA <small>@</small> DEN</div>
+  <div><span class="tag">Disagrees with Vegas</span> <span class="pick">DEN 53%</span></div></div>
+  <div class="bar" title="LA 47% / DEN 53%">
+    <i class="a" style="width:47%"></i><i class="h" style="width:53%"></i></div>
+  <div class="row meta"><span>LA 47% · DEN 53%</span><span>Vegas: LA 56%</span></div>
+  <div class="meta">Matthew Stafford vs Bo Nix · Sun Sep 27</div>
+  <div class="why"><b>Why:</b> Starting QB → LA · Recent offense → LA · Recent defense → DEN</div>
+</div>
+<div class="game">
+  <div class="row"><div class="teams">LV <small>@</small> NO</div>
+  <div><span class="pick">NO 66%</span></div></div>
+  <div class="bar" title="LV 34% / NO 66%">
+    <i class="a" style="width:34%"></i><i class="h" style="width:66%"></i></div>
+  <div class="row meta"><span>LV 34% · NO 66%</span><span>Vegas: NO 62%</span></div>
+  <div class="meta">Kirk Cousins vs Tyler Shough · Sun Sep 27</div>
+  <div class="why"><b>Why:</b> Team strength (Elo) → NO · Starting QB → NO · Recent offense → NO</div>
+</div>
+<div class="game">
+  <div class="row"><div class="teams">MIN <small>@</small> TB</div>
+  <div><span class="pick">MIN 64%</span></div></div>
+  <div class="bar" title="MIN 64% / TB 36%">
+    <i class="a" style="width:64%"></i><i class="h" style="width:36%"></i></div>
+  <div class="row meta"><span>MIN 64% · TB 36%</span><span>Vegas: MIN 52%</span></div>
+  <div class="meta">Kyler Murray vs Baker Mayfield · Sun Sep 27</div>
+  <div class="why"><b>Why:</b> Team strength (Elo) → MIN · Starting QB → MIN · Recent defense → MIN</div>
+</div>
+<div class="game">
+  <div class="row"><div class="teams">NE <small>@</small> JAX</div>
+  <div><span class="pick">JAX 58%</span></div></div>
+  <div class="bar" title="NE 42% / JAX 58%">
+    <i class="a" style="width:42%"></i><i class="h" style="width:58%"></i></div>
+  <div class="row meta"><span>NE 42% · JAX 58%</span><span>Vegas: JAX 58%</span></div>
+  <div class="meta">Drake Maye vs Trevor Lawrence · Sun Sep 27</div>
+  <div class="why"><b>Why:</b> Team strength (Elo) → NE · Recent offense → JAX · Recent point differential → JAX</div>
+</div>
+<div class="game">
+  <div class="row"><div class="teams">NYJ <small>@</small> DET</div>
+  <div><span class="pick">DET 82%</span></div></div>
+  <div class="bar" title="NYJ 18% / DET 82%">
+    <i class="a" style="width:18%"></i><i class="h" style="width:82%"></i></div>
+  <div class="row meta"><span>NYJ 18% · DET 82%</span><span>Vegas: DET 72%</span></div>
+  <div class="meta">Geno Smith vs Jared Goff · Sun Sep 27</div>
+  <div class="why"><b>Why:</b> Team strength (Elo) → DET · Starting QB → DET · Rest advantage → DET</div>
+</div>
+<div class="game">
+  <div class="row"><div class="teams">SEA <small>@</small> WAS</div>
+  <div><span class="pick">SEA 68%</span></div></div>
+  <div class="bar" title="SEA 68% / WAS 32%">
+    <i class="a" style="width:68%"></i><i class="h" style="width:32%"></i></div>
+  <div class="row meta"><span>SEA 68% · WAS 32%</span><span>Vegas: SEA 72%</span></div>
+  <div class="meta">Drew Lock vs Jayden Daniels · Sun Sep 27</div>
+  <div class="why"><b>Why:</b> Team strength (Elo) → SEA · Recent point differential → SEA · Starting QB → WAS</div>
+</div>
+<div class="game">
+  <div class="row"><div class="teams">TEN <small>@</small> NYG</div>
+  <div><span class="pick">NYG 76%</span></div></div>
+  <div class="bar" title="TEN 24% / NYG 76%">
+    <i class="a" style="width:24%"></i><i class="h" style="width:76%"></i></div>
+  <div class="row meta"><span>TEN 24% · NYG 76%</span><span>Vegas: NYG 55%</span></div>
+  <div class="meta">Cam Ward vs Jaxson Dart · Sun Sep 27</div>
+  <div class="why"><b>Why:</b> Team strength (Elo) → NYG · Starting QB → NYG · Recent point differential → NYG</div>
+</div>
+<div class="game">
+  <div class="row"><div class="teams">PHI <small>@</small> CHI</div>
+  <div><span class="pick">PHI 53%</span></div></div>
+  <div class="bar" title="PHI 53% / CHI 47%">
+    <i class="a" style="width:53%"></i><i class="h" style="width:47%"></i></div>
+  <div class="row meta"><span>PHI 53% · CHI 47%</span><span>Vegas: PHI 66%</span></div>
+  <div class="meta">Jalen Hurts vs Tyson Bagent · Mon Sep 28</div>
+  <div class="why"><b>Why:</b> Starting QB → PHI · Team strength (Elo) → PHI · Recent offense → CHI</div>
+</div>
+<h2>Week 2 results</h2><table><tr><th>Game</th><th>Final</th><th>Model</th><th>Vegas</th></tr><tr><td>DET @ BUF</td><td>31-41</td><td>BUF 67% <span class="ok">✓</span></td><td>BUF <span class="ok">✓</span></td></tr><tr><td>CAR @ ATL</td><td>34-3</td><td>ATL 64% <span class="no">✗</span></td><td>CAR <span class="ok">✓</span></td></tr><tr><td>CIN @ HOU</td><td>20-6</td><td>HOU 62% <span class="no">✗</span></td><td>HOU <span class="no">✗</span></td></tr><tr><td>CLE @ TB</td><td>23-19</td><td>TB 70% <span class="no">✗</span></td><td>TB <span class="no">✗</span></td></tr><tr><td>GB @ NYJ</td><td>20-17</td><td>GB 66% <span class="ok">✓</span></td><td>GB <span class="ok">✓</span></td></tr><tr><td>IND @ KC</td><td>30-33</td><td>KC 68% <span class="ok">✓</span></td><td>KC <span class="ok">✓</span></td></tr><tr><td>JAX @ DEN</td><td>13-20</td><td>DEN 51% <span class="ok">✓</span></td><td>DEN <span class="ok">✓</span></td></tr><tr><td>LV @ LAC</td><td>26-14</td><td>LAC 65% <span class="no">✗</span></td><td>LAC <span class="no">✗</span></td></tr><tr><td>MIA @ SF</td><td>13-35</td><td>SF 79% <span class="ok">✓</span></td><td>SF <span class="ok">✓</span></td></tr><tr><td>MIN @ CHI</td><td>9-3</td><td>CHI 57% <span class="no">✗</span></td><td>CHI <span class="no">✗</span></td></tr><tr><td>NO @ BAL</td><td>24-17</td><td>BAL 73% <span class="no">✗</span></td><td>BAL <span class="no">✗</span></td></tr><tr><td>PHI @ TEN</td><td>24-20</td><td>PHI 74% <span class="ok">✓</span></td><td>PHI <span class="ok">✓</span></td></tr><tr><td>PIT @ NE</td><td>3-20</td><td>NE 71% <span class="ok">✓</span></td><td>NE <span class="ok">✓</span></td></tr><tr><td>SEA @ ARI</td><td>31-7</td><td>SEA 72% <span class="ok">✓</span></td><td>SEA <span class="ok">✓</span></td></tr><tr><td>WAS @ DAL</td><td>20-37</td><td>DAL 56% <span class="ok">✓</span></td><td>DAL <span class="ok">✓</span></td></tr><tr><td>NYG @ LA</td><td>6-28</td><td>LA 73% <span class="ok">✓</span></td><td>LA <span class="ok">✓</span></td></tr></table>
+<footer>Model: Logistic Regression using team strength (Elo), recent form, starting QB efficiency (EPA per dropback),
+rest, home field and weather. Blue bar = home team, orange = away. Data from
+<a href="https://github.com/nflverse">nflverse</a>. For fun, not betting advice.</footer>
+</main></body></html>
