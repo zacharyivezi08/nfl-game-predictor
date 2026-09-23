@@ -2,24 +2,21 @@ name: Update picks page
 
 on:
   schedule:
-    # GitHub uses UTC. Two lines per time so it stays right before AND after
-    # daylight saving ends (EDT = UTC-4 until Nov 1, EST = UTC-5 after).
-    - cron: "0 23 * * 3"    # Wed 7:00 PM EDT
-    - cron: "0 0 * * 4"     # Wed 7:00 PM EST
-    - cron: "30 16 * * 0"   # Sun 12:30 PM EDT
-    - cron: "30 17 * * 0"   # Sun 12:30 PM EST
-    - cron: "30 19 * * 0"   # Sun 3:30 PM EDT
-    - cron: "30 20 * * 0"   # Sun 3:30 PM EST
-    - cron: "30 23 * * 0"   # Sun 7:30 PM EDT
-    - cron: "30 0 * * 1"    # Sun 7:30 PM EST
+    - cron: "*/30 * * * *"   # every 30 minutes, all week
   workflow_dispatch:         # adds a "Run workflow" button to run it anytime
 
 permissions:
   contents: write
 
+# Never run two updates at once (a slow run finishes before the next one starts)
+concurrency:
+  group: update-picks
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -37,15 +34,20 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - name: Pull latest results, retrain, rebuild page
+      - name: Pull latest results + injury reports, retrain, rebuild page
         run: |
           python src/train.py --refresh
           python src/build_site.py
 
-      - name: Save the new page
+      - name: Save the new page (only if something changed)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs
-          git diff --cached --quiet || git commit -m "Auto-update picks $(date -u +'%Y-%m-%d %H:%M UTC')"
-          git push
+          if git diff --cached --quiet; then
+            echo "Nothing changed since the last run."
+          else
+            git commit -m "Auto-update picks $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git pull --rebase
+            git push
+          fi
