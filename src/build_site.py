@@ -139,11 +139,36 @@ background:var(--card2);border:1.5px solid var(--line);border-radius:999px;paddi
 .mypick button.on{border-color:var(--s1);background:color-mix(in srgb,var(--s1) 16%,transparent)}
 .mypick button:disabled{opacity:.5;cursor:default}.mypick button.on:disabled{opacity:1}
 #myrec:empty{display:none}
+.sb{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:12px 0 4px;padding:14px 8px;
+border-radius:14px;background:var(--card2);border:1px solid var(--grid)}
+.sbt{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.sbt .sblg{width:52px;height:52px;object-fit:contain}.sbt span{font-size:13px;font-weight:700;color:var(--muted)}
+.sbt b{font-size:clamp(34px,8vw,46px);line-height:1;font-weight:900;letter-spacing:-.02em;color:var(--muted);
+font-family:"Arial Narrow","Roboto Condensed","Helvetica Neue",sans-serif;font-stretch:condensed}
+.sbt b.w{color:var(--good)}.sbt i.hid{visibility:hidden}.sbt i{font-style:normal;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--good)}
+.sbm{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:center;line-height:1.3}
+.sbf{text-align:center;font-size:13px;font-weight:700;margin:2px 0}
 .upsets{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
 .upset{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--tc);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
 .uprow{display:flex;align-items:center;gap:10px;margin:6px 0 4px}.uprow b{font-size:26px;font-weight:800;min-width:58px}
 .umeter{flex:1;height:8px;border-radius:4px;background:var(--grid);overflow:hidden}.umeter i{display:block;height:8px;max-width:100%;background:var(--tc)}
 @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+/* Texas burnt orange page background: text sitting on the page is white, cards keep their own colors */
+:root{--page:#BF5700;--onpage:#fff;--onpage-muted:#ffe6d1}
+body{background:var(--page)}
+.hero{background:radial-gradient(1200px 400px at 85% -20%,rgba(255,170,90,.35),transparent 60%),
+linear-gradient(135deg,#6e3200,#a84c00)}
+.hero .sub,.stat span{color:#ffe6d1}.kicker,.back{color:#ffd2ad}
+main{color:var(--onpage)}
+main>h2,main>section>h2,main>h3,main>section>h3{color:var(--onpage)}
+main h3,main .note,main details>summary{color:var(--onpage-muted)}
+.game .note,.chart .note,.cmp .note,.wrap .note,.upset .note,.glance .note,.card .note,.game summary,.game details>summary{color:var(--muted)}
+main>.note a,main>section>.note a{color:#fff;font-weight:700}
+h2::before{background:#fff}
+nav{background:color-mix(in srgb,var(--page) 88%,transparent);border-bottom-color:rgba(255,255,255,.25)}
+footer{color:var(--onpage-muted);border-top-color:rgba(255,255,255,.3)}footer a{color:#fff;font-weight:700}footer b{color:#fff}
+.game,.slot,.chart,.wrap,.glance>div,.upset,main .stat,.teamnav a,nav a,.card{color:var(--ink)}
+main .stat span{color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 """
 
@@ -514,13 +539,25 @@ def game_card(r, is_best=False, stats=None, gaps=None):
     vegas = f"Vegas: {e(r.vegas_pick)} {r.vegas_conf:.0%}" if isinstance(r.vegas_pick, str) else "Vegas: no line yet"
     qbs = f"{e(str(r.away_qb))} vs {e(str(r.home_qb))} · " if isinstance(r.home_qb, str) else ""
     why = " · ".join(f"{e(lbl)} → {e(team)}" for lbl, team in r.reasons)
-    score = ""
+    score = score_line = ""
     if "pred_margin" in r:
         v_total = f"{r.total_line:g}" if pd.notna(r.total_line) else "-"
-        score = (f'<div class="score"><b>Predicted:</b> {e(r.away_team)} {r.pred_away_pts}, {e(r.home_team)} {r.pred_home_pts}'
-                 f' · Spread {e(spread_text(r.home_team, r.away_team, r.pred_margin))}'
-                 f' <span class="meta">(Vegas {e(spread_text(r.home_team, r.away_team, r.spread_line))})</span>'
-                 f' · Total {r.pred_total:.1f} <span class="meta">(Vegas {v_total})</span></div>')
+        home_pts = (r.pred_total + r.pred_margin) / 2
+        away_pts = (r.pred_total - r.pred_margin) / 2
+        hw = home_pts >= away_pts
+        final = ""
+        if r.played:
+            final = (f'<div class="sbf">Final: {e(r.away_team)} {int(r.away_score)}, {e(r.home_team)} {int(r.home_score)}</div>')
+        score = f"""<div class="sb">
+  <div class="sbt">{logo(r.away_team, 128, "sblg")}<span>{e(r.away_team)}</span><b class="{'w' if not hw else ''}">{away_pts:.1f}</b>
+    <i{'' if not hw else ' class="hid"'}>Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt">{logo(r.home_team, 128, "sblg")}<span>{e(r.home_team)}</span><b class="{'w' if hw else ''}">{home_pts:.1f}</b>
+    <i{'' if hw else ' class="hid"'}>Winner</i></div>
+</div>{final}"""
+        score_line = f"""<div class="score">Spread {e(spread_text(r.home_team, r.away_team, r.pred_margin))}
+ <span class="meta">(Vegas {e(spread_text(r.home_team, r.away_team, r.spread_line))})</span>
+ · Total {r.pred_total:.1f} <span class="meta">(Vegas {v_total})</span></div>"""
     blend = ""
     if isinstance(r.vegas_pick, str):
         blend = f'<div class="blend"><b>Model + Vegas blend: {e(r.blend_pick)} {r.blend_conf:.0%}</b></div>'
@@ -530,12 +567,13 @@ def game_card(r, is_best=False, stats=None, gaps=None):
 <details class="game{' best' if is_best else ''}"><summary>
   <div class="row"><div class="teams">{tl(r.away_team)} <small>@</small> {tl(r.home_team)}</div>
   <div>{badges}<span class="pick">{e(r.pick)} {r.confidence:.0%}</span></div></div>
+  {score}
   <div class="bar" role="img" aria-label="{e(r.away_team)} {away_pct}%, {e(r.home_team)} {100 - away_pct}%">
     <i style="width:{away_pct}%;background:{ca}"></i><i style="width:{100 - away_pct}%;background:{ch}"></i></div>
   <div class="row meta"><span>{e(r.away_team)} {away_pct}% · {e(r.home_team)} {100 - away_pct}%</span><span>{vegas}</span></div>
   <div class="meta">{qbs}{r.gameday:%a %b %-d}</div>
   {pick_buttons(r)}
-  {score}
+  {score_line}
   {line_flags(r, gaps)}
   {blend}
   <div class="why"><b>Why:</b> {why}</div>
@@ -739,7 +777,7 @@ def page(title, hero, body, prefix="", color=None):
     style = f' style="--tc:{color}"' if color else ""
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>{e(title)}</title>
-<meta name="theme-color" content="#0b1a33"><style>{CSS}</style></head><body>
+<meta name="theme-color" content="#BF5700"><style>{CSS}</style></head><body>
 <header class="hero{' thero' if color else ''}"{style}><div class="in"><a class="back" href="{prefix}index.html">← All picks</a>{hero}</div></header>
 <main>{body}
 <footer><b>Teams</b><div class="teamnav">{''.join(tl(t, prefix) for t in TEAMS)}</div><br><b>Not betting advice.</b>
@@ -882,7 +920,7 @@ def main():
     html_page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>NFL Game Predictor</title>
 <meta name="description" content="Machine learning picks, predicted scores, power rankings and playoff odds for every NFL game.">
-<meta name="theme-color" content="#0b1a33"><style>{CSS}</style></head><body>
+<meta name="theme-color" content="#BF5700"><style>{CSS}</style></head><body>
 <header class="hero"><div class="in">
 <div class="kicker">Week {week} · {season} season · updated {datetime.now():%b %-d, %Y}</div>
 <h1>NFL Game Predictor</h1>
