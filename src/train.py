@@ -27,7 +27,7 @@ from sklearn.preprocessing import StandardScaler
 from data import load_games, load_injuries, load_qb_stats, load_snaps, load_team_epa
 from features import FEATURE_GROUPS, build_features
 from injuries import injury_loads
-from scores import evaluate, fit_score_models
+from scores import evaluate, fit_score_models, predict_scores
 
 MODEL_DIR = Path(__file__).resolve().parent.parent / "models"
 FIRST_SEASON = 2002   # skip first few seasons while ratings warm up
@@ -94,6 +94,65 @@ def blend_prob(blend, model_prob, vegas_prob):
     ok = ~np.isnan(vegas_prob)
     if ok.any():
         out[ok] = blend.predict_proba(blend_inputs(model_prob[ok], vegas_prob[ok]))[:, 1]
+    return out
+
+
+def calibration(oos, first_blend_season=2012):
+    """How often did teams actually win at each predicted chance? (walk-forward, so every prediction is honest)
+
+    The blend for each season is learned only from seasons before it. Returns bins for the favorite's chance
+    (model and blend) and the underdog's chance (blend), for the calibration chart and upset watch.
+    """
+    parts = []
+    for s in sorted(oos["season"].unique()):
+        if s < first_blend_season:
+            continue
+        cur = oos[(oos["season"] == s) & oos["vegas_prob"].notna()].copy()
+        cur["p_blend"] = blend_prob(fit_blend(oos[oos["season"] < s]), cur["p_model"], cur["vegas_prob"])
+        parts.append(cur)
+    c = pd.concat(parts)
+
+    def fav_bins(p):
+        fav = np.maximum(p, 1 - p)
+        won = np.where(p >= 0.5, c["home_win"], 1 - c["home_win"])
+        edges = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 1.0]
+        out = []
+        for lo, hi in zip(edges[:-1], edges[1:]):
+            m = (fav >= lo) & (fav < hi)
+            if m.sum() >= 20:
+                out.append({"lo": lo, "hi": hi, "n": int(m.sum()), "pred": float(fav[m].mean()), "won": float(won[m].mean())})
+        return out
+
+    dog = np.minimum(c["p_blend"], 1 - c["p_blend"])
+    dog_won = np.where(c["p_blend"] < 0.5, c["home_win"], 1 - c["home_win"])
+    upsets = []
+    for lo, hi in [(0.20, 0.30), (0.30, 0.35), (0.35, 0.40), (0.40, 0.45), (0.45, 0.50)]:
+        m = (dog >= lo) & (dog < hi)
+        upsets.append({"lo": lo, "hi": hi, "n": int(m.sum()), "won": float(dog_won[m].mean())})
+    return {"seasons": f"{int(c['season'].min())}–{int(c['season'].max())}", "games": len(c),
+            "model": fav_bins(c["p_model"].values), "blend": fav_bins(c["p_blend"].values), "upsets": upsets}
+
+
+GAP_POINTS = 4  # flag spreads/totals where the model's number is this far from the Vegas line
+
+
+def line_gap_record(done, full, features, first_season=2012):
+    """When the model's spread or total is GAP_POINTS+ away from Vegas, how often was its side right?
+
+    Walk-forward: each season's score models are trained only on earlier seasons.
+    """
+    parts = []
+    for s in [x for x in full if x >= first_season]:
+        tr = done[done["season"] < s]
+        te = done[(done["season"] == s) & done["spread_line"].notna() & done["total_line"].notna()].copy()
+        te["pm"], te["pt"], _, _ = predict_scores(fit_score_models(tr, features), te)
+        parts.append(te)
+    c = pd.concat(parts)
+    out = {"seasons": f"{int(c['season'].min())}–{int(c['season'].max())}", "points": GAP_POINTS}
+    for key, gap, real in (("spread", c["pm"] - c["spread_line"], c["home_score"] - c["away_score"] - c["spread_line"]),
+                           ("total", c["pt"] - c["total_line"], c["home_score"] + c["away_score"] - c["total_line"])):
+        m = (gap.abs() >= GAP_POINTS) & (real != 0)
+        out[key] = {"n": int(m.sum()), "hit": float((np.sign(gap[m]) == np.sign(real[m])).mean())}
     return out
 
 
@@ -218,14 +277,27 @@ def main():
     print(f"Last 2 weeks of the regular season: model {accuracy_score(y[late], post['p_model'][late] > .5):.1%}, "
           f"Vegas {accuracy_score(y[late], post['vegas_prob'][late] > .5):.1%} ({late.sum()} games)")
 
-    # 6) Retrain on every finished season and save
+    # 6) Are the percentages honest? (calibration) + how often do underdogs actually win?
+    print("\nSTEP 6: Calibration: when we say X%, does it happen X% of the time?")
+    cal = calibration(oos)
+    for b in cal["blend"]:
+        print(f"  Blend favorite {b['lo']:.0%}-{b['hi']:.0%}: predicted {b['pred']:.1%}, actually won {b['won']:.1%} ({b['n']} games)")
+    for b in cal["upsets"]:
+        print(f"  Underdogs given {b['lo']:.0%}-{b['hi']:.0%}: won {b['won']:.1%} ({b['n']} games)")
+
+    gaps = line_gap_record(done, full, features)
+    print(f"\n  When the model is {GAP_POINTS}+ pts off the Vegas line: spread side right {gaps['spread']['hit']:.1%} "
+          f"({gaps['spread']['n']} games), over/under right {gaps['total']['hit']:.1%} ({gaps['total']['n']} games). "
+          f"Break-even is 52.4%.")
+
+    # 7) Retrain on every finished season and save
     final_data = done[done["season"].isin(full)]
     final = get_models()[best].fit(final_data[features], final_data["home_win"])
     explainer = get_models()["Logistic Regression"].fit(final_data[features], final_data["home_win"])
     MODEL_DIR.mkdir(exist_ok=True)
     scores = fit_score_models(final_data, features)
     joblib.dump({"name": best, "model": final, "features": features, "groups": groups, "explainer": explainer,
-                 "scores": scores, "blend": fit_blend(oos)},
+                 "scores": scores, "blend": fit_blend(oos), "calibration": cal, "line_gaps": gaps},
                 MODEL_DIR / "model.joblib")
     print(f"\nSaved {best} ({len(features)} features) to models/model.joblib")
 

@@ -123,6 +123,12 @@ details[open] .more{color:var(--muted)}details[open]{transform:none!important}
 .cmp td.ct{font-size:16px;border-bottom:1px solid var(--line)}.cmp tr:hover td{background:none}
 .cmp td.win{font-weight:800;background:color-mix(in srgb,var(--tc) 18%,transparent)!important;border-radius:8px}
 .cmp .note{margin:10px 0 0;font-size:12px}
+.flag{font-size:13px;margin-top:8px;padding:8px 10px;border-radius:10px;background:var(--warnbg);border-left:3px solid var(--warn)}
+.flag b{color:var(--warn)}.flag .meta{display:block;margin-top:2px}
+.upsets{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.upset{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--tc);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
+.uprow{display:flex;align-items:center;gap:10px;margin:6px 0 4px}.uprow b{font-size:26px;font-weight:800;min-width:58px}
+.umeter{flex:1;height:8px;border-radius:4px;background:var(--grid);overflow:hidden}.umeter i{display:block;height:8px;max-width:100%;background:var(--tc)}
 @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 """
@@ -196,6 +202,82 @@ def slot_card(r):
     n = f"best of {r.games_in_slot} games" if r.games_in_slot > 1 else "only game"
     return (f'<div class="slot"><span>{e(r.slot)}</span><b>{tl(r.pick)} {r.confidence:.0%}</b>'
             f'<small>over {opp} · {n}</small></div>')
+
+
+# ---------- upset watch + calibration ----------
+
+UPSET_MIN = 0.35  # underdogs with at least this chance make the upset watch
+
+
+def upset_history(cal, p):
+    for b in cal.get("upsets", []):
+        if b["lo"] <= p < b["hi"]:
+            return b
+    return None
+
+
+def upset_watch(week_preds, cal, prefix=""):
+    """This week's underdogs with a real chance, by the blend (the most accurate forecast)."""
+    rows = []
+    for r in week_preds.itertuples():
+        fav_home = r.blend_prob >= 0.5
+        dog, fav = (r.away_team, r.home_team) if fav_home else (r.home_team, r.away_team)
+        p = 1 - r.blend_conf
+        if p < UPSET_MIN:
+            continue
+        rows.append((p, r, dog, fav))
+    if not rows:
+        return '<p class="note">No underdog has a 35%+ chance this week. Every favorite is a solid favorite.</p>'
+    cards = []
+    for p, r, dog, fav in sorted(rows, key=lambda x: -x[0]):
+        h = upset_history(cal, p) if cal else None
+        hist = (f"Underdogs given {h['lo']:.0%}–{h['hi']:.0%} have won <b>{h['won']:.0%}</b> of the time "
+                f"({h['n']:,} games since 2012)") if h else ""
+        model_dog = r.pick == dog
+        badge = '<span class="tag">Model picks the upset</span>' if model_dog else ""
+        result = ""
+        if isinstance(r.winner, str):
+            result = ('<span class="ok">Upset! ✓</span>' if r.winner == dog else '<span class="meta">Favorite won</span>')
+        cards.append(f"""<div class="upset" style="--tc:{TEAM_COLORS.get(dog, '#888')}">
+<div class="row"><div class="teams">{tl(dog, prefix)} <small>over</small> {tl(fav, prefix)}</div><div>{badge} {result}</div></div>
+<div class="uprow"><b>{p:.0%}</b><div class="umeter"><i style="width:{p * 200:.0f}%"></i></div></div>
+<div class="meta">{hist}</div></div>""")
+    return '<div class="upsets">' + "".join(cards) + "</div>"
+
+
+def calibration_chart(cal):
+    """Predicted chance vs how often it actually happened, for the model and the blend."""
+    if not cal or not cal.get("blend"):
+        return ""
+    W, H, L, R, T, B = 640, 300, 50, 20, 14, 40
+    lo, hi = 0.45, 1.0
+    x = lambda v: L + (v - lo) / (hi - lo) * (W - L - R)
+    y = lambda v: T + (hi - v) / (hi - lo) * (H - T - B)
+    out = ""
+    for g in (0.5, 0.6, 0.7, 0.8, 0.9, 1.0):
+        out += (f'<line x1="{L}" x2="{W - R}" y1="{y(g):.1f}" y2="{y(g):.1f}" stroke="var(--grid)"/>'
+                f'<text x="{L - 8}" y="{y(g) + 4:.1f}" text-anchor="end" font-size="11" fill="var(--muted)">{g:.0%}</text>'
+                f'<text x="{x(g):.1f}" y="{H - 22}" text-anchor="middle" font-size="11" fill="var(--muted)">{g:.0%}</text>')
+    out += (f'<line x1="{x(.5):.1f}" y1="{y(.5):.1f}" x2="{x(1):.1f}" y2="{y(1):.1f}" stroke="var(--muted)" '
+            f'stroke-dasharray="4 4"/><text x="{x(.93):.1f}" y="{y(.97):.1f}" font-size="11" fill="var(--muted)" '
+            f'text-anchor="end">perfect</text>')
+    out += (f'<text x="{(L + W - R) / 2:.0f}" y="{H - 4}" text-anchor="middle" font-size="11" fill="var(--muted)">'
+            f'Predicted chance for the favorite</text>')
+    for key, var, name in (("model", "--s2", "Model"), ("blend", "--s1", "Model + Vegas")):
+        pts = cal[key]
+        line = " ".join(f"{x(b['pred']):.1f},{y(b['won']):.1f}" for b in pts)
+        out += (f'<polyline points="{line}" fill="none" '
+                f'stroke="var({var})" stroke-width="2"/>')
+        out += "".join(f'<circle cx="{x(b["pred"]):.1f}" cy="{y(b["won"]):.1f}" r="{3 + min(b["n"], 700) / 140:.1f}" '
+                       f'fill="var({var})" stroke="var(--card)" stroke-width="1.5"><title>{name}: said {b["pred"]:.0%}, '
+                       f'won {b["won"]:.0%} ({b["n"]} games)</title></circle>' for b in pts)
+    rows = "".join(f"<tr><td>{b['lo']:.0%}–{b['hi']:.0%}</td><td class='n'>{b['pred']:.1%}</td><td class='n'>{b['won']:.1%}</td>"
+                   f"<td class='n'>{b['n']:,}</td></tr>" for b in cal["blend"])
+    return f"""<div class="chart"><div class="legend"><span style="--c:var(--s1)">Model + Vegas</span>
+<span style="--c:var(--s2)">Model</span></div>
+<svg viewBox="0 0 {W} {H}" width="100%" role="img" aria-label="Calibration: predicted vs actual win rate">{out}</svg></div>
+<details><summary>Show as a table (Model + Vegas)</summary><div class="wrap" style="margin-top:8px"><table>
+<tr><th>Favorite's chance</th><th class="n">Said</th><th class="n">Actually won</th><th class="n">Games</th></tr>{rows}</table></div></details>"""
 
 
 # ---------- click-to-compare team stats ----------
@@ -277,7 +359,28 @@ def compare_panel(r, stats):
             'Highlighted = better. * Can include games from last season. EPA = expected points added per play, the best single measure of efficiency.</p></div>')
 
 
-def game_card(r, is_best=False, stats=None):
+def line_flags(r, gaps):
+    """Highlight spreads/totals where the model's predicted score is far from the Vegas line."""
+    if not gaps or "pred_margin" not in r or pd.isna(r.spread_line) or pd.isna(r.total_line):
+        return ""
+    pts, out = gaps["points"], []
+    sg = r.pred_margin - r.spread_line
+    if abs(sg) >= pts:
+        team = r.home_team if sg > 0 else r.away_team
+        line = spread_text(r.home_team, r.away_team, r.spread_line)
+        out.append(f'<div class="flag"><b>Spread: model likes {e(team)} to cover</b> ({e(line)}). Its predicted margin is '
+                   f'{abs(sg):.1f} pts better for {e(team)}. <span class="meta">{pts}+ pt gaps have been right '
+                   f'{gaps["spread"]["hit"]:.0%} ({gaps["spread"]["n"]} games, {gaps["seasons"]})</span></div>')
+    tg = r.pred_total - r.total_line
+    if abs(tg) >= pts:
+        side = "OVER" if tg > 0 else "UNDER"
+        out.append(f'<div class="flag"><b>Total: model says {side} {r.total_line:g}</b>. It predicts {r.pred_total:.1f}, '
+                   f'{abs(tg):.1f} pts {"higher" if tg > 0 else "lower"}. <span class="meta">{pts}+ pt gaps have been right '
+                   f'{gaps["total"]["hit"]:.0%} ({gaps["total"]["n"]} games, {gaps["seasons"]})</span></div>')
+    return "".join(out)
+
+
+def game_card(r, is_best=False, stats=None, gaps=None):
     away_pct = round((1 - r.home_prob) * 100)
     ca, ch = bar_colors(r.away_team, r.home_team)
     disagree = isinstance(r.vegas_pick, str) and r.vegas_pick != r.pick
@@ -305,6 +408,7 @@ def game_card(r, is_best=False, stats=None):
   <div class="row meta"><span>{e(r.away_team)} {away_pct}% · {e(r.home_team)} {100 - away_pct}%</span><span>{vegas}</span></div>
   <div class="meta">{qbs}{r.gameday:%a %b %-d}</div>
   {score}
+  {line_flags(r, gaps)}
   {blend}
   <div class="why"><b>Why:</b> {why}</div>
   <div class="more">Compare team stats</div>
@@ -626,7 +730,7 @@ def main():
     cards = []
     for slot in best["slot"]:
         cards.append(f"<h3>{e(slot)}</h3>")
-        cards += [game_card(r, r.game_id in best_ids, stats) for _, r in this_week[this_week["slot"] == slot].iterrows()]
+        cards += [game_card(r, r.game_id in best_ids, stats, saved.get('line_gaps')) for _, r in this_week[this_week["slot"] == slot].iterrows()]
 
     # Pick tracker + odds history (saved in docs/data/ so they build up over the season)
     picks = picks_frame(update_picks(all_preds), season)
@@ -657,20 +761,30 @@ def main():
 <p class="sub">Machine learning picks, predicted scores, power rankings and playoff odds for every game.</p>
 {stats}</div></header>
 <main>
-<nav><a href="#slots">Top picks</a><a href="#picks">All picks</a><a href="#accuracy">Accuracy</a><a href="#tracker">Pick tracker</a>
+<nav><a href="#slots">Top picks</a><a href="#upsets">Upset watch</a><a href="#picks">All picks</a><a href="#accuracy">Accuracy</a><a href="#tracker">Pick tracker</a>
 <a href="#rankings">Power rankings</a><a href="#playoffs">Playoff odds</a>{'<a href="#results">Last week</a>' if lw_total else ''}
 <a href="history.html">Every pick</a></nav>
 <h2 id="slots">Most confident pick of each time slot</h2>
 <div class="slots">{''.join(slot_card(r) for _, r in best.iterrows())}</div>
+<h2 id="upsets">Upset watch</h2>
+<p class="note">Underdogs with at least a 35% chance, from the Model + Vegas blend. The bar fills up at 50% (a coin flip).
+Upsets are mostly luck, but these percentages are honest: in past seasons, underdogs won about as often as predicted.</p>
+{upset_watch(this_week, saved.get("calibration"))}
 <h2 id="picks">Week {week} picks</h2>
 <p class="note">Bars are in team colors: away team on the left, home team on the right. Predicted scores come from separate spread and total models.
 "Model + Vegas blend" combines the model with the betting line. It's the most accurate forecast on this page (in 2022–2025
-testing it matched Vegas, 67.7% vs 67.6%). When there's no line yet, it's just the model.</p>
+testing it matched Vegas, 67.7% vs 67.6%). When there's no line yet, it's just the model.
+Yellow boxes = the predicted score is {saved.get("line_gaps", {}).get("points", 4)}+ points away from the Vegas spread or total.
+Break-even for betting is 52.4%, so these are interesting, not proven: see the hit rates.</p>
 {''.join(cards)}
 <section><h2 id="accuracy">{season} accuracy: model vs Vegas</h2>
 <p class="note">Share of games picked correctly so far this season. (The model was trained only on earlier seasons,
 so these are real predictions.)</p>
-{accuracy_chart(all_preds, season)}</section>
+{accuracy_chart(all_preds, season)}
+<h3>Are the percentages honest?</h3>
+<p class="note">Every game from {saved.get("calibration", {}).get("seasons", "past seasons")}, each predicted using only earlier
+seasons. Dots on the dashed line = when it says 70%, the favorite really wins about 70% of the time. Bigger dots = more games.</p>
+{calibration_chart(saved.get("calibration"))}</section>
 <section><h2 id="tracker">Pick tracker</h2>
 <p class="note">Every pick is saved before kickoff and frozen once the game starts, so the record can't be rewritten.</p>
 {tracker_section(picks)}</section>

@@ -10,6 +10,8 @@ Built with Python, pandas and scikit-learn on free data from [nflverse](https://
 
 - **Weekly picks**: win probability, predicted score, spread and total for every game, compared with Vegas, plus the top 3 reasons for each pick
 - **Model + Vegas blend**: the most accurate forecast on the site (see below)
+- **Upset watch**: every underdog with a 35%+ chance, with how often underdogs at that level have actually won
+- **Spread and total flags**: highlighted when the predicted score is 4+ points away from the Vegas spread or total, with the historical hit rate
 - **Most confident pick of each time slot** (Thursday night, Sunday 1 PM, 4 PM, Sunday night, Monday night)
 - **Season accuracy chart**: the model vs the Vegas favorite, week by week
 - **Power rankings**: all 32 teams ranked by the model, with weekly movement and offense/defense ranks
@@ -77,6 +79,31 @@ same log loss). Ten other ways of combining them were tried (Vegas + individual 
 and none beat Vegas by more than noise. The closing line already contains nearly everything this model knows. The blend is
 still the best number on the site, and when there's no Vegas line yet (games more than a week out) it falls back to the model.
 
+### Are the percentages honest? (calibration)
+
+Predicting every game from 2012 on (each season using only earlier seasons), the Model + Vegas blend's percentages match
+reality: favorites it gave 55–60% won 57.6%, 75–80% won 77.9%, and underdogs it gave 35–40% won 40.0%. The site shows
+this as a chart. That's what makes the **upset watch** meaningful: a 40% underdog really does win about 4 times in 10.
+
+Does the model picking the underdog outright add anything? Not really. Underdogs the model picked won 43.6% of the time,
+almost exactly the 44.1% the blend predicted. So the upset watch ranks games by the blend's chance and only notes when the
+model also picks the upset.
+
+### Spread and total flags
+
+Overall the model's spread and over/under picks are coin flips (about 50%). But the bigger its disagreement with Vegas,
+the better it has done (walk-forward, 2012–2025):
+
+| Model's number vs the Vegas line | Spread side right | Over/under right |
+|---|---|---|
+| Any gap | 50.5% | 50.1% |
+| 2+ points | 51.2% | 51.9% |
+| 4+ points (flagged on the site) | 53.9% (562 games) | 54.3% (599 games) |
+| 6+ points | 56.7% (141 games) | 57.4% (129 games) |
+
+Break-even after the sportsbook's cut is 52.4%. The 4+ point results are above it, but with ~600 games that's still within
+the range luck could produce, so the flags are "worth a look," not proven. **Not betting advice.**
+
 **Predicted scores**
 
 | | Our model | Vegas |
@@ -121,6 +148,9 @@ It now ties Vegas in the final week. The 7 games with a "locked" team went from 
 
 - **Tuning the settings overfit.** Grid-searching Elo, EPA and QB settings (about 200 combinations) improved the validation score but made the untouched test *worse*. Re-tuning across 12 rolling seasons gained only about 0.001, which is noise, so the standard settings were kept.
 - **Travel hurt because home-field advantage has shrunk.** Home teams won 57.6% of games in 1999–2009, 50.4% in 2020 (no fans), and 54.5% in 2021–2026. Travel features mostly acted like extra home-field advantage, which older seasons overstated.
+- **Early-season fixes didn't help.** The model trails Vegas most in weeks 3–6. Tested: a new-head-coach flag, letting the
+  model trust ratings less before teams have played 6 games, and last season's point differential. None improved both
+  validation and test, so none were kept. Early in the season the blend is the fix, since Vegas knows about offseason moves.
 - **QB accuracy (CPOE) added nothing.** Completion % over expected, from nflfastR's completion probability model, was tested as its own feature group. Validation got slightly worse (0.6271 vs 0.6269) and the test was unchanged (64.3%), because it overlaps heavily with the QB EPA rating the model already uses (correlation 0.68): accurate QBs already show up as efficient ones. It was left out so the site updates stay fast.
 - **Splitting injuries into offense and defense** added noise. A single "total missing talent" number worked.
 - **Choosing the model type on the test seasons** was accidental peeking. It's now chosen on validation. Gradient boosting and random forest looked slightly better on the test, but logistic regression won on validation, so that's what's used.
