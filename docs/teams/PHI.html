@@ -1,0 +1,98 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>PHI · NFL Game Predictor</title>
+<meta name="theme-color" content="#0b1a33"><style>
+:root{--bg:#f3f5f9;--card:#fff;--card2:#f7f8fb;--ink:#0f141c;--muted:#5b6472;--line:#e2e6ec;--grid:#e9ecf1;
+--s1:#2a78d6;--s2:#eb6834;--good:#1a7f37;--bad:#c2255c;--warn:#9a6700;--warnbg:#fff4d6;
+--hero1:#0b1a33;--hero2:#123a73;--glow:rgba(42,120,214,.18);--shadow:0 1px 2px rgba(15,20,28,.06),0 4px 16px rgba(15,20,28,.05)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#070b12;--card:#0f1520;--card2:#131b28;--ink:#e8eef6;
+--muted:#8a96a8;--line:#1f2937;--grid:#1a2230;--s1:#3d8bf0;--s2:#f07033;--good:#3fb950;--bad:#f778ba;
+--warn:#e3b341;--warnbg:#2d2410;--hero1:#060d1a;--hero2:#0f2c5c;--glow:rgba(61,139,240,.22);--shadow:0 1px 2px rgba(0,0,0,.4)}}
+*{box-sizing:border-box}html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+font-variant-numeric:tabular-nums}
+main{max-width:960px;margin:0 auto;padding:0 16px 60px}
+.hero{background:radial-gradient(1200px 400px at 85% -20%,rgba(61,139,240,.45),transparent 60%),
+linear-gradient(135deg,var(--hero1),var(--hero2));color:#fff;padding:30px 0 26px;margin-bottom:0}
+.hero .in{max-width:960px;margin:0 auto;padding:0 16px}
+.kicker{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#9cc3ff}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.1;margin:6px 0 6px;letter-spacing:-.02em;font-weight:800}
+.hero .sub{color:#c4d3ea;margin:0 0 20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 14px;
+backdrop-filter:blur(6px)}
+.stat b{display:block;font-size:26px;font-weight:800;letter-spacing:-.01em}.stat span{color:#b5c5de;font-size:12.5px}
+@media (max-width:520px){.stats .stat:last-child:nth-child(odd){grid-column:1/-1}}
+main .stat{background:var(--card);border-color:var(--line);box-shadow:var(--shadow)}main .stat span{color:var(--muted)}
+nav{position:sticky;top:0;z-index:5;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:10px 16px;
+margin:0 -16px 8px;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:saturate(1.6) blur(10px);
+border-bottom:1px solid var(--line)}nav::-webkit-scrollbar{display:none}
+nav a{flex:none;font-size:13px;font-weight:650;color:var(--ink);text-decoration:none;padding:6px 12px;border:1px solid var(--line);
+border-radius:999px;background:var(--card);transition:border-color .15s,color .15s}nav a:hover{border-color:var(--s1);color:var(--s1)}
+h2{font-size:21px;font-weight:800;letter-spacing:-.01em;margin:40px 0 6px;scroll-margin-top:64px;display:flex;align-items:center;gap:10px}
+h2::before{content:"";width:4px;height:20px;border-radius:2px;background:linear-gradient(var(--s1),var(--s2))}
+h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin:24px 0 6px}
+.sub{color:var(--muted);margin:0 0 14px}.note{color:var(--muted);font-size:13px;margin:0 0 12px;max-width:760px}
+.card,.game,.slot,.chart,.wrap{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.game{padding:14px 16px;margin:10px 0;transition:transform .15s,box-shadow .15s,border-color .15s}
+.game:hover,.slot:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--s1) 45%,var(--line));box-shadow:0 8px 28px var(--glow)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.teams{font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px}.teams small{color:var(--muted);font-weight:500}
+.pick{font-weight:800;font-size:17px}.bar{display:flex;gap:3px;height:10px;margin:12px 0 8px}
+.bar i{display:block;border-radius:5px}.a{background:var(--s2)}.h{background:var(--s1)}
+.meta{color:var(--muted);font-size:13px}.why{font-size:13px;margin-top:8px;color:var(--muted)}.why b{color:var(--ink)}
+.score{font-size:13px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.blend{font-size:13px;margin-top:6px;display:inline-block;padding:3px 10px;border-radius:8px;
+background:color-mix(in srgb,var(--s1) 12%,transparent)}.blend b{color:var(--s1)}
+.tag{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--warnbg);color:var(--warn)}
+.best{border:1.5px solid var(--s1);box-shadow:0 0 0 3px var(--glow)}
+.star{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--s1);color:#fff}
+.slots{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(160px,1fr);gap:10px;overflow-x:auto;
+scroll-snap-type:x mandatory;padding:2px 2px 8px;scrollbar-width:thin}
+.slot{padding:12px 14px;scroll-snap-align:start;transition:transform .15s,border-color .15s,box-shadow .15s}
+.slot span{display:block;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.slot b{display:block;font-size:24px;font-weight:800;margin:4px 0 2px}.slot small{color:var(--muted)}
+.ok{color:var(--good);font-weight:800}.no{color:var(--bad);font-weight:800}
+.wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+td,th{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;white-space:nowrap}
+tr:last-child td{border-bottom:0}tbody tr:hover td,table tr:hover td{background:var(--card2)}
+th{color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;background:var(--card2)}
+td.n,th.n{text-align:right}
+.meter{display:inline-block;width:64px;height:6px;border-radius:3px;background:var(--grid);vertical-align:middle;margin-left:8px}
+.meter i{display:block;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--s1),#6fb0ff)}
+.up{color:var(--good);font-weight:700}.down{color:var(--bad);font-weight:700}.same{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.grid2>div{min-width:0}
+@media (max-width:700px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.chart{padding:12px 12px 6px;position:relative}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--muted);margin:0 0 4px 4px}
+.legend span::before{content:"";display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle;background:var(--c)}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 8px;border-radius:6px;
+display:none;white-space:nowrap;transform:translate(-50%,-110%)}
+details{margin-top:8px;font-size:13px}summary{cursor:pointer;color:var(--muted)}
+footer{color:var(--muted);font-size:13px;margin-top:48px;padding-top:20px;border-top:1px solid var(--line)}footer a{color:var(--s1)}
+.tb{display:inline-flex;align-items:center;gap:6px;font-weight:800;color:var(--ink);text-decoration:none}
+.tb::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--tc);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--tc) 45%,var(--muted))}
+a.tb:hover{color:var(--s1)}
+.back{display:inline-block;font-size:13px;color:#9cc3ff;text-decoration:none;margin-bottom:6px}
+.teamnav{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.teamnav a{font-size:12px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.teamnav a:hover{border-color:var(--s1)}
+.thero{background:radial-gradient(900px 300px at 90% -30%,color-mix(in srgb,var(--tc) 70%,transparent),transparent 65%),
+linear-gradient(135deg,var(--hero1),var(--hero2))}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style></head><body>
+<header class="hero thero" style="--tc:#004C54"><div class="in"><a class="back" href="../index.html">← All picks</a><div class="kicker">NFC East · 2026</div><h1>PHI <span style="opacity:.6">2-0</span></h1>
+<p class="sub">Model ratings, schedule picks and playoff odds.</p>
+<div class="stats">
+<div class="stat"><b>#12</b><span>Power ranking (▼ 1 this week)</span></div>
+<div class="stat"><b>57%</b><span>Chance to beat an average team (neutral field)</span></div>
+<div class="stat"><b>75%</b><span>Playoff odds · 10.4 projected wins</span></div>
+<div class="stat"><b>5%</b><span>Super Bowl odds</span></div></div></div></header>
+<main><p class="note" style="margin-top:16px">Offense rank 12 · Defense rank 6 (EPA per play)</p>
+<h2>Schedule and picks</h2><div class="wrap"><table><tr><th>Week</th><th>Opponent</th><th>Result / date</th><th class="n">Model: PHI wins</th><th class="n">Model + Vegas</th></tr><tr><td>Wk 1</td><td>vs <a class="tb" style="--tc:#5A1414" href="../teams/WAS.html">WAS</a></td><td>W 24-22</td><td class='n'>70% <span class="ok">✓</span></td><td class='n'>68% <span class="ok">✓</span></td></tr><tr><td>Wk 2</td><td>@ <a class="tb" style="--tc:#4B92DB" href="../teams/TEN.html">TEN</a></td><td>W 24-20</td><td class='n'>74% <span class="ok">✓</span></td><td class='n'>76% <span class="ok">✓</span></td></tr><tr><td>Wk 3</td><td>@ <a class="tb" style="--tc:#C83803" href="../teams/CHI.html">CHI</a></td><td>Mon Sep 28</td><td class='n'>55% </td><td class='n'>64% </td></tr><tr><td>Wk 4</td><td>vs <a class="tb" style="--tc:#003594" href="../teams/LA.html">LA</a></td><td>Sun Oct 4</td><td class='n'>52% </td><td class='n'>45% </td></tr><tr><td>Wk 5</td><td>@ <a class="tb" style="--tc:#006778" href="../teams/JAX.html">JAX</a></td><td>Sun Oct 11</td><td class='n'>33% </td><td class='n'>33% </td></tr><tr><td>Wk 6</td><td>vs <a class="tb" style="--tc:#0085CA" href="../teams/CAR.html">CAR</a></td><td>Sun Oct 18</td><td class='n'>68% </td><td class='n'>68% </td></tr><tr><td>Wk 7</td><td>vs <a class="tb" style="--tc:#003594" href="../teams/DAL.html">DAL</a></td><td>Mon Oct 26</td><td class='n'>62% </td><td class='n'>62% </td></tr><tr><td>Wk 8</td><td>@ <a class="tb" style="--tc:#5A1414" href="../teams/WAS.html">WAS</a></td><td>Sun Nov 1</td><td class='n'>55% </td><td class='n'>55% </td></tr><tr><td>Wk 9</td><td>vs <a class="tb" style="--tc:#0B2265" href="../teams/NYG.html">NYG</a></td><td>Sun Nov 8</td><td class='n'>66% </td><td class='n'>66% </td></tr><tr><td>Wk 11</td><td>vs <a class="tb" style="--tc:#FFB612" href="../teams/PIT.html">PIT</a></td><td>Sun Nov 22</td><td class='n'>72% </td><td class='n'>72% </td></tr><tr><td>Wk 12</td><td>@ <a class="tb" style="--tc:#003594" href="../teams/DAL.html">DAL</a></td><td>Thu Nov 26</td><td class='n'>51% </td><td class='n'>51% </td></tr><tr><td>Wk 13</td><td>@ <a class="tb" style="--tc:#97233F" href="../teams/ARI.html">ARI</a></td><td>Sun Dec 6</td><td class='n'>64% </td><td class='n'>64% </td></tr><tr><td>Wk 14</td><td>vs <a class="tb" style="--tc:#002C5F" href="../teams/IND.html">IND</a></td><td>Sun Dec 13</td><td class='n'>66% </td><td class='n'>66% </td></tr><tr><td>Wk 15</td><td>vs <a class="tb" style="--tc:#69BE28" href="../teams/SEA.html">SEA</a></td><td>Sat Dec 19</td><td class='n'>47% </td><td class='n'>47% </td></tr><tr><td>Wk 16</td><td>vs <a class="tb" style="--tc:#A71930" href="../teams/HOU.html">HOU</a></td><td>Thu Dec 24</td><td class='n'>61% </td><td class='n'>61% </td></tr><tr><td>Wk 17</td><td>@ <a class="tb" style="--tc:#AA0000" href="../teams/SF.html">SF</a></td><td>Sun Jan 3</td><td class='n'>35% </td><td class='n'>35% </td></tr><tr><td>Wk 18</td><td>@ <a class="tb" style="--tc:#0B2265" href="../teams/NYG.html">NYG</a></td><td>Sun Jan 10</td><td class='n'>60% </td><td class='n'>60% </td></tr></table></div>
+<h2>Power rating by week</h2><p class="note">Chance to beat an average NFL team on a neutral field, going into each week.</p>
+<div class="chart"><div class="legend"><span style="--c:var(--s1)">Rating</span></div><svg viewBox="0 0 640 200" width="100%" role="img" aria-label="PHI power rating by week"><line x1="44" x2="570" y1="172.0" y2="172.0" stroke="var(--grid)"/><text x="36" y="176.0" text-anchor="end" font-size="11" fill="var(--muted)">0%</text><line x1="44" x2="570" y1="132.0" y2="132.0" stroke="var(--grid)"/><text x="36" y="136.0" text-anchor="end" font-size="11" fill="var(--muted)">25%</text><line x1="44" x2="570" y1="92.0" y2="92.0" stroke="var(--grid)"/><text x="36" y="96.0" text-anchor="end" font-size="11" fill="var(--muted)">50%</text><line x1="44" x2="570" y1="52.0" y2="52.0" stroke="var(--grid)"/><text x="36" y="56.0" text-anchor="end" font-size="11" fill="var(--muted)">75%</text><line x1="44" x2="570" y1="12.0" y2="12.0" stroke="var(--grid)"/><text x="36" y="16.0" text-anchor="end" font-size="11" fill="var(--muted)">100%</text><text x="44.0" y="192" text-anchor="middle" font-size="11" fill="var(--muted)">Wk 1</text><text x="307.0" y="192" text-anchor="middle" font-size="11" fill="var(--muted)">Wk 2</text><text x="570.0" y="192" text-anchor="middle" font-size="11" fill="var(--muted)">Wk 3</text><polyline points="44.0,77.5 307.0,81.5 570.0,80.7" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round"/><circle cx="44.0" cy="77.5" r="4" fill="var(--s1)" stroke="var(--card)" stroke-width="2"><title>Rating Wk 1: 59%</title></circle><circle cx="307.0" cy="81.5" r="4" fill="var(--s1)" stroke="var(--card)" stroke-width="2"><title>Rating Wk 2: 57%</title></circle><circle cx="570.0" cy="80.7" r="4" fill="var(--s1)" stroke="var(--card)" stroke-width="2"><title>Rating Wk 3: 57%</title></circle><text x="579.0" y="84.7" font-size="12" font-weight="600" fill="var(--ink)">57%</text></svg></div>
+<h2>Playoff odds by week</h2><p class="note">Saved each week from 10,000 season simulations (starts the week the tracker went live).</p>
+<div class="chart"><div class="legend"><span style="--c:var(--s1)">Playoffs</span><span style="--c:var(--s2)">Win Super Bowl</span></div><svg viewBox="0 0 640 200" width="100%" role="img" aria-label="PHI playoff odds by week"><line x1="44" x2="570" y1="172.0" y2="172.0" stroke="var(--grid)"/><text x="36" y="176.0" text-anchor="end" font-size="11" fill="var(--muted)">0%</text><line x1="44" x2="570" y1="132.0" y2="132.0" stroke="var(--grid)"/><text x="36" y="136.0" text-anchor="end" font-size="11" fill="var(--muted)">25%</text><line x1="44" x2="570" y1="92.0" y2="92.0" stroke="var(--grid)"/><text x="36" y="96.0" text-anchor="end" font-size="11" fill="var(--muted)">50%</text><line x1="44" x2="570" y1="52.0" y2="52.0" stroke="var(--grid)"/><text x="36" y="56.0" text-anchor="end" font-size="11" fill="var(--muted)">75%</text><line x1="44" x2="570" y1="12.0" y2="12.0" stroke="var(--grid)"/><text x="36" y="16.0" text-anchor="end" font-size="11" fill="var(--muted)">100%</text><text x="307.0" y="192" text-anchor="middle" font-size="11" fill="var(--muted)">Wk 3</text><polyline points="307.0,52.1" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round"/><circle cx="307.0" cy="52.1" r="4" fill="var(--s1)" stroke="var(--card)" stroke-width="2"><title>Playoffs Wk 3: 75%</title></circle><text x="316.0" y="56.1" font-size="12" font-weight="600" fill="var(--ink)">75%</text><polyline points="307.0,164.5" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linejoin="round"/><circle cx="307.0" cy="164.5" r="4" fill="var(--s2)" stroke="var(--card)" stroke-width="2"><title>Win Super Bowl Wk 3: 5%</title></circle><text x="316.0" y="168.5" font-size="12" font-weight="600" fill="var(--ink)">5%</text></svg></div>
+<footer><b>Teams</b><div class="teamnav"><a class="tb" style="--tc:#97233F" href="../teams/ARI.html">ARI</a><a class="tb" style="--tc:#A71930" href="../teams/ATL.html">ATL</a><a class="tb" style="--tc:#241773" href="../teams/BAL.html">BAL</a><a class="tb" style="--tc:#00338D" href="../teams/BUF.html">BUF</a><a class="tb" style="--tc:#0085CA" href="../teams/CAR.html">CAR</a><a class="tb" style="--tc:#C83803" href="../teams/CHI.html">CHI</a><a class="tb" style="--tc:#FB4F14" href="../teams/CIN.html">CIN</a><a class="tb" style="--tc:#FF3C00" href="../teams/CLE.html">CLE</a><a class="tb" style="--tc:#003594" href="../teams/DAL.html">DAL</a><a class="tb" style="--tc:#FB4F14" href="../teams/DEN.html">DEN</a><a class="tb" style="--tc:#0076B6" href="../teams/DET.html">DET</a><a class="tb" style="--tc:#203731" href="../teams/GB.html">GB</a><a class="tb" style="--tc:#A71930" href="../teams/HOU.html">HOU</a><a class="tb" style="--tc:#002C5F" href="../teams/IND.html">IND</a><a class="tb" style="--tc:#006778" href="../teams/JAX.html">JAX</a><a class="tb" style="--tc:#E31837" href="../teams/KC.html">KC</a><a class="tb" style="--tc:#003594" href="../teams/LA.html">LA</a><a class="tb" style="--tc:#0080C6" href="../teams/LAC.html">LAC</a><a class="tb" style="--tc:#A5ACAF" href="../teams/LV.html">LV</a><a class="tb" style="--tc:#008E97" href="../teams/MIA.html">MIA</a><a class="tb" style="--tc:#4F2683" href="../teams/MIN.html">MIN</a><a class="tb" style="--tc:#C60C30" href="../teams/NE.html">NE</a><a class="tb" style="--tc:#D3BC8D" href="../teams/NO.html">NO</a><a class="tb" style="--tc:#0B2265" href="../teams/NYG.html">NYG</a><a class="tb" style="--tc:#125740" href="../teams/NYJ.html">NYJ</a><a class="tb" style="--tc:#004C54" href="../teams/PHI.html">PHI</a><a class="tb" style="--tc:#FFB612" href="../teams/PIT.html">PIT</a><a class="tb" style="--tc:#69BE28" href="../teams/SEA.html">SEA</a><a class="tb" style="--tc:#AA0000" href="../teams/SF.html">SF</a><a class="tb" style="--tc:#D50A0A" href="../teams/TB.html">TB</a><a class="tb" style="--tc:#4B92DB" href="../teams/TEN.html">TEN</a><a class="tb" style="--tc:#5A1414" href="../teams/WAS.html">WAS</a></div><br><b>Not betting advice.</b>
+Data from <a href="https://github.com/nflverse">nflverse</a>.</footer></main></body></html>

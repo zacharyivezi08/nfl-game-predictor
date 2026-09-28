@@ -1,229 +1,285 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>NFL Game Predictor</title>
-<style>
-:root{--bg:#f6f7f9;--card:#fff;--ink:#14171c;--muted:#5d6570;--line:#e3e6ea;--grid:#eceef1;
---s1:#2a78d6;--s2:#eb6834;--good:#1a7f37;--bad:#c2255c;--warn:#9a6700;--warnbg:#fff4d6}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1117;--card:#161b22;--ink:#e6edf3;
---muted:#8b949e;--line:#30363d;--grid:#21262d;--s1:#3987e5;--s2:#d95926;--good:#3fb950;--bad:#f778ba;
---warn:#e3b341;--warnbg:#2d2410}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);
-font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-main{max-width:900px;margin:0 auto;padding:28px 16px 60px}
-h1{font-size:28px;margin:0 0 4px}h2{font-size:19px;margin:40px 0 6px;scroll-margin-top:12px}
-.sub{color:var(--muted);margin:0 0 14px}.note{color:var(--muted);font-size:13px;margin:0 0 12px}
-nav{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 18px}
-nav a{font-size:13px;font-weight:600;color:var(--ink);text-decoration:none;padding:5px 11px;border:1px solid var(--line);
-border-radius:999px;background:var(--card)}nav a:hover{border-color:var(--s1)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
-.stat b{display:block;font-size:24px}.stat span{color:var(--muted);font-size:13px}
-.game{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:10px 0}
+<meta name="description" content="Machine learning picks, predicted scores, power rankings and playoff odds for every NFL game.">
+<meta name="theme-color" content="#0b1a33"><style>
+:root{--bg:#f3f5f9;--card:#fff;--card2:#f7f8fb;--ink:#0f141c;--muted:#5b6472;--line:#e2e6ec;--grid:#e9ecf1;
+--s1:#2a78d6;--s2:#eb6834;--good:#1a7f37;--bad:#c2255c;--warn:#9a6700;--warnbg:#fff4d6;
+--hero1:#0b1a33;--hero2:#123a73;--glow:rgba(42,120,214,.18);--shadow:0 1px 2px rgba(15,20,28,.06),0 4px 16px rgba(15,20,28,.05)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#070b12;--card:#0f1520;--card2:#131b28;--ink:#e8eef6;
+--muted:#8a96a8;--line:#1f2937;--grid:#1a2230;--s1:#3d8bf0;--s2:#f07033;--good:#3fb950;--bad:#f778ba;
+--warn:#e3b341;--warnbg:#2d2410;--hero1:#060d1a;--hero2:#0f2c5c;--glow:rgba(61,139,240,.22);--shadow:0 1px 2px rgba(0,0,0,.4)}}
+*{box-sizing:border-box}html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+font-variant-numeric:tabular-nums}
+main{max-width:960px;margin:0 auto;padding:0 16px 60px}
+.hero{background:radial-gradient(1200px 400px at 85% -20%,rgba(61,139,240,.45),transparent 60%),
+linear-gradient(135deg,var(--hero1),var(--hero2));color:#fff;padding:30px 0 26px;margin-bottom:0}
+.hero .in{max-width:960px;margin:0 auto;padding:0 16px}
+.kicker{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#9cc3ff}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.1;margin:6px 0 6px;letter-spacing:-.02em;font-weight:800}
+.hero .sub{color:#c4d3ea;margin:0 0 20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 14px;
+backdrop-filter:blur(6px)}
+.stat b{display:block;font-size:26px;font-weight:800;letter-spacing:-.01em}.stat span{color:#b5c5de;font-size:12.5px}
+@media (max-width:520px){.stats .stat:last-child:nth-child(odd){grid-column:1/-1}}
+main .stat{background:var(--card);border-color:var(--line);box-shadow:var(--shadow)}main .stat span{color:var(--muted)}
+nav{position:sticky;top:0;z-index:5;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:10px 16px;
+margin:0 -16px 8px;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:saturate(1.6) blur(10px);
+border-bottom:1px solid var(--line)}nav::-webkit-scrollbar{display:none}
+nav a{flex:none;font-size:13px;font-weight:650;color:var(--ink);text-decoration:none;padding:6px 12px;border:1px solid var(--line);
+border-radius:999px;background:var(--card);transition:border-color .15s,color .15s}nav a:hover{border-color:var(--s1);color:var(--s1)}
+h2{font-size:21px;font-weight:800;letter-spacing:-.01em;margin:40px 0 6px;scroll-margin-top:64px;display:flex;align-items:center;gap:10px}
+h2::before{content:"";width:4px;height:20px;border-radius:2px;background:linear-gradient(var(--s1),var(--s2))}
+h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin:24px 0 6px}
+.sub{color:var(--muted);margin:0 0 14px}.note{color:var(--muted);font-size:13px;margin:0 0 12px;max-width:760px}
+.card,.game,.slot,.chart,.wrap{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.game{padding:14px 16px;margin:10px 0;transition:transform .15s,box-shadow .15s,border-color .15s}
+.game:hover,.slot:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--s1) 45%,var(--line));box-shadow:0 8px 28px var(--glow)}
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.teams{font-weight:700;font-size:17px}.teams small{color:var(--muted);font-weight:400}
-.pick{font-weight:700}.bar{display:flex;gap:2px;height:8px;margin:10px 0 8px}
-.bar i{display:block;border-radius:4px}.a{background:var(--s2)}.h{background:var(--s1)}
-.meta{color:var(--muted);font-size:13px}.why{font-size:13px;margin-top:6px}
-.score{font-size:13px;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
-.tag{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--warnbg);color:var(--warn)}
-.best{border:2px solid var(--s1)}.star{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--s1);color:#fff}
-.slots{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.slot{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-.slot span{display:block;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
-.slot b{display:block;font-size:20px;margin:2px 0}.slot small{color:var(--muted)}
-h3{font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:22px 0 4px}
-.ok{color:var(--good);font-weight:700}.no{color:var(--bad);font-weight:700}
-.wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.teams{font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px}.teams small{color:var(--muted);font-weight:500}
+.pick{font-weight:800;font-size:17px}.bar{display:flex;gap:3px;height:10px;margin:12px 0 8px}
+.bar i{display:block;border-radius:5px}.a{background:var(--s2)}.h{background:var(--s1)}
+.meta{color:var(--muted);font-size:13px}.why{font-size:13px;margin-top:8px;color:var(--muted)}.why b{color:var(--ink)}
+.score{font-size:13px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.blend{font-size:13px;margin-top:6px;display:inline-block;padding:3px 10px;border-radius:8px;
+background:color-mix(in srgb,var(--s1) 12%,transparent)}.blend b{color:var(--s1)}
+.tag{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--warnbg);color:var(--warn)}
+.best{border:1.5px solid var(--s1);box-shadow:0 0 0 3px var(--glow)}
+.star{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--s1);color:#fff}
+.slots{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(160px,1fr);gap:10px;overflow-x:auto;
+scroll-snap-type:x mandatory;padding:2px 2px 8px;scrollbar-width:thin}
+.slot{padding:12px 14px;scroll-snap-align:start;transition:transform .15s,border-color .15s,box-shadow .15s}
+.slot span{display:block;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.slot b{display:block;font-size:24px;font-weight:800;margin:4px 0 2px}.slot small{color:var(--muted)}
+.ok{color:var(--good);font-weight:800}.no{color:var(--bad);font-weight:800}
+.wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-td,th{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;white-space:nowrap}
-tr:last-child td{border-bottom:0}th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
-td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
-.meter{display:inline-block;width:60px;height:6px;border-radius:3px;background:var(--grid);vertical-align:middle;margin-left:6px}
-.meter i{display:block;height:6px;border-radius:3px;background:var(--s1)}
-.up{color:var(--good)}.down{color:var(--bad)}.same{color:var(--muted)}
-.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.grid2>div{min-width:0}@media (max-width:700px){.grid2{grid-template-columns:minmax(0,1fr)}}
-.chart{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 12px 6px;position:relative}
+td,th{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;white-space:nowrap}
+tr:last-child td{border-bottom:0}tbody tr:hover td,table tr:hover td{background:var(--card2)}
+th{color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;background:var(--card2)}
+td.n,th.n{text-align:right}
+.meter{display:inline-block;width:64px;height:6px;border-radius:3px;background:var(--grid);vertical-align:middle;margin-left:8px}
+.meter i{display:block;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--s1),#6fb0ff)}
+.up{color:var(--good);font-weight:700}.down{color:var(--bad);font-weight:700}.same{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.grid2>div{min-width:0}
+@media (max-width:700px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.chart{padding:12px 12px 6px;position:relative}
 .legend{display:flex;gap:16px;font-size:13px;color:var(--muted);margin:0 0 4px 4px}
 .legend span::before{content:"";display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle;background:var(--c)}
 .tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 8px;border-radius:6px;
 display:none;white-space:nowrap;transform:translate(-50%,-110%)}
 details{margin-top:8px;font-size:13px}summary{cursor:pointer;color:var(--muted)}
-footer{color:var(--muted);font-size:13px;margin-top:44px}footer a{color:var(--s1)}
-</style></head><body><main>
+footer{color:var(--muted);font-size:13px;margin-top:48px;padding-top:20px;border-top:1px solid var(--line)}footer a{color:var(--s1)}
+.tb{display:inline-flex;align-items:center;gap:6px;font-weight:800;color:var(--ink);text-decoration:none}
+.tb::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--tc);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--tc) 45%,var(--muted))}
+a.tb:hover{color:var(--s1)}
+.back{display:inline-block;font-size:13px;color:#9cc3ff;text-decoration:none;margin-bottom:6px}
+.teamnav{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.teamnav a{font-size:12px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.teamnav a:hover{border-color:var(--s1)}
+.thero{background:radial-gradient(900px 300px at 90% -30%,color-mix(in srgb,var(--tc) 70%,transparent),transparent 65%),
+linear-gradient(135deg,var(--hero1),var(--hero2))}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style></head><body>
+<header class="hero"><div class="in">
+<div class="kicker">Week 3 · 2026 season · updated Sep 28, 2026</div>
 <h1>NFL Game Predictor</h1>
-<p class="sub">Week 3, 2026 · machine learning picks, scores and playoff odds · updated Sep 28, 2026</p>
-<nav><a href="#picks">Picks</a><a href="#accuracy">Accuracy</a><a href="#rankings">Power rankings</a>
-<a href="#playoffs">Playoff odds</a><a href="#results">Last week</a></nav>
+<p class="sub">Machine learning picks, predicted scores, power rankings and playoff odds for every game.</p>
 <div class="stats">
 <div class="stat"><b>28-19</b><span>Model record in 2026 (60%)</span></div>
 <div class="stat"><b>32-15</b><span>Vegas favorites in 2026 (68%)</span></div>
 <div class="stat"><b>9-7</b><span>Model in week 2</span></div>
-<div class="stat"><b>BUF</b><span>#1 in power rankings</span></div></div>
-<h2>Most confident pick of each time slot</h2>
-<div class="slots"><div class="slot"><span>Thursday Night</span><b>GB 66%</b><small>over ATL · only game</small></div><div class="slot"><span>Sunday 1 PM</span><b>BUF 85%</b><small>over LAC · best of 9 games</small></div><div class="slot"><span>Sunday 4 PM</span><b>SF 76%</b><small>over ARI · best of 4 games</small></div><div class="slot"><span>Sunday Night</span><b>DEN 57%</b><small>over LA · only game</small></div><div class="slot"><span>Monday Night</span><b>PHI 56%</b><small>over CHI · only game</small></div></div>
+<div class="stat"><b>31-16</b><span>Model + Vegas blend in 2026 (66%)</span></div>
+<div class="stat"><b>BUF</b><span>#1 in power rankings</span></div></div></div></header>
+<main>
+<nav><a href="#slots">Top picks</a><a href="#picks">All picks</a><a href="#accuracy">Accuracy</a><a href="#tracker">Pick tracker</a>
+<a href="#rankings">Power rankings</a><a href="#playoffs">Playoff odds</a><a href="#results">Last week</a>
+<a href="history.html">Every pick</a></nav>
+<h2 id="slots">Most confident pick of each time slot</h2>
+<div class="slots"><div class="slot"><span>Thursday Night</span><b><a class="tb" style="--tc:#203731" href="teams/GB.html">GB</a> 66%</b><small>over ATL · only game</small></div><div class="slot"><span>Sunday 1 PM</span><b><a class="tb" style="--tc:#00338D" href="teams/BUF.html">BUF</a> 85%</b><small>over LAC · best of 9 games</small></div><div class="slot"><span>Sunday 4 PM</span><b><a class="tb" style="--tc:#AA0000" href="teams/SF.html">SF</a> 77%</b><small>over ARI · best of 4 games</small></div><div class="slot"><span>Sunday Night</span><b><a class="tb" style="--tc:#FB4F14" href="teams/DEN.html">DEN</a> 56%</b><small>over LA · only game</small></div><div class="slot"><span>Monday Night</span><b><a class="tb" style="--tc:#004C54" href="teams/PHI.html">PHI</a> 55%</b><small>over CHI · only game</small></div></div>
 <h2 id="picks">Week 3 picks</h2>
-<p class="note">Blue = home team, orange = away team. Predicted scores come from separate spread and total models.</p>
+<p class="note">Blue = home team, orange = away team. Predicted scores come from separate spread and total models.
+"Model + Vegas blend" combines the model with the betting line. It's the most accurate forecast on this page (in 2022–2025
+testing it matched Vegas, 67.7% vs 67.6%). When there's no line yet, it's just the model.</p>
 <h3>Thursday Night</h3>
 <div class="game best">
-  <div class="row"><div class="teams">ATL <small>@</small> GB</div>
+  <div class="row"><div class="teams"><a class="tb" style="--tc:#A71930" href="teams/ATL.html">ATL</a> <small>@</small> <a class="tb" style="--tc:#203731" href="teams/GB.html">GB</a></div>
   <div><span class="pick">GB 66%</span></div></div>
   <div class="bar" role="img" aria-label="ATL 34%, GB 66%">
     <i class="a" style="width:34%"></i><i class="h" style="width:66%"></i></div>
   <div class="row meta"><span>ATL 34% · GB 66%</span><span>Vegas: GB 67%</span></div>
   <div class="meta">Michael Penix Jr. vs Jordan Love · Thu Sep 24</div>
   <div class="score"><b>Predicted:</b> ATL 19, GB 25 · Spread GB -6 <span class="meta">(Vegas GB -4.5)</span> · Total 43.4 <span class="meta">(Vegas 43.5)</span></div>
+  <div class="blend"><b>Model + Vegas blend: GB 67%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → GB · Starting QB → GB · Injuries → ATL</div>
 </div><h3>Sunday 1 PM</h3>
 <div class="game">
-  <div class="row"><div class="teams">CAR <small>@</small> CLE</div>
+  <div class="row"><div class="teams"><a class="tb" style="--tc:#0085CA" href="teams/CAR.html">CAR</a> <small>@</small> <a class="tb" style="--tc:#FF3C00" href="teams/CLE.html">CLE</a></div>
   <div><span class="tag">Disagrees with Vegas</span> <span class="pick">CLE 53%</span></div></div>
   <div class="bar" role="img" aria-label="CAR 47%, CLE 53%">
     <i class="a" style="width:47%"></i><i class="h" style="width:53%"></i></div>
   <div class="row meta"><span>CAR 47% · CLE 53%</span><span>Vegas: CAR 55%</span></div>
   <div class="meta">Bryce Young vs Deshaun Watson · Sun Sep 27</div>
-  <div class="score"><b>Predicted:</b> CAR 20, CLE 21 · Spread CLE -0.5 <span class="meta">(Vegas CAR -2.5)</span> · Total 40.4 <span class="meta">(Vegas 41.5)</span></div>
+  <div class="score"><b>Predicted:</b> CAR 20, CLE 20 · Spread CLE -0.5 <span class="meta">(Vegas CAR -2.5)</span> · Total 40.4 <span class="meta">(Vegas 41.5)</span></div>
+  <div class="blend"><b>Model + Vegas blend: CAR 56%</b></div>
   <div class="why"><b>Why:</b> Starting QB → CAR · Success rate → CAR · Offense efficiency (EPA) → CLE</div>
 </div>
 <div class="game">
-  <div class="row"><div class="teams">CIN <small>@</small> PIT</div>
+  <div class="row"><div class="teams"><a class="tb" style="--tc:#FB4F14" href="teams/CIN.html">CIN</a> <small>@</small> <a class="tb" style="--tc:#FFB612" href="teams/PIT.html">PIT</a></div>
   <div><span class="pick">CIN 60%</span></div></div>
   <div class="bar" role="img" aria-label="CIN 60%, PIT 40%">
     <i class="a" style="width:60%"></i><i class="h" style="width:40%"></i></div>
   <div class="row meta"><span>CIN 60% · PIT 40%</span><span>Vegas: CIN 62%</span></div>
   <div class="meta">Joe Burrow vs Aaron Rodgers · Sun Sep 27</div>
   <div class="score"><b>Predicted:</b> CIN 22, PIT 19 · Spread CIN -2.5 <span class="meta">(Vegas CIN -3.5)</span> · Total 40.9 <span class="meta">(Vegas 42.5)</span></div>
+  <div class="blend"><b>Model + Vegas blend: CIN 63%</b></div>
   <div class="why"><b>Why:</b> Starting QB → CIN · Recent offense → CIN · Recent point differential → CIN</div>
 </div>
 <div class="game">
-  <div class="row"><div class="teams">HOU <small>@</small> IND</div>
+  <div class="row"><div class="teams"><a class="tb" style="--tc:#A71930" href="teams/HOU.html">HOU</a> <small>@</small> <a class="tb" style="--tc:#002C5F" href="teams/IND.html">IND</a></div>
   <div><span class="pick">HOU 58%</span></div></div>
   <div class="bar" role="img" aria-label="HOU 58%, IND 42%">
     <i class="a" style="width:58%"></i><i class="h" style="width:42%"></i></div>
   <div class="row meta"><span>HOU 58% · IND 42%</span><span>Vegas: HOU 53%</span></div>
   <div class="meta">C.J. Stroud vs Daniel Jones · Sun Sep 27</div>
-  <div class="score"><b>Predicted:</b> HOU 24, IND 22 · Spread HOU -2.5 <span class="meta">(Vegas HOU -1.5)</span> · Total 46.6 <span class="meta">(Vegas 41.5)</span></div>
+  <div class="score"><b>Predicted:</b> HOU 24, IND 22 · Spread HOU -2 <span class="meta">(Vegas HOU -1.5)</span> · Total 46.6 <span class="meta">(Vegas 41.5)</span></div>
+  <div class="blend"><b>Model + Vegas blend: HOU 55%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → HOU · Success rate → HOU · Division game → HOU</div>
 </div>
 <div class="game">
-  <div class="row"><div class="teams">KC <small>@</small> MIA</div>
+  <div class="row"><div class="teams"><a class="tb" style="--tc:#E31837" href="teams/KC.html">KC</a> <small>@</small> <a class="tb" style="--tc:#008E97" href="teams/MIA.html">MIA</a></div>
   <div><span class="pick">KC 63%</span></div></div>
   <div class="bar" role="img" aria-label="KC 63%, MIA 37%">
     <i class="a" style="width:63%"></i><i class="h" style="width:37%"></i></div>
   <div class="row meta"><span>KC 63% · MIA 37%</span><span>Vegas: KC 82%</span></div>
   <div class="meta">Patrick Mahomes vs Malik Willis · Sun Sep 27</div>
   <div class="score"><b>Predicted:</b> KC 24, MIA 20 · Spread KC -4 <span class="meta">(Vegas KC -10)</span> · Total 44.8 <span class="meta">(Vegas 45.5)</span></div>
+  <div class="blend"><b>Model + Vegas blend: KC 83%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → KC · Success rate → KC · Recent point differential → KC</div>
 </div>
 <div class="game best">
-  <div class="row"><div class="teams">LAC <small>@</small> BUF</div>
+  <div class="row"><div class="teams"><a class="tb" style="--tc:#0080C6" href="teams/LAC.html">LAC</a> <small>@</small> <a class="tb" style="--tc:#00338D" href="teams/BUF.html">BUF</a></div>
   <div><span class="star">★ Top pick of slot</span> <span class="pick">BUF 85%</span></div></div>
   <div class="bar" role="img" aria-label="LAC 15%, BUF 85%">
     <i class="a" style="width:15%"></i><i class="h" style="width:85%"></i></div>
   <div class="row meta"><span>LAC 15% · BUF 85%</span><span>Vegas: BUF 73%</span></div>
   <div class="meta">Justin Herbert vs Josh Allen · Sun Sep 27</div>
   <div class="score"><b>Predicted:</b> LAC 16, BUF 28 · Spread BUF -12.5 <span class="meta">(Vegas BUF -7)</span> · Total 44.2 <span class="meta">(Vegas 50.5)</span></div>
+  <div class="blend"><b>Model + Vegas blend: BUF 75%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → BUF · Starting QB → BUF · Recent offense → BUF</div>
 </div>
 <div class="game">
-  <div class="row"><div class="teams">NE <small>@</small> JAX</div>
+  <div class="row"><div class="teams"><a class="tb" style="--tc:#C60C30" href="teams/NE.html">NE</a> <small>@</small> <a class="tb" style="--tc:#006778" href="teams/JAX.html">JAX</a></div>
   <div><span class="pick">JAX 59%</span></div></div>
   <div class="bar" role="img" aria-label="NE 41%, JAX 59%">
     <i class="a" style="width:41%"></i><i class="h" style="width:59%"></i></div>
   <div class="row meta"><span>NE 41% · JAX 59%</span><span>Vegas: JAX 59%</span></div>
   <div class="meta">Drake Maye vs Trevor Lawrence · Sun Sep 27</div>
   <div class="score"><b>Predicted:</b> NE 20, JAX 22 · Spread JAX -3 <span class="meta">(Vegas JAX -3)</span> · Total 42.1 <span class="meta">(Vegas 46.5)</span></div>
+  <div class="blend"><b>Model + Vegas blend: JAX 59%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → NE · Recent offense → JAX · Injuries → JAX</div>
 </div>
 <div class="game">
-  <div class="row"><div class="teams">NYJ <small>@</small> DET</div>
+  <div class="row"><div class="teams"><a class="tb" style="--tc:#125740" href="teams/NYJ.html">NYJ</a> <small>@</small> <a class="tb" style="--tc:#0076B6" href="teams/DET.html">DET</a></div>
   <div><span class="pick">DET 81%</span></div></div>
   <div class="bar" role="img" aria-label="NYJ 19%, DET 81%">
     <i class="a" style="width:19%"></i><i class="h" style="width:81%"></i></div>
   <div class="row meta"><span>NYJ 19% · DET 81%</span><span>Vegas: DET 73%</span></div>
   <div class="meta">Geno Smith vs Jared Goff · Sun Sep 27</div>
   <div class="score"><b>Predicted:</b> NYJ 18, DET 29 · Spread DET -11 <span class="meta">(Vegas DET -7)</span> · Total 47.0 <span class="meta">(Vegas 49.5)</span></div>
+  <div class="blend"><b>Model + Vegas blend: DET 75%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → DET · Starting QB → DET · Success rate → DET</div>
 </div>
 <div class="game">
-  <div class="row"><div class="teams">SEA <small>@</small> WAS</div>
-  <div><span class="pick">SEA 65%</span></div></div>
-  <div class="bar" role="img" aria-label="SEA 65%, WAS 35%">
-    <i class="a" style="width:65%"></i><i class="h" style="width:35%"></i></div>
-  <div class="row meta"><span>SEA 65% · WAS 35%</span><span>Vegas: SEA 77%</span></div>
+  <div class="row"><div class="teams"><a class="tb" style="--tc:#69BE28" href="teams/SEA.html">SEA</a> <small>@</small> <a class="tb" style="--tc:#5A1414" href="teams/WAS.html">WAS</a></div>
+  <div><span class="pick">SEA 66%</span></div></div>
+  <div class="bar" role="img" aria-label="SEA 66%, WAS 34%">
+    <i class="a" style="width:66%"></i><i class="h" style="width:34%"></i></div>
+  <div class="row meta"><span>SEA 66% · WAS 34%</span><span>Vegas: SEA 77%</span></div>
   <div class="meta">Drew Lock vs Jayden Daniels · Sun Sep 27</div>
   <div class="score"><b>Predicted:</b> SEA 24, WAS 20 · Spread SEA -4 <span class="meta">(Vegas SEA -8.5)</span> · Total 44.7 <span class="meta">(Vegas 40.5)</span></div>
+  <div class="blend"><b>Model + Vegas blend: SEA 79%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → SEA · Success rate → SEA · Backup / new QB → WAS</div>
 </div>
 <div class="game">
-  <div class="row"><div class="teams">TEN <small>@</small> NYG</div>
-  <div><span class="pick">NYG 67%</span></div></div>
-  <div class="bar" role="img" aria-label="TEN 33%, NYG 67%">
-    <i class="a" style="width:33%"></i><i class="h" style="width:67%"></i></div>
-  <div class="row meta"><span>TEN 33% · NYG 67%</span><span>Vegas: NYG 54%</span></div>
+  <div class="row"><div class="teams"><a class="tb" style="--tc:#4B92DB" href="teams/TEN.html">TEN</a> <small>@</small> <a class="tb" style="--tc:#0B2265" href="teams/NYG.html">NYG</a></div>
+  <div><span class="pick">NYG 68%</span></div></div>
+  <div class="bar" role="img" aria-label="TEN 32%, NYG 68%">
+    <i class="a" style="width:32%"></i><i class="h" style="width:68%"></i></div>
+  <div class="row meta"><span>TEN 32% · NYG 68%</span><span>Vegas: NYG 54%</span></div>
   <div class="meta">Cam Ward vs Jameis Winston · Sun Sep 27</div>
-  <div class="score"><b>Predicted:</b> TEN 20, NYG 24 · Spread NYG -5 <span class="meta">(Vegas NYG -2.5)</span> · Total 44.1 <span class="meta">(Vegas 37.5)</span></div>
+  <div class="score"><b>Predicted:</b> TEN 20, NYG 25 · Spread NYG -5 <span class="meta">(Vegas NYG -2.5)</span> · Total 44.1 <span class="meta">(Vegas 37.5)</span></div>
+  <div class="blend"><b>Model + Vegas blend: NYG 55%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → NYG · Backup / new QB → TEN · Recent point differential → NYG</div>
 </div><h3>Sunday 4 PM</h3>
 <div class="game best">
-  <div class="row"><div class="teams">ARI <small>@</small> SF</div>
-  <div><span class="star">★ Top pick of slot</span> <span class="pick">SF 76%</span></div></div>
-  <div class="bar" role="img" aria-label="ARI 24%, SF 76%">
-    <i class="a" style="width:24%"></i><i class="h" style="width:76%"></i></div>
-  <div class="row meta"><span>ARI 24% · SF 76%</span><span>Vegas: SF 77%</span></div>
+  <div class="row"><div class="teams"><a class="tb" style="--tc:#97233F" href="teams/ARI.html">ARI</a> <small>@</small> <a class="tb" style="--tc:#AA0000" href="teams/SF.html">SF</a></div>
+  <div><span class="star">★ Top pick of slot</span> <span class="pick">SF 77%</span></div></div>
+  <div class="bar" role="img" aria-label="ARI 23%, SF 77%">
+    <i class="a" style="width:23%"></i><i class="h" style="width:77%"></i></div>
+  <div class="row meta"><span>ARI 23% · SF 77%</span><span>Vegas: SF 77%</span></div>
   <div class="meta">Jacoby Brissett vs Brock Purdy · Sun Sep 27</div>
   <div class="score"><b>Predicted:</b> ARI 19, SF 28 · Spread SF -9 <span class="meta">(Vegas SF -7.5)</span> · Total 47.0 <span class="meta">(Vegas 48.5)</span></div>
+  <div class="blend"><b>Model + Vegas blend: SF 77%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → SF · Success rate → SF · Starting QB → SF</div>
 </div>
 <div class="game">
-  <div class="row"><div class="teams">MIN <small>@</small> TB</div>
+  <div class="row"><div class="teams"><a class="tb" style="--tc:#4F2683" href="teams/MIN.html">MIN</a> <small>@</small> <a class="tb" style="--tc:#D50A0A" href="teams/TB.html">TB</a></div>
   <div><span class="pick">MIN 64%</span></div></div>
   <div class="bar" role="img" aria-label="MIN 64%, TB 36%">
     <i class="a" style="width:64%"></i><i class="h" style="width:36%"></i></div>
   <div class="row meta"><span>MIN 64% · TB 36%</span><span>Vegas: MIN 50%</span></div>
   <div class="meta">Kyler Murray vs Baker Mayfield · Sun Sep 27</div>
   <div class="score"><b>Predicted:</b> MIN 22, TB 19 · Spread MIN -3 <span class="meta">(Vegas MIN -1.5)</span> · Total 40.5 <span class="meta">(Vegas 42.5)</span></div>
+  <div class="blend"><b>Model + Vegas blend: MIN 53%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → MIN · Starting QB → MIN · Recent point differential → MIN</div>
 </div>
 <div class="game">
-  <div class="row"><div class="teams">BAL <small>@</small> DAL</div>
+  <div class="row"><div class="teams"><a class="tb" style="--tc:#241773" href="teams/BAL.html">BAL</a> <small>@</small> <a class="tb" style="--tc:#003594" href="teams/DAL.html">DAL</a></div>
   <div><span class="pick">BAL 58%</span></div></div>
   <div class="bar" role="img" aria-label="BAL 58%, DAL 42%">
     <i class="a" style="width:58%"></i><i class="h" style="width:42%"></i></div>
   <div class="row meta"><span>BAL 58% · DAL 42%</span><span>Vegas: BAL 60%</span></div>
   <div class="meta">Lamar Jackson vs Dak Prescott · Sun Sep 27</div>
   <div class="score"><b>Predicted:</b> BAL 27, DAL 25 · Spread BAL -2 <span class="meta">(Vegas BAL -3)</span> · Total 51.9 <span class="meta">(Vegas 53.5)</span></div>
+  <div class="blend"><b>Model + Vegas blend: BAL 62%</b></div>
   <div class="why"><b>Why:</b> Neutral site, no home edge → BAL · Team strength (Elo) → BAL · Starting QB → DAL</div>
 </div>
 <div class="game">
-  <div class="row"><div class="teams">LV <small>@</small> NO</div>
+  <div class="row"><div class="teams"><a class="tb" style="--tc:#A5ACAF" href="teams/LV.html">LV</a> <small>@</small> <a class="tb" style="--tc:#D3BC8D" href="teams/NO.html">NO</a></div>
   <div><span class="pick">NO 66%</span></div></div>
   <div class="bar" role="img" aria-label="LV 34%, NO 66%">
     <i class="a" style="width:34%"></i><i class="h" style="width:66%"></i></div>
   <div class="row meta"><span>LV 34% · NO 66%</span><span>Vegas: NO 63%</span></div>
   <div class="meta">Kirk Cousins vs Tyler Shough · Sun Sep 27</div>
   <div class="score"><b>Predicted:</b> LV 19, NO 25 · Spread NO -5.5 <span class="meta">(Vegas NO -3.5)</span> · Total 44.2 <span class="meta">(Vegas 43.5)</span></div>
+  <div class="blend"><b>Model + Vegas blend: NO 63%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → NO · Starting QB → NO · Recent offense → NO</div>
 </div><h3>Sunday Night</h3>
 <div class="game best">
-  <div class="row"><div class="teams">LA <small>@</small> DEN</div>
-  <div><span class="pick">DEN 57%</span></div></div>
-  <div class="bar" role="img" aria-label="LA 43%, DEN 57%">
-    <i class="a" style="width:43%"></i><i class="h" style="width:57%"></i></div>
-  <div class="row meta"><span>LA 43% · DEN 57%</span><span>Vegas: DEN 50%</span></div>
+  <div class="row"><div class="teams"><a class="tb" style="--tc:#003594" href="teams/LA.html">LA</a> <small>@</small> <a class="tb" style="--tc:#FB4F14" href="teams/DEN.html">DEN</a></div>
+  <div><span class="pick">DEN 56%</span></div></div>
+  <div class="bar" role="img" aria-label="LA 44%, DEN 56%">
+    <i class="a" style="width:44%"></i><i class="h" style="width:56%"></i></div>
+  <div class="row meta"><span>LA 44% · DEN 56%</span><span>Vegas: DEN 50%</span></div>
   <div class="meta">Matthew Stafford vs Bo Nix · Sun Sep 27</div>
   <div class="score"><b>Predicted:</b> LA 21, DEN 23 · Spread DEN -2.5 <span class="meta">(Vegas DEN -1.5)</span> · Total 43.9 <span class="meta">(Vegas 43.5)</span></div>
+  <div class="blend"><b>Model + Vegas blend: LA 50%</b></div>
   <div class="why"><b>Why:</b> Starting QB → LA · Injuries → DEN · Offense efficiency (EPA) → DEN</div>
 </div><h3>Monday Night</h3>
 <div class="game best">
-  <div class="row"><div class="teams">PHI <small>@</small> CHI</div>
-  <div><span class="pick">PHI 56%</span></div></div>
-  <div class="bar" role="img" aria-label="PHI 56%, CHI 44%">
-    <i class="a" style="width:56%"></i><i class="h" style="width:44%"></i></div>
-  <div class="row meta"><span>PHI 56% · CHI 44%</span><span>Vegas: PHI 63%</span></div>
+  <div class="row"><div class="teams"><a class="tb" style="--tc:#004C54" href="teams/PHI.html">PHI</a> <small>@</small> <a class="tb" style="--tc:#C83803" href="teams/CHI.html">CHI</a></div>
+  <div><span class="pick">PHI 55%</span></div></div>
+  <div class="bar" role="img" aria-label="PHI 55%, CHI 45%">
+    <i class="a" style="width:55%"></i><i class="h" style="width:45%"></i></div>
+  <div class="row meta"><span>PHI 55% · CHI 45%</span><span>Vegas: PHI 63%</span></div>
   <div class="meta">Jalen Hurts vs Tyson Bagent · Mon Sep 28</div>
-  <div class="score"><b>Predicted:</b> PHI 24, CHI 22 · Spread PHI -2 <span class="meta">(Vegas PHI -3.5)</span> · Total 45.2 <span class="meta">(Vegas 41.5)</span></div>
+  <div class="score"><b>Predicted:</b> PHI 23, CHI 22 · Spread PHI -1.5 <span class="meta">(Vegas PHI -3.5)</span> · Total 45.2 <span class="meta">(Vegas 41.5)</span></div>
+  <div class="blend"><b>Model + Vegas blend: PHI 64%</b></div>
   <div class="why"><b>Why:</b> Backup / new QB → PHI · Starting QB → PHI · Team strength (Elo) → PHI</div>
 </div>
-<h2 id="accuracy">2026 accuracy: model vs Vegas</h2>
+<section><h2 id="accuracy">2026 accuracy: model vs Vegas</h2>
 <p class="note">Share of games picked correctly so far this season. (The model was trained only on earlier seasons,
 so these are real predictions.)</p>
 
@@ -248,17 +304,21 @@ svg.querySelectorAll('rect[data-i]').forEach(r=>{
   tip.style.left=(b.left-cb.left+x*b.width/640)+'px';tip.style.top=(b.top-cb.top+30)+'px';tip.style.display='block';});
  r.addEventListener('mouseleave',()=>{tip.style.display='none';xh.setAttribute('visibility','hidden');});
 });})();
-</script>
-<h2 id="rankings">Power rankings</h2>
+</script></section>
+<section><h2 id="tracker">Pick tracker</h2>
+<p class="note">Every pick is saved before kickoff and frozen once the game starts, so the record can't be rewritten.</p>
+<div class="wrap"><table><tr><th>Week</th><th class="n">Model</th><th class="n">Vegas favorite</th><th class="n">Model + Vegas</th></tr><tr><td>Week 1</td><td class='n'>9-7 (56%)</td><td class='n'>12-4 (75%)</td><td class='n'>12-4 (75%)</td></tr><tr><td>Week 2</td><td class='n'>9-7 (56%)</td><td class='n'>11-5 (69%)</td><td class='n'>11-5 (69%)</td></tr><tr><td>Week 3</td><td class='n'>10-5 (67%)</td><td class='n'>9-6 (60%)</td><td class='n'>8-7 (53%)</td></tr><tr><td><b>Season</b></td><td class='n'><b>28-19 (60%)</b></td><td class='n'><b>32-15 (68%)</b></td><td class='n'><b>31-16 (66%)</b></td></tr></table></div><div class="grid2"><div><h3>Biggest upsets called</h3><p class="note">Model picked against the Vegas favorite and was right.</p><div class="wrap"><table><tr><td>Wk 3</td><td><a class="tb" style="--tc:#0085CA" href="teams/CAR.html">CAR</a> @ <a class="tb" style="--tc:#FF3C00" href="teams/CLE.html">CLE</a></td><td class='n'>18-21</td><td>Picked <b>CLE</b>; Vegas had CAR 55%</td></tr></table></div></div><div><h3>Worst misses</h3><p class="note">Most confident picks that lost.</p><div class="wrap"><table><tr><td>Wk 1</td><td><a class="tb" style="--tc:#97233F" href="teams/ARI.html">ARI</a> @ <a class="tb" style="--tc:#0080C6" href="teams/LAC.html">LAC</a></td><td class='n'>26-14</td><td>Picked LAC 77%, ARI won</td></tr><tr><td>Wk 2</td><td><a class="tb" style="--tc:#FF3C00" href="teams/CLE.html">CLE</a> @ <a class="tb" style="--tc:#D50A0A" href="teams/TB.html">TB</a></td><td class='n'>23-19</td><td>Picked TB 73%, CLE won</td></tr><tr><td>Wk 2</td><td><a class="tb" style="--tc:#D3BC8D" href="teams/NO.html">NO</a> @ <a class="tb" style="--tc:#241773" href="teams/BAL.html">BAL</a></td><td class='n'>24-17</td><td>Picked BAL 71%, NO won</td></tr><tr><td>Wk 3</td><td><a class="tb" style="--tc:#A5ACAF" href="teams/LV.html">LV</a> @ <a class="tb" style="--tc:#D3BC8D" href="teams/NO.html">NO</a></td><td class='n'>35-27</td><td>Picked NO 66%, LV won</td></tr><tr><td>Wk 3</td><td><a class="tb" style="--tc:#A71930" href="teams/ATL.html">ATL</a> @ <a class="tb" style="--tc:#203731" href="teams/GB.html">GB</a></td><td class='n'>35-14</td><td>Picked GB 66%, ATL won</td></tr></table></div></div></div><p class="note" style="margin-top:10px"><a href="history.html">See every pick →</a></p></section>
+<section><h2 id="rankings">Power rankings</h2>
 <p class="note">Rating = chance to beat an average NFL team on a neutral field. Offense/defense = efficiency rank (EPA per play).
-Arrows = movement since last week.</p>
-<div class="wrap"><table><tr><th class="n">#</th><th>Move</th><th>Team</th><th class="n">Record</th><th class="n">Rating</th><th class="n">Offense</th><th class="n">Defense</th></tr><tr><td class='n'>1</td><td><span class="up">▲ 1</span></td><td><b>BUF</b></td><td class='n'>3-0</td><td class='n'>67%<span class='meter'><i style='width:67%'></i></span></td><td class='n'>2</td><td class='n'>13</td></tr><tr><td class='n'>2</td><td><span class="down">▼ 1</span></td><td><b>SEA</b></td><td class='n'>2-1</td><td class='n'>67%<span class='meter'><i style='width:67%'></i></span></td><td class='n'>9</td><td class='n'>1</td></tr><tr><td class='n'>3</td><td><span class="up">▲ 3</span></td><td><b>JAX</b></td><td class='n'>2-1</td><td class='n'>66%<span class='meter'><i style='width:66%'></i></span></td><td class='n'>4</td><td class='n'>2</td></tr><tr><td class='n'>4</td><td><span class="same">–</span></td><td><b>SF</b></td><td class='n'>3-0</td><td class='n'>65%<span class='meter'><i style='width:65%'></i></span></td><td class='n'>1</td><td class='n'>25</td></tr><tr><td class='n'>5</td><td><span class="down">▼ 2</span></td><td><b>LA</b></td><td class='n'>1-2</td><td class='n'>62%<span class='meter'><i style='width:62%'></i></span></td><td class='n'>5</td><td class='n'>14</td></tr><tr><td class='n'>6</td><td><span class="up">▲ 3</span></td><td><b>MIN</b></td><td class='n'>3-0</td><td class='n'>62%<span class='meter'><i style='width:62%'></i></span></td><td class='n'>31</td><td class='n'>3</td></tr><tr><td class='n'>7</td><td><span class="up">▲ 8</span></td><td><b>KC</b></td><td class='n'>3-0</td><td class='n'>61%<span class='meter'><i style='width:61%'></i></span></td><td class='n'>11</td><td class='n'>7</td></tr><tr><td class='n'>8</td><td><span class="down">▼ 1</span></td><td><b>DEN</b></td><td class='n'>2-1</td><td class='n'>60%<span class='meter'><i style='width:60%'></i></span></td><td class='n'>16</td><td class='n'>8</td></tr><tr><td class='n'>9</td><td><span class="up">▲ 1</span></td><td><b>BAL</b></td><td class='n'>2-1</td><td class='n'>59%<span class='meter'><i style='width:59%'></i></span></td><td class='n'>3</td><td class='n'>19</td></tr><tr><td class='n'>10</td><td><span class="up">▲ 4</span></td><td><b>DET</b></td><td class='n'>2-1</td><td class='n'>58%<span class='meter'><i style='width:58%'></i></span></td><td class='n'>7</td><td class='n'>23</td></tr><tr><td class='n'>11</td><td><span class="down">▼ 3</span></td><td><b>CIN</b></td><td class='n'>2-1</td><td class='n'>58%<span class='meter'><i style='width:58%'></i></span></td><td class='n'>10</td><td class='n'>18</td></tr><tr><td class='n'>12</td><td><span class="same">–</span></td><td><b>PHI</b></td><td class='n'>2-0</td><td class='n'>57%<span class='meter'><i style='width:57%'></i></span></td><td class='n'>12</td><td class='n'>6</td></tr><tr><td class='n'>13</td><td><span class="same">–</span></td><td><b>CHI</b></td><td class='n'>1-1</td><td class='n'>56%<span class='meter'><i style='width:56%'></i></span></td><td class='n'>8</td><td class='n'>20</td></tr><tr><td class='n'>14</td><td><span class="down">▼ 3</span></td><td><b>HOU</b></td><td class='n'>0-3</td><td class='n'>55%<span class='meter'><i style='width:55%'></i></span></td><td class='n'>24</td><td class='n'>5</td></tr><tr><td class='n'>15</td><td><span class="down">▼ 10</span></td><td><b>NE</b></td><td class='n'>1-2</td><td class='n'>54%<span class='meter'><i style='width:54%'></i></span></td><td class='n'>17</td><td class='n'>4</td></tr><tr><td class='n'>16</td><td><span class="up">▲ 1</span></td><td><b>DAL</b></td><td class='n'>1-2</td><td class='n'>50%<span class='meter'><i style='width:50%'></i></span></td><td class='n'>6</td><td class='n'>32</td></tr><tr><td class='n'>17</td><td><span class="up">▲ 8</span></td><td><b>ATL</b></td><td class='n'>1-2</td><td class='n'>48%<span class='meter'><i style='width:48%'></i></span></td><td class='n'>23</td><td class='n'>12</td></tr><tr><td class='n'>18</td><td><span class="down">▼ 2</span></td><td><b>GB</b></td><td class='n'>1-2</td><td class='n'>47%<span class='meter'><i style='width:47%'></i></span></td><td class='n'>14</td><td class='n'>22</td></tr><tr><td class='n'>19</td><td><span class="same">–</span></td><td><b>PIT</b></td><td class='n'>2-1</td><td class='n'>46%<span class='meter'><i style='width:46%'></i></span></td><td class='n'>25</td><td class='n'>15</td></tr><tr><td class='n'>20</td><td><span class="up">▲ 3</span></td><td><b>IND</b></td><td class='n'>1-2</td><td class='n'>44%<span class='meter'><i style='width:44%'></i></span></td><td class='n'>18</td><td class='n'>26</td></tr><tr><td class='n'>21</td><td><span class="down">▼ 3</span></td><td><b>NO</b></td><td class='n'>1-2</td><td class='n'>44%<span class='meter'><i style='width:44%'></i></span></td><td class='n'>20</td><td class='n'>17</td></tr><tr><td class='n'>22</td><td><span class="down">▼ 1</span></td><td><b>CAR</b></td><td class='n'>1-2</td><td class='n'>43%<span class='meter'><i style='width:43%'></i></span></td><td class='n'>15</td><td class='n'>21</td></tr><tr><td class='n'>23</td><td><span class="up">▲ 1</span></td><td><b>WAS</b></td><td class='n'>1-2</td><td class='n'>43%<span class='meter'><i style='width:43%'></i></span></td><td class='n'>13</td><td class='n'>28</td></tr><tr><td class='n'>24</td><td><span class="up">▲ 2</span></td><td><b>LV</b></td><td class='n'>3-0</td><td class='n'>42%<span class='meter'><i style='width:42%'></i></span></td><td class='n'>28</td><td class='n'>10</td></tr><tr><td class='n'>25</td><td><span class="down">▼ 5</span></td><td><b>NYG</b></td><td class='n'>2-1</td><td class='n'>42%<span class='meter'><i style='width:42%'></i></span></td><td class='n'>21</td><td class='n'>24</td></tr><tr><td class='n'>26</td><td><span class="down">▼ 4</span></td><td><b>TB</b></td><td class='n'>0-3</td><td class='n'>41%<span class='meter'><i style='width:41%'></i></span></td><td class='n'>26</td><td class='n'>16</td></tr><tr><td class='n'>27</td><td><span class="same">–</span></td><td><b>LAC</b></td><td class='n'>0-3</td><td class='n'>39%<span class='meter'><i style='width:39%'></i></span></td><td class='n'>29</td><td class='n'>9</td></tr><tr><td class='n'>28</td><td><span class="up">▲ 1</span></td><td><b>CLE</b></td><td class='n'>2-1</td><td class='n'>37%<span class='meter'><i style='width:37%'></i></span></td><td class='n'>32</td><td class='n'>11</td></tr><tr><td class='n'>29</td><td><span class="down">▼ 1</span></td><td><b>ARI</b></td><td class='n'>1-2</td><td class='n'>37%<span class='meter'><i style='width:37%'></i></span></td><td class='n'>19</td><td class='n'>30</td></tr><tr><td class='n'>30</td><td><span class="same">–</span></td><td><b>MIA</b></td><td class='n'>0-3</td><td class='n'>33%<span class='meter'><i style='width:33%'></i></span></td><td class='n'>22</td><td class='n'>31</td></tr><tr><td class='n'>31</td><td><span class="same">–</span></td><td><b>NYJ</b></td><td class='n'>1-2</td><td class='n'>31%<span class='meter'><i style='width:31%'></i></span></td><td class='n'>27</td><td class='n'>27</td></tr><tr><td class='n'>32</td><td><span class="same">–</span></td><td><b>TEN</b></td><td class='n'>0-3</td><td class='n'>25%<span class='meter'><i style='width:25%'></i></span></td><td class='n'>30</td><td class='n'>29</td></tr></table></div>
-<h2 id="playoffs">Playoff odds</h2>
+Arrows = movement since last week. Tap a team for its page.</p>
+<div class="wrap"><table><tr><th class="n">#</th><th>Move</th><th>Team</th><th class="n">Record</th><th class="n">Rating</th><th class="n">Offense</th><th class="n">Defense</th></tr><tr><td class='n'>1</td><td><span class="up">▲ 1</span></td><td><b><a class="tb" style="--tc:#00338D" href="teams/BUF.html">BUF</a></b></td><td class='n'>3-0</td><td class='n'>68%<span class='meter'><i style='width:68%'></i></span></td><td class='n'>2</td><td class='n'>13</td></tr><tr><td class='n'>2</td><td><span class="down">▼ 1</span></td><td><b><a class="tb" style="--tc:#69BE28" href="teams/SEA.html">SEA</a></b></td><td class='n'>2-1</td><td class='n'>67%<span class='meter'><i style='width:67%'></i></span></td><td class='n'>9</td><td class='n'>1</td></tr><tr><td class='n'>3</td><td><span class="up">▲ 3</span></td><td><b><a class="tb" style="--tc:#006778" href="teams/JAX.html">JAX</a></b></td><td class='n'>2-1</td><td class='n'>66%<span class='meter'><i style='width:66%'></i></span></td><td class='n'>4</td><td class='n'>2</td></tr><tr><td class='n'>4</td><td><span class="same">–</span></td><td><b><a class="tb" style="--tc:#AA0000" href="teams/SF.html">SF</a></b></td><td class='n'>3-0</td><td class='n'>65%<span class='meter'><i style='width:65%'></i></span></td><td class='n'>1</td><td class='n'>25</td></tr><tr><td class='n'>5</td><td><span class="down">▼ 2</span></td><td><b><a class="tb" style="--tc:#003594" href="teams/LA.html">LA</a></b></td><td class='n'>1-2</td><td class='n'>62%<span class='meter'><i style='width:62%'></i></span></td><td class='n'>5</td><td class='n'>14</td></tr><tr><td class='n'>6</td><td><span class="up">▲ 3</span></td><td><b><a class="tb" style="--tc:#4F2683" href="teams/MIN.html">MIN</a></b></td><td class='n'>3-0</td><td class='n'>62%<span class='meter'><i style='width:62%'></i></span></td><td class='n'>31</td><td class='n'>3</td></tr><tr><td class='n'>7</td><td><span class="up">▲ 8</span></td><td><b><a class="tb" style="--tc:#E31837" href="teams/KC.html">KC</a></b></td><td class='n'>3-0</td><td class='n'>61%<span class='meter'><i style='width:61%'></i></span></td><td class='n'>11</td><td class='n'>7</td></tr><tr><td class='n'>8</td><td><span class="down">▼ 1</span></td><td><b><a class="tb" style="--tc:#FB4F14" href="teams/DEN.html">DEN</a></b></td><td class='n'>2-1</td><td class='n'>60%<span class='meter'><i style='width:60%'></i></span></td><td class='n'>16</td><td class='n'>8</td></tr><tr><td class='n'>9</td><td><span class="up">▲ 1</span></td><td><b><a class="tb" style="--tc:#241773" href="teams/BAL.html">BAL</a></b></td><td class='n'>2-1</td><td class='n'>59%<span class='meter'><i style='width:59%'></i></span></td><td class='n'>3</td><td class='n'>19</td></tr><tr><td class='n'>10</td><td><span class="up">▲ 4</span></td><td><b><a class="tb" style="--tc:#0076B6" href="teams/DET.html">DET</a></b></td><td class='n'>2-1</td><td class='n'>59%<span class='meter'><i style='width:59%'></i></span></td><td class='n'>7</td><td class='n'>23</td></tr><tr><td class='n'>11</td><td><span class="down">▼ 3</span></td><td><b><a class="tb" style="--tc:#FB4F14" href="teams/CIN.html">CIN</a></b></td><td class='n'>2-1</td><td class='n'>58%<span class='meter'><i style='width:58%'></i></span></td><td class='n'>10</td><td class='n'>18</td></tr><tr><td class='n'>12</td><td><span class="down">▼ 1</span></td><td><b><a class="tb" style="--tc:#004C54" href="teams/PHI.html">PHI</a></b></td><td class='n'>2-0</td><td class='n'>57%<span class='meter'><i style='width:57%'></i></span></td><td class='n'>12</td><td class='n'>6</td></tr><tr><td class='n'>13</td><td><span class="same">–</span></td><td><b><a class="tb" style="--tc:#C83803" href="teams/CHI.html">CHI</a></b></td><td class='n'>1-1</td><td class='n'>56%<span class='meter'><i style='width:56%'></i></span></td><td class='n'>8</td><td class='n'>20</td></tr><tr><td class='n'>14</td><td><span class="down">▼ 9</span></td><td><b><a class="tb" style="--tc:#C60C30" href="teams/NE.html">NE</a></b></td><td class='n'>1-2</td><td class='n'>54%<span class='meter'><i style='width:54%'></i></span></td><td class='n'>17</td><td class='n'>4</td></tr><tr><td class='n'>15</td><td><span class="down">▼ 3</span></td><td><b><a class="tb" style="--tc:#A71930" href="teams/HOU.html">HOU</a></b></td><td class='n'>0-3</td><td class='n'>54%<span class='meter'><i style='width:54%'></i></span></td><td class='n'>24</td><td class='n'>5</td></tr><tr><td class='n'>16</td><td><span class="up">▲ 1</span></td><td><b><a class="tb" style="--tc:#003594" href="teams/DAL.html">DAL</a></b></td><td class='n'>1-2</td><td class='n'>50%<span class='meter'><i style='width:50%'></i></span></td><td class='n'>6</td><td class='n'>32</td></tr><tr><td class='n'>17</td><td><span class="up">▲ 8</span></td><td><b><a class="tb" style="--tc:#A71930" href="teams/ATL.html">ATL</a></b></td><td class='n'>1-2</td><td class='n'>48%<span class='meter'><i style='width:48%'></i></span></td><td class='n'>23</td><td class='n'>12</td></tr><tr><td class='n'>18</td><td><span class="down">▼ 2</span></td><td><b><a class="tb" style="--tc:#203731" href="teams/GB.html">GB</a></b></td><td class='n'>1-2</td><td class='n'>47%<span class='meter'><i style='width:47%'></i></span></td><td class='n'>14</td><td class='n'>22</td></tr><tr><td class='n'>19</td><td><span class="same">–</span></td><td><b><a class="tb" style="--tc:#FFB612" href="teams/PIT.html">PIT</a></b></td><td class='n'>2-1</td><td class='n'>46%<span class='meter'><i style='width:46%'></i></span></td><td class='n'>25</td><td class='n'>15</td></tr><tr><td class='n'>20</td><td><span class="up">▲ 3</span></td><td><b><a class="tb" style="--tc:#002C5F" href="teams/IND.html">IND</a></b></td><td class='n'>1-2</td><td class='n'>44%<span class='meter'><i style='width:44%'></i></span></td><td class='n'>18</td><td class='n'>26</td></tr><tr><td class='n'>21</td><td><span class="down">▼ 3</span></td><td><b><a class="tb" style="--tc:#D3BC8D" href="teams/NO.html">NO</a></b></td><td class='n'>1-2</td><td class='n'>44%<span class='meter'><i style='width:44%'></i></span></td><td class='n'>20</td><td class='n'>17</td></tr><tr><td class='n'>22</td><td><span class="down">▼ 1</span></td><td><b><a class="tb" style="--tc:#0085CA" href="teams/CAR.html">CAR</a></b></td><td class='n'>1-2</td><td class='n'>43%<span class='meter'><i style='width:43%'></i></span></td><td class='n'>15</td><td class='n'>21</td></tr><tr><td class='n'>23</td><td><span class="up">▲ 1</span></td><td><b><a class="tb" style="--tc:#5A1414" href="teams/WAS.html">WAS</a></b></td><td class='n'>1-2</td><td class='n'>43%<span class='meter'><i style='width:43%'></i></span></td><td class='n'>13</td><td class='n'>28</td></tr><tr><td class='n'>24</td><td><span class="up">▲ 2</span></td><td><b><a class="tb" style="--tc:#A5ACAF" href="teams/LV.html">LV</a></b></td><td class='n'>3-0</td><td class='n'>42%<span class='meter'><i style='width:42%'></i></span></td><td class='n'>28</td><td class='n'>10</td></tr><tr><td class='n'>25</td><td><span class="down">▼ 5</span></td><td><b><a class="tb" style="--tc:#0B2265" href="teams/NYG.html">NYG</a></b></td><td class='n'>2-1</td><td class='n'>42%<span class='meter'><i style='width:42%'></i></span></td><td class='n'>21</td><td class='n'>24</td></tr><tr><td class='n'>26</td><td><span class="down">▼ 4</span></td><td><b><a class="tb" style="--tc:#D50A0A" href="teams/TB.html">TB</a></b></td><td class='n'>0-3</td><td class='n'>41%<span class='meter'><i style='width:41%'></i></span></td><td class='n'>26</td><td class='n'>16</td></tr><tr><td class='n'>27</td><td><span class="same">–</span></td><td><b><a class="tb" style="--tc:#0080C6" href="teams/LAC.html">LAC</a></b></td><td class='n'>0-3</td><td class='n'>39%<span class='meter'><i style='width:39%'></i></span></td><td class='n'>29</td><td class='n'>9</td></tr><tr><td class='n'>28</td><td><span class="up">▲ 2</span></td><td><b><a class="tb" style="--tc:#FF3C00" href="teams/CLE.html">CLE</a></b></td><td class='n'>2-1</td><td class='n'>37%<span class='meter'><i style='width:37%'></i></span></td><td class='n'>32</td><td class='n'>11</td></tr><tr><td class='n'>29</td><td><span class="down">▼ 1</span></td><td><b><a class="tb" style="--tc:#97233F" href="teams/ARI.html">ARI</a></b></td><td class='n'>1-2</td><td class='n'>37%<span class='meter'><i style='width:37%'></i></span></td><td class='n'>19</td><td class='n'>30</td></tr><tr><td class='n'>30</td><td><span class="down">▼ 1</span></td><td><b><a class="tb" style="--tc:#008E97" href="teams/MIA.html">MIA</a></b></td><td class='n'>0-3</td><td class='n'>33%<span class='meter'><i style='width:33%'></i></span></td><td class='n'>22</td><td class='n'>31</td></tr><tr><td class='n'>31</td><td><span class="same">–</span></td><td><b><a class="tb" style="--tc:#125740" href="teams/NYJ.html">NYJ</a></b></td><td class='n'>1-2</td><td class='n'>31%<span class='meter'><i style='width:31%'></i></span></td><td class='n'>27</td><td class='n'>27</td></tr><tr><td class='n'>32</td><td><span class="same">–</span></td><td><b><a class="tb" style="--tc:#4B92DB" href="teams/TEN.html">TEN</a></b></td><td class='n'>0-3</td><td class='n'>25%<span class='meter'><i style='width:25%'></i></span></td><td class='n'>30</td><td class='n'>29</td></tr></table></div></section>
+<section><h2 id="playoffs">Playoff odds</h2>
 <p class="note">From 10,000 simulations of the rest of the season and the playoffs. Simplified tiebreakers:
 teams tied on wins are ordered randomly.</p>
-<div><h3>AFC</h3><div class="wrap"><table><tr><th>Team</th><th class="n">Now</th><th class="n">Proj W</th><th class="n">Playoffs</th><th class="n">Division</th><th class="n">#1 seed</th><th class="n">Make SB</th><th class="n">Win SB</th></tr><tr><td><b>BUF</b></td><td class='n'>3-0</td><td class='n'>12.3</td><td class='n'>96%</td><td class='n'>88%</td><td class='n'>36%</td><td class='n'>28%</td><td class='n'><b>15%</b></td></tr><tr><td><b>JAX</b></td><td class='n'>2-1</td><td class='n'>11.2</td><td class='n'>87%</td><td class='n'>78%</td><td class='n'>15%</td><td class='n'>19%</td><td class='n'><b>11%</b></td></tr><tr><td><b>KC</b></td><td class='n'>3-0</td><td class='n'>11.1</td><td class='n'>84%</td><td class='n'>53%</td><td class='n'>16%</td><td class='n'>14%</td><td class='n'><b>7%</b></td></tr><tr><td><b>CIN</b></td><td class='n'>2-1</td><td class='n'>10.6</td><td class='n'>77%</td><td class='n'>43%</td><td class='n'>10%</td><td class='n'>10%</td><td class='n'><b>4%</b></td></tr><tr><td><b>BAL</b></td><td class='n'>2-1</td><td class='n'>10.4</td><td class='n'>75%</td><td class='n'>40%</td><td class='n'>9%</td><td class='n'>10%</td><td class='n'><b>5%</b></td></tr><tr><td><b>DEN</b></td><td class='n'>2-1</td><td class='n'>10.4</td><td class='n'>74%</td><td class='n'>36%</td><td class='n'>9%</td><td class='n'>10%</td><td class='n'><b>5%</b></td></tr><tr><td><b>NE</b></td><td class='n'>1-2</td><td class='n'>8.8</td><td class='n'>43%</td><td class='n'>12%</td><td class='n'>2%</td><td class='n'>3%</td><td class='n'><b>1%</b></td></tr><tr><td><b>PIT</b></td><td class='n'>2-1</td><td class='n'>8.6</td><td class='n'>39%</td><td class='n'>11%</td><td class='n'>2%</td><td class='n'>2%</td><td class='n'><b><1%</b></td></tr><tr><td><b>LV</b></td><td class='n'>3-0</td><td class='n'>8.6</td><td class='n'>39%</td><td class='n'>11%</td><td class='n'>1%</td><td class='n'>1%</td><td class='n'><b><1%</b></td></tr><tr><td><b>HOU</b></td><td class='n'>0-3</td><td class='n'>8.1</td><td class='n'>32%</td><td class='n'>13%</td><td class='n'><1%</td><td class='n'>3%</td><td class='n'><b>1%</b></td></tr><tr><td><b>CLE</b></td><td class='n'>2-1</td><td class='n'>7.7</td><td class='n'>23%</td><td class='n'>6%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b>IND</b></td><td class='n'>1-2</td><td class='n'>7.6</td><td class='n'>22%</td><td class='n'>9%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b>NYJ</b></td><td class='n'>1-2</td><td class='n'>5.6</td><td class='n'>4%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b>LAC</b></td><td class='n'>0-3</td><td class='n'>4.9</td><td class='n'>2%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b>MIA</b></td><td class='n'>0-3</td><td class='n'>4.5</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'>-</td><td class='n'><b>-</b></td></tr><tr><td><b>TEN</b></td><td class='n'>0-3</td><td class='n'>3.5</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'>-</td><td class='n'>-</td><td class='n'><b>-</b></td></tr></table></div></div><div><h3>NFC</h3><div class="wrap"><table><tr><th>Team</th><th class="n">Now</th><th class="n">Proj W</th><th class="n">Playoffs</th><th class="n">Division</th><th class="n">#1 seed</th><th class="n">Make SB</th><th class="n">Win SB</th></tr><tr><td><b>MIN</b></td><td class='n'>3-0</td><td class='n'>11.8</td><td class='n'>90%</td><td class='n'>60%</td><td class='n'>29%</td><td class='n'>18%</td><td class='n'><b>9%</b></td></tr><tr><td><b>SF</b></td><td class='n'>3-0</td><td class='n'>11.6</td><td class='n'>87%</td><td class='n'>51%</td><td class='n'>25%</td><td class='n'>20%</td><td class='n'><b>11%</b></td></tr><tr><td><b>SEA</b></td><td class='n'>2-1</td><td class='n'>11.0</td><td class='n'>81%</td><td class='n'>36%</td><td class='n'>15%</td><td class='n'>19%</td><td class='n'><b>10%</b></td></tr><tr><td><b>PHI</b></td><td class='n'>2-0</td><td class='n'>10.4</td><td class='n'>75%</td><td class='n'>65%</td><td class='n'>10%</td><td class='n'>10%</td><td class='n'><b>5%</b></td></tr><tr><td><b>DET</b></td><td class='n'>2-1</td><td class='n'>10.5</td><td class='n'>73%</td><td class='n'>29%</td><td class='n'>10%</td><td class='n'>10%</td><td class='n'><b>5%</b></td></tr><tr><td><b>LA</b></td><td class='n'>1-2</td><td class='n'>9.4</td><td class='n'>53%</td><td class='n'>12%</td><td class='n'>4%</td><td class='n'>8%</td><td class='n'><b>4%</b></td></tr><tr><td><b>CHI</b></td><td class='n'>1-1</td><td class='n'>8.9</td><td class='n'>43%</td><td class='n'>9%</td><td class='n'>3%</td><td class='n'>4%</td><td class='n'><b>2%</b></td></tr><tr><td><b>NO</b></td><td class='n'>1-2</td><td class='n'>7.8</td><td class='n'>39%</td><td class='n'>36%</td><td class='n'><1%</td><td class='n'>2%</td><td class='n'><b><1%</b></td></tr><tr><td><b>ATL</b></td><td class='n'>1-2</td><td class='n'>7.7</td><td class='n'>38%</td><td class='n'>34%</td><td class='n'><1%</td><td class='n'>2%</td><td class='n'><b><1%</b></td></tr><tr><td><b>DAL</b></td><td class='n'>1-2</td><td class='n'>8.0</td><td class='n'>28%</td><td class='n'>15%</td><td class='n'><1%</td><td class='n'>2%</td><td class='n'><b><1%</b></td></tr><tr><td><b>NYG</b></td><td class='n'>2-1</td><td class='n'>7.7</td><td class='n'>23%</td><td class='n'>13%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b>CAR</b></td><td class='n'>1-2</td><td class='n'>6.9</td><td class='n'>23%</td><td class='n'>20%</td><td class='n'><1%</td><td class='n'>1%</td><td class='n'><b><1%</b></td></tr><tr><td><b>GB</b></td><td class='n'>1-2</td><td class='n'>7.3</td><td class='n'>17%</td><td class='n'>2%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b>WAS</b></td><td class='n'>1-2</td><td class='n'>7.0</td><td class='n'>15%</td><td class='n'>7%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b>TB</b></td><td class='n'>0-3</td><td class='n'>5.9</td><td class='n'>11%</td><td class='n'>10%</td><td class='n'>-</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b>ARI</b></td><td class='n'>1-2</td><td class='n'>6.1</td><td class='n'>5%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr></table></div></div>
-<h2 id="results">Week 2 results</h2><div class="wrap"><table><tr><th>Game</th><th class="n">Final</th><th class="n">Predicted</th><th>Model pick</th><th>Vegas pick</th></tr><tr><td>DET @ BUF</td><td class='n'>31-41</td><td class='n'>22-28</td><td>BUF 69% <span class="ok">✓</span></td><td>BUF <span class="ok">✓</span></td></tr><tr><td>CAR @ ATL</td><td class='n'>34-3</td><td class='n'>22-25</td><td>ATL 64% <span class="no">✗</span></td><td>CAR <span class="ok">✓</span></td></tr><tr><td>CIN @ HOU</td><td class='n'>20-6</td><td class='n'>22-26</td><td>HOU 60% <span class="no">✗</span></td><td>HOU <span class="no">✗</span></td></tr><tr><td>CLE @ TB</td><td class='n'>23-19</td><td class='n'>16-24</td><td>TB 73% <span class="no">✗</span></td><td>TB <span class="no">✗</span></td></tr><tr><td>GB @ NYJ</td><td class='n'>20-17</td><td class='n'>26-19</td><td>GB 68% <span class="ok">✓</span></td><td>GB <span class="ok">✓</span></td></tr><tr><td>IND @ KC</td><td class='n'>30-33</td><td class='n'>19-24</td><td>KC 67% <span class="ok">✓</span></td><td>KC <span class="ok">✓</span></td></tr><tr><td>JAX @ DEN</td><td class='n'>13-20</td><td class='n'>21-21</td><td>JAX 50% <span class="no">✗</span></td><td>DEN <span class="ok">✓</span></td></tr><tr><td>LV @ LAC</td><td class='n'>26-14</td><td class='n'>17-23</td><td>LAC 66% <span class="no">✗</span></td><td>LAC <span class="no">✗</span></td></tr><tr><td>MIA @ SF</td><td class='n'>13-35</td><td class='n'>18-28</td><td>SF 80% <span class="ok">✓</span></td><td>SF <span class="ok">✓</span></td></tr><tr><td>MIN @ CHI</td><td class='n'>9-3</td><td class='n'>22-25</td><td>CHI 58% <span class="no">✗</span></td><td>CHI <span class="no">✗</span></td></tr><tr><td>NO @ BAL</td><td class='n'>24-17</td><td class='n'>19-27</td><td>BAL 71% <span class="no">✗</span></td><td>BAL <span class="no">✗</span></td></tr><tr><td>PHI @ TEN</td><td class='n'>24-20</td><td class='n'>26-18</td><td>PHI 73% <span class="ok">✓</span></td><td>PHI <span class="ok">✓</span></td></tr><tr><td>PIT @ NE</td><td class='n'>3-20</td><td class='n'>16-23</td><td>NE 71% <span class="ok">✓</span></td><td>NE <span class="ok">✓</span></td></tr><tr><td>SEA @ ARI</td><td class='n'>31-7</td><td class='n'>25-22</td><td>SEA 64% <span class="ok">✓</span></td><td>SEA <span class="ok">✓</span></td></tr><tr><td>WAS @ DAL</td><td class='n'>20-37</td><td class='n'>25-27</td><td>DAL 56% <span class="ok">✓</span></td><td>DAL <span class="ok">✓</span></td></tr><tr><td>NYG @ LA</td><td class='n'>6-28</td><td class='n'>22-29</td><td>LA 71% <span class="ok">✓</span></td><td>LA <span class="ok">✓</span></td></tr></table></div>
-<footer>Model: Logistic Regression using Elo team strength, recent form, rest, home field; starting QB efficiency; offense & defense efficiency (EPA per play, success rate); injured starters. It picked these by testing each group of stats and keeping only the
+<div><h3>AFC</h3><div class="wrap"><table><tr><th>Team</th><th class="n">Now</th><th class="n">Proj W</th><th class="n">Playoffs</th><th class="n">Division</th><th class="n">#1 seed</th><th class="n">Make SB</th><th class="n">Win SB</th></tr><tr><td><b><a class="tb" style="--tc:#00338D" href="teams/BUF.html">BUF</a></b></td><td class='n'>3-0</td><td class='n'>12.4</td><td class='n'>96%</td><td class='n'>88%</td><td class='n'>37%</td><td class='n'>28%</td><td class='n'><b>16%</b></td></tr><tr><td><b><a class="tb" style="--tc:#006778" href="teams/JAX.html">JAX</a></b></td><td class='n'>2-1</td><td class='n'>11.2</td><td class='n'>88%</td><td class='n'>78%</td><td class='n'>15%</td><td class='n'>19%</td><td class='n'><b>11%</b></td></tr><tr><td><b><a class="tb" style="--tc:#E31837" href="teams/KC.html">KC</a></b></td><td class='n'>3-0</td><td class='n'>11.1</td><td class='n'>84%</td><td class='n'>53%</td><td class='n'>15%</td><td class='n'>13%</td><td class='n'><b>7%</b></td></tr><tr><td><b><a class="tb" style="--tc:#FB4F14" href="teams/CIN.html">CIN</a></b></td><td class='n'>2-1</td><td class='n'>10.6</td><td class='n'>77%</td><td class='n'>43%</td><td class='n'>9%</td><td class='n'>10%</td><td class='n'><b>4%</b></td></tr><tr><td><b><a class="tb" style="--tc:#241773" href="teams/BAL.html">BAL</a></b></td><td class='n'>2-1</td><td class='n'>10.5</td><td class='n'>75%</td><td class='n'>40%</td><td class='n'>9%</td><td class='n'>10%</td><td class='n'><b>5%</b></td></tr><tr><td><b><a class="tb" style="--tc:#FB4F14" href="teams/DEN.html">DEN</a></b></td><td class='n'>2-1</td><td class='n'>10.5</td><td class='n'>75%</td><td class='n'>36%</td><td class='n'>9%</td><td class='n'>9%</td><td class='n'><b>4%</b></td></tr><tr><td><b><a class="tb" style="--tc:#C60C30" href="teams/NE.html">NE</a></b></td><td class='n'>1-2</td><td class='n'>8.8</td><td class='n'>43%</td><td class='n'>11%</td><td class='n'>2%</td><td class='n'>3%</td><td class='n'><b>1%</b></td></tr><tr><td><b><a class="tb" style="--tc:#FFB612" href="teams/PIT.html">PIT</a></b></td><td class='n'>2-1</td><td class='n'>8.6</td><td class='n'>39%</td><td class='n'>11%</td><td class='n'>2%</td><td class='n'>2%</td><td class='n'><b><1%</b></td></tr><tr><td><b><a class="tb" style="--tc:#A5ACAF" href="teams/LV.html">LV</a></b></td><td class='n'>3-0</td><td class='n'>8.6</td><td class='n'>38%</td><td class='n'>11%</td><td class='n'>1%</td><td class='n'>1%</td><td class='n'><b><1%</b></td></tr><tr><td><b><a class="tb" style="--tc:#A71930" href="teams/HOU.html">HOU</a></b></td><td class='n'>0-3</td><td class='n'>8.1</td><td class='n'>31%</td><td class='n'>13%</td><td class='n'><1%</td><td class='n'>3%</td><td class='n'><b>1%</b></td></tr><tr><td><b><a class="tb" style="--tc:#FF3C00" href="teams/CLE.html">CLE</a></b></td><td class='n'>2-1</td><td class='n'>7.7</td><td class='n'>23%</td><td class='n'>6%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b><a class="tb" style="--tc:#002C5F" href="teams/IND.html">IND</a></b></td><td class='n'>1-2</td><td class='n'>7.6</td><td class='n'>22%</td><td class='n'>8%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b><a class="tb" style="--tc:#125740" href="teams/NYJ.html">NYJ</a></b></td><td class='n'>1-2</td><td class='n'>5.6</td><td class='n'>4%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b><a class="tb" style="--tc:#0080C6" href="teams/LAC.html">LAC</a></b></td><td class='n'>0-3</td><td class='n'>4.9</td><td class='n'>2%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b><a class="tb" style="--tc:#008E97" href="teams/MIA.html">MIA</a></b></td><td class='n'>0-3</td><td class='n'>4.5</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'>-</td><td class='n'><b>-</b></td></tr><tr><td><b><a class="tb" style="--tc:#4B92DB" href="teams/TEN.html">TEN</a></b></td><td class='n'>0-3</td><td class='n'>3.4</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'>-</td><td class='n'>-</td><td class='n'><b>-</b></td></tr></table></div></div><div><h3>NFC</h3><div class="wrap"><table><tr><th>Team</th><th class="n">Now</th><th class="n">Proj W</th><th class="n">Playoffs</th><th class="n">Division</th><th class="n">#1 seed</th><th class="n">Make SB</th><th class="n">Win SB</th></tr><tr><td><b><a class="tb" style="--tc:#4F2683" href="teams/MIN.html">MIN</a></b></td><td class='n'>3-0</td><td class='n'>11.8</td><td class='n'>90%</td><td class='n'>60%</td><td class='n'>28%</td><td class='n'>18%</td><td class='n'><b>9%</b></td></tr><tr><td><b><a class="tb" style="--tc:#AA0000" href="teams/SF.html">SF</a></b></td><td class='n'>3-0</td><td class='n'>11.6</td><td class='n'>88%</td><td class='n'>51%</td><td class='n'>25%</td><td class='n'>20%</td><td class='n'><b>11%</b></td></tr><tr><td><b><a class="tb" style="--tc:#69BE28" href="teams/SEA.html">SEA</a></b></td><td class='n'>2-1</td><td class='n'>11.0</td><td class='n'>81%</td><td class='n'>36%</td><td class='n'>15%</td><td class='n'>19%</td><td class='n'><b>11%</b></td></tr><tr><td><b><a class="tb" style="--tc:#004C54" href="teams/PHI.html">PHI</a></b></td><td class='n'>2-0</td><td class='n'>10.4</td><td class='n'>75%</td><td class='n'>65%</td><td class='n'>11%</td><td class='n'>10%</td><td class='n'><b>5%</b></td></tr><tr><td><b><a class="tb" style="--tc:#0076B6" href="teams/DET.html">DET</a></b></td><td class='n'>2-1</td><td class='n'>10.5</td><td class='n'>73%</td><td class='n'>29%</td><td class='n'>10%</td><td class='n'>10%</td><td class='n'><b>5%</b></td></tr><tr><td><b><a class="tb" style="--tc:#003594" href="teams/LA.html">LA</a></b></td><td class='n'>1-2</td><td class='n'>9.4</td><td class='n'>52%</td><td class='n'>12%</td><td class='n'>4%</td><td class='n'>8%</td><td class='n'><b>4%</b></td></tr><tr><td><b><a class="tb" style="--tc:#C83803" href="teams/CHI.html">CHI</a></b></td><td class='n'>1-1</td><td class='n'>8.9</td><td class='n'>43%</td><td class='n'>9%</td><td class='n'>3%</td><td class='n'>4%</td><td class='n'><b>2%</b></td></tr><tr><td><b><a class="tb" style="--tc:#D3BC8D" href="teams/NO.html">NO</a></b></td><td class='n'>1-2</td><td class='n'>7.8</td><td class='n'>39%</td><td class='n'>36%</td><td class='n'><1%</td><td class='n'>2%</td><td class='n'><b><1%</b></td></tr><tr><td><b><a class="tb" style="--tc:#A71930" href="teams/ATL.html">ATL</a></b></td><td class='n'>1-2</td><td class='n'>7.7</td><td class='n'>37%</td><td class='n'>34%</td><td class='n'><1%</td><td class='n'>2%</td><td class='n'><b><1%</b></td></tr><tr><td><b><a class="tb" style="--tc:#003594" href="teams/DAL.html">DAL</a></b></td><td class='n'>1-2</td><td class='n'>8.0</td><td class='n'>28%</td><td class='n'>15%</td><td class='n'><1%</td><td class='n'>2%</td><td class='n'><b><1%</b></td></tr><tr><td><b><a class="tb" style="--tc:#0B2265" href="teams/NYG.html">NYG</a></b></td><td class='n'>2-1</td><td class='n'>7.7</td><td class='n'>23%</td><td class='n'>12%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b><a class="tb" style="--tc:#0085CA" href="teams/CAR.html">CAR</a></b></td><td class='n'>1-2</td><td class='n'>6.9</td><td class='n'>23%</td><td class='n'>21%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b><a class="tb" style="--tc:#203731" href="teams/GB.html">GB</a></b></td><td class='n'>1-2</td><td class='n'>7.3</td><td class='n'>16%</td><td class='n'>2%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b><a class="tb" style="--tc:#5A1414" href="teams/WAS.html">WAS</a></b></td><td class='n'>1-2</td><td class='n'>7.0</td><td class='n'>15%</td><td class='n'>7%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b><a class="tb" style="--tc:#D50A0A" href="teams/TB.html">TB</a></b></td><td class='n'>0-3</td><td class='n'>5.9</td><td class='n'>11%</td><td class='n'>10%</td><td class='n'>-</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr><tr><td><b><a class="tb" style="--tc:#97233F" href="teams/ARI.html">ARI</a></b></td><td class='n'>1-2</td><td class='n'>6.1</td><td class='n'>5%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><1%</td><td class='n'><b><1%</b></td></tr></table></div></div></section>
+<section><h2 id="results">Week 2 results</h2><div class="wrap"><table><tr><th>Game</th><th class="n">Final</th><th class="n">Predicted</th><th>Model pick</th><th>Vegas pick</th></tr><tr><td>DET @ BUF</td><td class='n'>31-41</td><td class='n'>22-28</td><td>BUF 69% <span class="ok">✓</span></td><td>BUF <span class="ok">✓</span></td></tr><tr><td>CAR @ ATL</td><td class='n'>34-3</td><td class='n'>22-25</td><td>ATL 64% <span class="no">✗</span></td><td>CAR <span class="ok">✓</span></td></tr><tr><td>CIN @ HOU</td><td class='n'>20-6</td><td class='n'>22-26</td><td>HOU 61% <span class="no">✗</span></td><td>HOU <span class="no">✗</span></td></tr><tr><td>CLE @ TB</td><td class='n'>23-19</td><td class='n'>16-24</td><td>TB 73% <span class="no">✗</span></td><td>TB <span class="no">✗</span></td></tr><tr><td>GB @ NYJ</td><td class='n'>20-17</td><td class='n'>26-19</td><td>GB 68% <span class="ok">✓</span></td><td>GB <span class="ok">✓</span></td></tr><tr><td>IND @ KC</td><td class='n'>30-33</td><td class='n'>19-24</td><td>KC 67% <span class="ok">✓</span></td><td>KC <span class="ok">✓</span></td></tr><tr><td>JAX @ DEN</td><td class='n'>13-20</td><td class='n'>21-21</td><td>JAX 50% <span class="no">✗</span></td><td>DEN <span class="ok">✓</span></td></tr><tr><td>LV @ LAC</td><td class='n'>26-14</td><td class='n'>17-23</td><td>LAC 66% <span class="no">✗</span></td><td>LAC <span class="no">✗</span></td></tr><tr><td>MIA @ SF</td><td class='n'>13-35</td><td class='n'>18-28</td><td>SF 81% <span class="ok">✓</span></td><td>SF <span class="ok">✓</span></td></tr><tr><td>MIN @ CHI</td><td class='n'>9-3</td><td class='n'>22-25</td><td>CHI 58% <span class="no">✗</span></td><td>CHI <span class="no">✗</span></td></tr><tr><td>NO @ BAL</td><td class='n'>24-17</td><td class='n'>19-27</td><td>BAL 71% <span class="no">✗</span></td><td>BAL <span class="no">✗</span></td></tr><tr><td>PHI @ TEN</td><td class='n'>24-20</td><td class='n'>26-18</td><td>PHI 74% <span class="ok">✓</span></td><td>PHI <span class="ok">✓</span></td></tr><tr><td>PIT @ NE</td><td class='n'>3-20</td><td class='n'>16-23</td><td>NE 71% <span class="ok">✓</span></td><td>NE <span class="ok">✓</span></td></tr><tr><td>SEA @ ARI</td><td class='n'>31-7</td><td class='n'>25-22</td><td>SEA 66% <span class="ok">✓</span></td><td>SEA <span class="ok">✓</span></td></tr><tr><td>WAS @ DAL</td><td class='n'>20-37</td><td class='n'>25-27</td><td>DAL 56% <span class="ok">✓</span></td><td>DAL <span class="ok">✓</span></td></tr><tr><td>NYG @ LA</td><td class='n'>6-28</td><td class='n'>22-29</td><td>LA 72% <span class="ok">✓</span></td><td>LA <span class="ok">✓</span></td></tr></table></div></section>
+<footer><b>Teams</b><div class="teamnav"><a class="tb" style="--tc:#97233F" href="teams/ARI.html">ARI</a><a class="tb" style="--tc:#A71930" href="teams/ATL.html">ATL</a><a class="tb" style="--tc:#241773" href="teams/BAL.html">BAL</a><a class="tb" style="--tc:#00338D" href="teams/BUF.html">BUF</a><a class="tb" style="--tc:#0085CA" href="teams/CAR.html">CAR</a><a class="tb" style="--tc:#C83803" href="teams/CHI.html">CHI</a><a class="tb" style="--tc:#FB4F14" href="teams/CIN.html">CIN</a><a class="tb" style="--tc:#FF3C00" href="teams/CLE.html">CLE</a><a class="tb" style="--tc:#003594" href="teams/DAL.html">DAL</a><a class="tb" style="--tc:#FB4F14" href="teams/DEN.html">DEN</a><a class="tb" style="--tc:#0076B6" href="teams/DET.html">DET</a><a class="tb" style="--tc:#203731" href="teams/GB.html">GB</a><a class="tb" style="--tc:#A71930" href="teams/HOU.html">HOU</a><a class="tb" style="--tc:#002C5F" href="teams/IND.html">IND</a><a class="tb" style="--tc:#006778" href="teams/JAX.html">JAX</a><a class="tb" style="--tc:#E31837" href="teams/KC.html">KC</a><a class="tb" style="--tc:#003594" href="teams/LA.html">LA</a><a class="tb" style="--tc:#0080C6" href="teams/LAC.html">LAC</a><a class="tb" style="--tc:#A5ACAF" href="teams/LV.html">LV</a><a class="tb" style="--tc:#008E97" href="teams/MIA.html">MIA</a><a class="tb" style="--tc:#4F2683" href="teams/MIN.html">MIN</a><a class="tb" style="--tc:#C60C30" href="teams/NE.html">NE</a><a class="tb" style="--tc:#D3BC8D" href="teams/NO.html">NO</a><a class="tb" style="--tc:#0B2265" href="teams/NYG.html">NYG</a><a class="tb" style="--tc:#125740" href="teams/NYJ.html">NYJ</a><a class="tb" style="--tc:#004C54" href="teams/PHI.html">PHI</a><a class="tb" style="--tc:#FFB612" href="teams/PIT.html">PIT</a><a class="tb" style="--tc:#69BE28" href="teams/SEA.html">SEA</a><a class="tb" style="--tc:#AA0000" href="teams/SF.html">SF</a><a class="tb" style="--tc:#D50A0A" href="teams/TB.html">TB</a><a class="tb" style="--tc:#4B92DB" href="teams/TEN.html">TEN</a><a class="tb" style="--tc:#5A1414" href="teams/WAS.html">WAS</a></div><br>
+Model: Logistic Regression using Elo team strength, recent form, rest, home field; starting QB efficiency; offense & defense efficiency (EPA per play, success rate); late-season stakes (seed locked or eliminated); injured starters. It picked these by testing each group of stats and keeping only the
 ones that improved predictions. Data from <a href="https://github.com/nflverse">nflverse</a>.
 Code: <a href="https://github.com/zacharyivezi08/nfl-game-predictor">github.com/zacharyivezi08/nfl-game-predictor</a>.
 <br><br><b>Not betting advice.</b> "Most confident" means most likely to win, not a good bet. In a 10-season backtest
