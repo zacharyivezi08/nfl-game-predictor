@@ -211,3 +211,7 @@ src/build_site.py  builds the website (docs/index.html, history.html, teams/*.ht
 ```
 
 Project idea from @ethandojo's NFL Project Ideas list.
+
+---
+
+© 2026 Zachary Ivezi. All rights reserved.

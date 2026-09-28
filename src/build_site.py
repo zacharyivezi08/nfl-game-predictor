@@ -153,22 +153,29 @@ font-family:"Arial Narrow","Roboto Condensed","Helvetica Neue",sans-serif;font-s
 .uprow{display:flex;align-items:center;gap:10px;margin:6px 0 4px}.uprow b{font-size:26px;font-weight:800;min-width:58px}
 .umeter{flex:1;height:8px;border-radius:4px;background:var(--grid);overflow:hidden}.umeter i{display:block;height:8px;max-width:100%;background:var(--tc)}
 @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-/* Texas burnt orange page background: text sitting on the page is white, cards keep their own colors */
-:root{--page:#BF5700;--onpage:#fff;--onpage-muted:#ffe6d1}
-body{background:var(--page)}
+/* White page, bright orange header + cards (white text inside the orange) */
+:root,:root:not([data-theme="light"]){--bg:#ffffff;--ink:#14171c;--muted:#5b6472;--line:#e7e9ee;--grid:#eef0f3;--card2:#f6f7f9}
+body{background:#fff;color:var(--ink)}
 .hero{background:radial-gradient(1200px 400px at 85% -20%,rgba(255,170,90,.35),transparent 60%),
-linear-gradient(135deg,#6e3200,#a84c00)}
-.hero .sub,.stat span{color:#ffe6d1}.kicker,.back{color:#ffd2ad}
-main{color:var(--onpage)}
-main>h2,main>section>h2,main>h3,main>section>h3{color:var(--onpage)}
-main h3,main .note,main details>summary{color:var(--onpage-muted)}
-.game .note,.chart .note,.cmp .note,.wrap .note,.upset .note,.glance .note,.card .note,.game summary,.game details>summary{color:var(--muted)}
-main>.note a,main>section>.note a{color:#fff;font-weight:700}
-h2::before{background:#fff}
-nav{background:color-mix(in srgb,var(--page) 88%,transparent);border-bottom-color:rgba(255,255,255,.25)}
-footer{color:var(--onpage-muted);border-top-color:rgba(255,255,255,.3)}footer a{color:#fff;font-weight:700}footer b{color:#fff}
-.game,.slot,.chart,.wrap,.glance>div,.upset,main .stat,.teamnav a,nav a,.card{color:var(--ink)}
-main .stat span{color:var(--muted)}
+linear-gradient(135deg,#e25d00,#ff8a1f)}
+.hero .sub,.hero .stat span{color:#fff5eb}.kicker,.back{color:#fff3e6}
+nav{background:rgba(255,255,255,.92);border-bottom-color:var(--line)}
+nav a{background:#fff;color:#b44d00;border-color:#ffc999}nav a:hover{border-color:#F26A00;color:#F26A00}
+h2::before{background:#F26A00}
+.game,.slot,.chart,.wrap,.glance>div,.upset,main .stat,.teamnav a,.card{
+--card:#F26A00;--card2:rgba(255,255,255,.13);--ink:#fff;--muted:#fff1e3;--line:rgba(255,255,255,.28);--grid:rgba(255,255,255,.2);
+--s1:#fff;--good:#b9f6b0;--bad:#ffc2d6;--warn:#fff3c4;--warnbg:rgba(0,0,0,.18);
+background:#F26A00;color:#fff;border-color:#dd6000;box-shadow:0 2px 10px rgba(242,106,0,.25)}
+.game:hover,.slot:hover{box-shadow:0 10px 28px rgba(242,106,0,.35)}
+.best{box-shadow:0 0 0 3px rgba(242,106,0,.35)}
+th{background:rgba(0,0,0,.12)}
+.blend{background:rgba(255,255,255,.18)}.star{background:#fff;color:#F26A00}
+.tag{background:rgba(0,0,0,.2);color:#fff3c4}
+.mypick button.on{background:#fff;color:#F26A00;border-color:#fff}
+.cmp td.win{background:rgba(255,255,255,.22)!important}
+.meter{background:rgba(255,255,255,.25)}.meter i{background:#fff}
+footer{color:var(--muted)}footer a{color:#F26A00;font-weight:700}
+.teamnav a{color:#fff}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 """
 
@@ -777,7 +784,7 @@ def page(title, hero, body, prefix="", color=None):
     style = f' style="--tc:{color}"' if color else ""
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>{e(title)}</title>
-<meta name="theme-color" content="#BF5700"><style>{CSS}</style></head><body>
+<meta name="theme-color" content="#F26A00"><style>{CSS}</style></head><body>
 <header class="hero{' thero' if color else ''}"{style}><div class="in"><a class="back" href="{prefix}index.html">← All picks</a>{hero}</div></header>
 <main>{body}
 <footer><b>Teams</b><div class="teamnav">{''.join(tl(t, prefix) for t in TEAMS)}</div><br><b>Not betting advice.</b>
@@ -920,7 +927,7 @@ def main():
     html_page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>NFL Game Predictor</title>
 <meta name="description" content="Machine learning picks, predicted scores, power rankings and playoff odds for every NFL game.">
-<meta name="theme-color" content="#BF5700"><style>{CSS}</style></head><body>
+<meta name="theme-color" content="#F26A00"><style>{CSS}</style></head><body>
 <header class="hero"><div class="in">
 <div class="kicker">Week {week} · {season} season · updated {datetime.now():%b %-d, %Y}</div>
 <h1>NFL Game Predictor</h1>
@@ -974,7 +981,8 @@ ones that improved predictions. Data from <a href="https://github.com/nflverse">
 Code: <a href="https://github.com/zacharyivezi08/nfl-game-predictor">github.com/zacharyivezi08/nfl-game-predictor</a>.
 <br><br><b>Not betting advice.</b> "Most confident" means most likely to win, not a good bet. In a 10-season backtest
 against real odds, betting the model's picks lost about 2–6% of the money wagered, and its spread and over/under
-picks hit about 49–50%, below the 52.4% needed to break even. Vegas is more accurate than this model.</footer>
+picks hit about 49–50%, below the 52.4% needed to break even. Vegas is more accurate than this model.
+<br><br>© 2026 Zachary Ivezi. All rights reserved.</footer>
 </main>{my_picks_script(all_preds)}</body></html>"""
 
     DOCS.mkdir(exist_ok=True)
