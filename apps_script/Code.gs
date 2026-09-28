@@ -20,8 +20,22 @@ function schedule_() {
   return JSON.parse(s);
 }
 
+function book_() {
+  // Works both when the script was opened from a Sheet (Extensions > Apps Script) and when it was created on its own:
+  // in that case it makes a Google Sheet called "NFL Picks" in your Drive the first time and keeps using it.
+  let ss = null;
+  try { ss = SpreadsheetApp.getActiveSpreadsheet(); } catch (e) {}
+  if (ss) return ss;
+  const props = PropertiesService.getScriptProperties();
+  const id = props.getProperty('SHEET_ID');
+  if (id) { try { return SpreadsheetApp.openById(id); } catch (e) {} }
+  ss = SpreadsheetApp.create('NFL Picks');
+  props.setProperty('SHEET_ID', ss.getId());
+  return ss;
+}
+
 function sheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = book_();
   let sh = ss.getSheetByName('Picks');
   if (!sh) {
     sh = ss.insertSheet('Picks');
