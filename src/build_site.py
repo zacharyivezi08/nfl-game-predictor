@@ -139,6 +139,11 @@ background:var(--card2);border:1.5px solid var(--line);border-radius:999px;paddi
 .mypick button.on{border-color:var(--s1);background:color-mix(in srgb,var(--s1) 16%,transparent)}
 .mypick button:disabled{opacity:.5;cursor:default}.mypick button.on:disabled{opacity:1}
 #myrec:empty{display:none}
+.namebox{padding:12px 16px;border-radius:16px;margin-bottom:10px}.namerow{display:flex;gap:8px;margin:8px 0 4px}
+.namerow input{flex:1;min-width:0;font:inherit;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.4);
+background:#fff;color:#14171c}.namerow button{font:inherit;font-weight:800;padding:8px 16px;border-radius:10px;border:0;
+background:#fff;color:#F26A00;cursor:pointer}
+tr.me td{background:rgba(255,255,255,.2)}tr.bench td{font-style:italic;opacity:.85}
 .sb{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:12px 0 4px;padding:14px 8px;
 border-radius:14px;background:var(--card2);border:1px solid var(--grid)}
 .sbt{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
@@ -367,24 +372,63 @@ def pick_buttons(r):
             f'<span class="res"></span></div>')
 
 
-def my_picks_script(all_preds):
-    """Results for every finished game this season, so the viewer's record can be scored in the browser."""
+def load_site_config():
+    """site_config.json at the repo root: {"picks_url": "<Google Apps Script web app URL>"} ("" = picks stay local)."""
+    try:
+        return json.loads((DOCS.parent / "site_config.json").read_text())
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
+def write_schedule(all_preds):
+    """docs/data/schedule.json: kickoff time + teams for every game, so the picks sheet can lock games at kickoff."""
+    from history import kickoff
+    sched = {r.game_id: {"kick": kickoff(r).isoformat(), "home": r.home_team, "away": r.away_team}
+             for r in all_preds.itertuples()}
+    (DOCS / "data").mkdir(parents=True, exist_ok=True)
+    (DOCS / "data" / "schedule.json").write_text(json.dumps(sched))
+
+
+def my_picks_section(url):
+    if not url:
+        return ('<div class="stats" id="myrec"></div>'
+                '<p class="note">Saved in this browser only (not shared, not sent anywhere). Picks lock at kickoff.</p>')
+    return """<div class="namebox card"><label for="myname"><b>Your name for the leaderboard</b></label>
+<div class="namerow"><input id="myname" maxlength="24" placeholder="Name or nickname" autocomplete="nickname">
+<button type="button" id="savename">Save</button></div><span class="meta" id="namestatus"></span></div>
+<div class="stats" id="myrec"></div>
+<p class="note">Picks lock at kickoff. <b>Your name and picks are saved to the site owner's Google Sheet and shown on the
+leaderboard</b> once each game kicks off. Leave the name blank to keep your picks private in this browser only.</p>
+<h2 id="leaderboard">Leaderboard</h2>
+<div id="lb"><p class="note">Loading…</p></div>"""
+
+
+def my_picks_script(all_preds, url=""):
+    """Results for every finished game this season, so records can be scored in the browser. If a picks URL is set,
+    picks are also sent to the Google Sheet and everyone's locked picks come back for the leaderboard."""
     res = {}
     for r in all_preds.itertuples():
         if r.played:
             res[r.game_id] = {"w": r.winner if isinstance(r.winner, str) else "TIE", "m": r.pick,
                               "v": r.vegas_pick if isinstance(r.vegas_pick, str) else None}
     return """<script>
-(function(){const R=%s;let P={};
-try{P=JSON.parse(localStorage.getItem('nflgp-picks')||'{}')}catch(e){}
-function save(){try{localStorage.setItem('nflgp-picks',JSON.stringify(P))}catch(e){}}
+(function(){const R=%s,URL=%s;let P={},NAME='';
+try{P=JSON.parse(localStorage.getItem('nflgp-picks')||'{}');NAME=localStorage.getItem('nflgp-name')||''}catch(e){}
+function save(){try{localStorage.setItem('nflgp-picks',JSON.stringify(P));localStorage.setItem('nflgp-name',NAME)}catch(e){}}
 function rec(a,b){return a+'-'+(b-a)+(b?' ('+Math.round(100*a/b)+'%%)':'')}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function isLocked(el){return R[el.dataset.g]||Date.now()>=Date.parse(el.dataset.k)}
+function send(g,team,el){
+ if(!URL||!NAME)return;const s=el&&el.querySelector('.res');if(s)s.textContent='Saving…';
+ fetch(URL,{method:'POST',body:JSON.stringify({name:NAME,game:g,team:team||''})}).then(r=>r.json()).then(j=>{
+  if(s)s.innerHTML=j.ok?'<span class="ok">Saved ✓</span>':'<span class="no">'+esc(j.error||'Not saved')+'</span>';
+ }).catch(()=>{if(s)s.innerHTML='<span class="no">Not saved (offline?)</span>'});}
 function render(){
- document.querySelectorAll('.mypick').forEach(el=>{const g=el.dataset.g,done=R[g],locked=done||Date.now()>=Date.parse(el.dataset.k);
+ document.querySelectorAll('.mypick').forEach(el=>{const g=el.dataset.g,done=R[g],locked=isLocked(el);
   el.querySelectorAll('button').forEach(b=>{b.classList.toggle('on',P[g]===b.dataset.t);b.disabled=!!locked;});
   const s=el.querySelector('.res');
   if(done&&P[g])s.innerHTML=done.w===P[g]?'<span class="ok">✓ Right</span>':(done.w==='TIE'?'Tie':'<span class="no">✗ Wrong</span>');
-  else s.textContent=locked&&!P[g]?'Locked (kicked off)':'';});
+  else if(locked&&!P[g])s.textContent='Locked (kicked off)';});
  let n=0,y=0,m=0,v=0,vn=0,open=0;
  for(const g in P){const r=R[g];if(!r){open++;continue}if(r.w==='TIE')continue;n++;if(P[g]===r.w)y++;if(r.m===r.w)m++;
   if(r.v){vn++;if(r.v===r.w)v++}}
@@ -395,9 +439,31 @@ function render(){
   :'<p class="note">'+(open?'You have '+open+' pick(s) waiting on results. ':'')+'Tap a team under any game below to make your pick. '+
   'Picks lock at kickoff, and your record vs the model shows up here once games finish.</p>';}
 document.addEventListener('click',ev=>{const b=ev.target.closest('.mypick button');if(!b)return;ev.preventDefault();ev.stopPropagation();
- if(b.disabled)return;const g=b.closest('.mypick').dataset.g;if(P[g]===b.dataset.t)delete P[g];else P[g]=b.dataset.t;save();render();});
-render();})();
-</script>""" % json.dumps(res)
+ if(b.disabled)return;const el=b.closest('.mypick'),g=el.dataset.g;if(P[g]===b.dataset.t)delete P[g];else P[g]=b.dataset.t;
+ save();render();send(g,P[g],el);});
+// name box: saving a name also sends any picks already made for games that haven't kicked off
+const ni=document.getElementById('myname'),sb=document.getElementById('savename'),ns=document.getElementById('namestatus');
+if(ni){ni.value=NAME;if(NAME)ns.textContent='Picks are going to the leaderboard as '+NAME+'.';
+ sb.addEventListener('click',()=>{NAME=ni.value.replace(/\s+/g,' ').trim().slice(0,24);save();
+  ns.textContent=NAME?'Saved. Picks are going to the leaderboard as '+NAME+'.':'No name: picks stay in this browser only.';
+  document.querySelectorAll('.mypick').forEach(el=>{const g=el.dataset.g;if(P[g]&&!isLocked(el))send(g,P[g],el)});});}
+// leaderboard
+function leaderboard(){const lb=document.getElementById('lb');if(!lb||!URL)return;
+ fetch(URL).then(r=>r.json()).then(d=>{const ppl={};
+  (d.picks||[]).forEach(p=>{const k=String(p.n).toLowerCase();const o=ppl[k]||(ppl[k]={name:p.n,w:0,n:0,open:0});
+   const r=R[p.g];if(!r){o.open++;return}if(r.w==='TIE')return;o.n++;if(p.t===r.w)o.w++;});
+  let mw=0,mn=0,vw=0,vn=0;for(const g in R){const r=R[g];if(r.w==='TIE')continue;mn++;if(r.m===r.w)mw++;if(r.v){vn++;if(r.v===r.w)vw++}}
+  const rows=Object.values(ppl).sort((a,b)=>b.w-a.w||(b.w/Math.max(b.n,1))-(a.w/Math.max(a.n,1)));
+  if(!rows.length){lb.innerHTML='<p class="note">No locked picks yet. Names show up here once their picked games kick off.</p>';return}
+  lb.innerHTML='<div class="wrap"><table><tr><th class="n">#</th><th>Name</th><th class="n">Record</th><th class="n">Pending</th></tr>'+
+   rows.map((o,i)=>'<tr'+(o.name.toLowerCase()===NAME.toLowerCase()?' class="me"':'')+'><td class="n">'+(i+1)+'</td><td><b>'+esc(o.name)+
+   '</b></td><td class="n">'+rec(o.w,o.n)+'</td><td class="n">'+o.open+'</td></tr>').join('')+
+   '<tr class="bench"><td></td><td>Model (every game)</td><td class="n">'+rec(mw,mn)+'</td><td></td></tr>'+
+   '<tr class="bench"><td></td><td>Vegas favorite (every game)</td><td class="n">'+rec(vw,vn)+'</td><td></td></tr></table></div>'+
+   '<p class="note">Ranked by wins. Only picks made on this site after the leaderboard started count.</p>';
+ }).catch(()=>{lb.innerHTML='<p class="note">Couldn\\'t load the leaderboard right now.</p>'});}
+render();leaderboard();})();
+</script>""" % (json.dumps(res), json.dumps(url or ""))
 
 
 # ---------- plain-English matchup edges ----------
@@ -924,6 +990,8 @@ def main():
                 "stakes": "late-season stakes (seed locked or eliminated)"}
     used = "; ".join(features[g] for g in saved.get("groups", []))
 
+    picks_url = load_site_config().get("picks_url", "")
+    write_schedule(all_preds)
     html_page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>NFL Game Predictor</title>
 <meta name="description" content="Machine learning picks, predicted scores, power rankings and playoff odds for every NFL game.">
@@ -934,14 +1002,13 @@ def main():
 <p class="sub">Machine learning picks, predicted scores, power rankings and playoff odds for every game.</p>
 {stats}</div></header>
 <main>
-<nav><a href="#glance">At a glance</a><a href="#mine">Your picks</a><a href="#slots">Top picks</a><a href="#upsets">Upset watch</a><a href="#picks">All picks</a><a href="#accuracy">Accuracy</a><a href="#tracker">Pick tracker</a>
+<nav><a href="#glance">At a glance</a><a href="#mine">Your picks</a>{'<a href="#leaderboard">Leaderboard</a>' if picks_url else ''}<a href="#slots">Top picks</a><a href="#upsets">Upset watch</a><a href="#picks">All picks</a><a href="#accuracy">Accuracy</a><a href="#tracker">Pick tracker</a>
 <a href="#rankings">Power rankings</a><a href="#playoffs">Playoff odds</a>{'<a href="#results">Last week</a>' if lw_total else ''}
 <a href="history.html">Every pick</a></nav>
 <h2 id="glance">Week {week} at a glance</h2>
 {glance_card(this_week)}
 <h2 id="mine">Your picks</h2>
-<div class="stats" id="myrec"></div>
-<p class="note">Saved in this browser only (not shared, not sent anywhere). Picks lock at kickoff.</p>
+{my_picks_section(picks_url)}
 <h2 id="slots">Most confident pick of each time slot</h2>
 <div class="slots">{''.join(slot_card(r) for _, r in best.iterrows())}</div>
 <h2 id="upsets">Upset watch</h2>
@@ -983,7 +1050,7 @@ Code: <a href="https://github.com/zacharyivezi08/nfl-game-predictor">github.com/
 against real odds, betting the model's picks lost about 2–6% of the money wagered, and its spread and over/under
 picks hit about 49–50%, below the 52.4% needed to break even. Vegas is more accurate than this model.
 <br><br>© 2026 Zachary Ivezi. All rights reserved.</footer>
-</main>{my_picks_script(all_preds)}</body></html>"""
+</main>{my_picks_script(all_preds, picks_url)}</body></html>"""
 
     DOCS.mkdir(exist_ok=True)
     (DOCS / "index.html").write_text(html_page)

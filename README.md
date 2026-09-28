@@ -12,6 +12,7 @@ Built with Python, pandas and scikit-learn on free data from [nflverse](https://
 - **Model + Vegas blend**: the most accurate forecast on the site (see below)
 - **Week at a glance**: the safest picks, best upset chances and spread/total flags in one box
 - **Make your own picks**: tap a team on any game before kickoff; your record vs the model and Vegas is kept in your browser
+- **Leaderboard**: anyone with the link can enter a name and make picks; picks are saved to a Google Sheet and everyone's record is ranked (see "Shared picks setup" below)
 - **Matchup edges**: in each game's stat comparison, plain-English pass/run mismatches (e.g. "BUF passing offense #2 vs MIA pass defense #28: Big edge BUF")
 - **Upset watch**: every underdog with a 35%+ chance, with how often underdogs at that level have actually won
 - **Spread and total flags**: highlighted when the predicted score is 4+ points away from the Vegas spread or total, with the historical hit rate
@@ -193,6 +194,18 @@ python src/build_site.py         # builds the website: docs/index.html, history.
 python src/history.py            # pick tracker: record by week + biggest upsets called
 ```
 
+## Shared picks setup (leaderboard)
+
+Picks can be saved to a Google Sheet you own, so friends' picks show up on a leaderboard.
+
+1. Create a Google Sheet (sheets.new), then **Extensions > Apps Script**. Replace the starter code with `apps_script/Code.gs` and save.
+2. **Deploy > New deployment**, type **Web app**, *Execute as:* Me, *Who has access:* Anyone. Approve the permissions
+   (Google shows an "unverified app" warning for your own scripts: **Advanced > Go to project**).
+3. Copy the **Web app URL** into `site_config.json` as `"picks_url"`, then commit and push.
+
+The script only accepts picks before kickoff (checked against `docs/data/schedule.json` on the live site) and only shows
+other people's picks once a game has started. Leave `picks_url` empty to keep picks private in each viewer's browser.
+
 ## Project structure
 
 ```
@@ -206,6 +219,8 @@ src/ratings.py     any-matchup predictions + power rankings
 src/simulate.py    10,000-season playoff simulator
 src/backtest.py    betting backtest against real odds
 src/history.py     pick tracker: saves every pick before kickoff (docs/data/picks.json) + weekly playoff odds
+apps_script/Code.gs  Google Sheet script that stores shared picks for the leaderboard
+site_config.json   site settings (the leaderboard's Google Sheet web app URL)
 src/build_site.py  builds the website (docs/index.html, history.html, teams/*.html)
 .github/workflows  auto-updates the site every 30 minutes
 ```
