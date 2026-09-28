@@ -121,6 +121,7 @@ It now ties Vegas in the final week. The 7 games with a "locked" team went from 
 
 - **Tuning the settings overfit.** Grid-searching Elo, EPA and QB settings (about 200 combinations) improved the validation score but made the untouched test *worse*. Re-tuning across 12 rolling seasons gained only about 0.001, which is noise, so the standard settings were kept.
 - **Travel hurt because home-field advantage has shrunk.** Home teams won 57.6% of games in 1999–2009, 50.4% in 2020 (no fans), and 54.5% in 2021–2026. Travel features mostly acted like extra home-field advantage, which older seasons overstated.
+- **QB accuracy (CPOE) added nothing.** Completion % over expected, from nflfastR's completion probability model, was tested as its own feature group. Validation got slightly worse (0.6271 vs 0.6269) and the test was unchanged (64.3%), because it overlaps heavily with the QB EPA rating the model already uses (correlation 0.68): accurate QBs already show up as efficient ones. It was left out so the site updates stay fast.
 - **Splitting injuries into offense and defense** added noise. A single "total missing talent" number worked.
 - **Choosing the model type on the test seasons** was accidental peeking. It's now chosen on validation. Gradient boosting and random forest looked slightly better on the test, but logistic regression won on validation, so that's what's used.
 

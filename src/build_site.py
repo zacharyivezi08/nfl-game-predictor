@@ -102,6 +102,11 @@ footer{color:var(--muted);font-size:13px;margin-top:48px;padding-top:20px;border
 .tb{display:inline-flex;align-items:center;gap:6px;font-weight:800;color:var(--ink);text-decoration:none}
 .tb::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--tc);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--tc) 45%,var(--muted))}
 a.tb:hover{color:var(--s1)}
+.tb{vertical-align:middle}.tb:has(img)::before{display:none}td .tb .lg{width:20px;height:20px}
+.slot b{display:flex;align-items:center;gap:6px;white-space:nowrap}.slot b .tb{gap:5px}.tb .lg{width:22px;height:22px;object-fit:contain;flex:none}
+.teams .tb .lg{width:28px;height:28px}.slot .tb .lg{width:24px;height:24px}.cmp .ct .tb .lg{width:40px;height:40px}
+.cmp .ct .tb{flex-direction:column;gap:2px}
+.hlogo{width:88px;height:88px;object-fit:contain;float:right;margin:0 0 8px 12px;filter:drop-shadow(0 4px 14px rgba(0,0,0,.35))}
 .back{display:inline-block;font-size:13px;color:#9cc3ff;text-decoration:none;margin-bottom:6px}
 .teamnav{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
 .teamnav a{font-size:12px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
@@ -161,10 +166,27 @@ def bar_colors(away, home):
     return a, h
 
 
+ESPN_ABBR = {"LA": "lar", "WAS": "wsh"}  # the logo links are the same ones nflverse's team list uses
+
+
+def logo_url(team, size=64):
+    """Small team logo (resized by ESPN's image server, so each is only a few KB)."""
+    code = ESPN_ABBR.get(team, team.lower())
+    return f"https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/{code}.png&h={size}&w={size}"
+
+
+def logo(team, size=64, cls="lg"):
+    """Logo <img>. If the small version fails it tries the full-size one; if that fails too, it removes
+    itself and the team's color chip shows instead."""
+    full = f"https://a.espncdn.com/i/teamlogos/nfl/500/{ESPN_ABBR.get(team, team.lower())}.png"
+    return (f'<img class="{cls}" src="{logo_url(team, size)}" alt="" width="{size // 2}" height="{size // 2}" '
+            f'loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src=\'{full}\'">')
+
+
 def tl(team, prefix=""):
-    """Link a team abbreviation to its team page."""
+    """Team logo + abbreviation, linked to its team page."""
     return (f'<a class="tb" style="--tc:{TEAM_COLORS.get(team, "#888")}" '
-            f'href="{prefix}teams/{e(team)}.html">{e(team)}</a>')
+            f'href="{prefix}teams/{e(team)}.html">{logo(team)}{e(team)}</a>')
 
 
 # ---------- this week ----------
@@ -549,7 +571,7 @@ def team_page(team, season, all_preds, ranks, odds, odds_hist, rating_hist, reco
         f"{team} playoff odds by week", 0, 1)
     mv = int(rk["change"]) if rk["change"] == rk["change"] else 0
     move = f"▲ {mv}" if mv > 0 else (f"▼ {-mv}" if mv < 0 else "no change")
-    hero = f"""<div class="kicker">{e(TEAM_DIV[team])} · {season}</div><h1>{e(team)} <span style="opacity:.6">{records[team]}</span></h1>
+    hero = f"""{logo(team, 176, "hlogo")}<div class="kicker">{e(TEAM_DIV[team])} · {season}</div><h1>{e(team)} <span style="opacity:.6">{records[team]}</span></h1>
 <p class="sub">Model ratings, schedule picks and playoff odds.</p>
 <div class="stats">
 <div class="stat"><b>#{int(rk['rank'])}</b><span>Power ranking ({move} this week)</span></div>
