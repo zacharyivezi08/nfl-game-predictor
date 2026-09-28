@@ -58,6 +58,15 @@ def predict_games(saved, games: pd.DataFrame) -> pd.DataFrame:
     games["correct"] = games.apply(lambda r: None if pd.isna(r.winner) else r.pick == r.winner, axis=1)
     games["vegas_correct"] = games.apply(
         lambda r: None if pd.isna(r.winner) or pd.isna(r.vegas_pick) else r.vegas_pick == r.winner, axis=1)
+    # Model + Vegas blend (the most accurate forecast; = the model alone when there's no line yet)
+    if "blend" in saved:
+        from train import blend_prob
+        games["blend_prob"] = blend_prob(saved["blend"], games["home_prob"], games["vegas_prob"])
+    else:
+        games["blend_prob"] = games["home_prob"]
+    games["blend_pick"] = np.where(games["blend_prob"] >= 0.5, games["home_team"], games["away_team"])
+    games["blend_conf"] = games["blend_prob"].where(games["blend_prob"] >= 0.5, 1 - games["blend_prob"])
+    games["blend_correct"] = games.apply(lambda r: None if pd.isna(r.winner) else r.blend_pick == r.winner, axis=1)
     games["reasons"] = [reasons(saved, r) for _, r in games.iterrows()]
     if "scores" in saved:
         from scores import predict_scores
@@ -147,6 +156,7 @@ def main():
             line += f"   | Vegas: {r.vegas_pick} {r.vegas_conf:.0%}"
             if r.vegas_pick != r.pick:
                 line += "  << DISAGREES"
+            line += f"   | Blend: {r.blend_pick} {r.blend_conf:.0%}"
         if isinstance(r.winner, str):
             line += f"   | final {int(r.away_score)}-{int(r.home_score)} {'correct' if r.correct else 'wrong'}"
         print(line)

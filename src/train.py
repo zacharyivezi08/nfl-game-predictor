@@ -5,6 +5,9 @@ How the seasons are used (so the final test is honest):
     2018-2021  "validation": decides which feature groups to keep
     2022-2025  "test": never looked at until the very end
 
+It also learns a "model + Vegas" blend from out-of-sample predictions (each season predicted by a
+model trained only on earlier seasons), since combining two forecasts can beat either one.
+
 Usage:
     python src/train.py            # use cached data
     python src/train.py --refresh  # re-download latest results first
@@ -13,6 +16,7 @@ import argparse
 from pathlib import Path
 
 import joblib
+import numpy as np
 import pandas as pd
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -55,6 +59,45 @@ def score(y, p):
 def fmt(table):
     return table.to_string(index=False, formatters={
         "accuracy": "{:.1%}".format, "log_loss": "{:.4f}".format, "brier": "{:.4f}".format})
+
+
+def logit(p):
+    p = np.clip(np.asarray(p, dtype=float), 1e-6, 1 - 1e-6)
+    return np.log(p / (1 - p))
+
+
+def blend_inputs(model_prob, vegas_prob):
+    return np.c_[logit(model_prob), logit(vegas_prob)]
+
+
+def walk_forward(done, seasons, features, model_name):
+    """Out-of-sample predictions: each season is predicted by a model trained only on earlier seasons."""
+    parts = []
+    for s in seasons:
+        tr, te = done[done["season"] < s], done[done["season"] == s].copy()
+        te["p_model"] = get_models()[model_name].fit(tr[features], tr["home_win"]).predict_proba(te[features])[:, 1]
+        parts.append(te)
+    return pd.concat(parts)
+
+
+def fit_blend(oos):
+    """Learn how much to trust the model vs Vegas, from out-of-sample predictions."""
+    o = oos[oos["vegas_prob"].notna()]
+    return LogisticRegression(C=100, max_iter=2000).fit(blend_inputs(o["p_model"], o["vegas_prob"]), o["home_win"])
+
+
+def blend_prob(blend, model_prob, vegas_prob):
+    """Model + Vegas combined. Falls back to the model alone when there's no Vegas line yet."""
+    model_prob = np.asarray(model_prob, dtype=float)
+    vegas_prob = np.asarray(vegas_prob, dtype=float)
+    out = model_prob.copy()
+    ok = ~np.isnan(vegas_prob)
+    if ok.any():
+        out[ok] = blend.predict_proba(blend_inputs(model_prob[ok], vegas_prob[ok]))[:, 1]
+    return out
+
+
+BLEND_FIRST_SEASON = 2008  # out-of-sample predictions used to learn the blend start here
 
 
 def split_seasons(df):
@@ -157,14 +200,32 @@ def main():
     print(f"  Picking against the spread: {ev['ats_win_pct']:.1%}  |  over/under: {ev['ou_win_pct']:.1%}  "
           f"(need 52.4% to beat the bookmaker's cut)")
 
-    # 5) Retrain on every finished season and save
+    # 5) Model + Vegas blend: learned on out-of-sample seasons BEFORE the test, scored on the test
+    print("\nSTEP 5: Blend the model with Vegas (weights learned before the test seasons)")
+    oos = walk_forward(done, [s for s in full if s >= BLEND_FIRST_SEASON], features, best)
+    pre, post = oos[oos["season"] < test_seasons[0]], oos[oos["season"].isin(test_seasons) & oos["vegas_prob"].notna()]
+    blend = fit_blend(pre)
+    pb = blend_prob(blend, post["p_model"], post["vegas_prob"])
+    y = post["home_win"]
+    print(fmt(pd.DataFrame([
+        {"source": "Our model (each season trained on earlier ones)", **score(y, post["p_model"])},
+        {"source": "Vegas", **score(y, post["vegas_prob"])},
+        {"source": "Model + Vegas blend", **score(y, pd.Series(pb, index=y.index))},
+    ])))
+    w_model, w_vegas = blend.coef_[0]
+    print(f"Blend weights: model {w_model:.2f}, Vegas {w_vegas:.2f} (Vegas does most of the work)")
+    late = (post["week"] >= 17) & (post["game_type"] == "REG")
+    print(f"Last 2 weeks of the regular season: model {accuracy_score(y[late], post['p_model'][late] > .5):.1%}, "
+          f"Vegas {accuracy_score(y[late], post['vegas_prob'][late] > .5):.1%} ({late.sum()} games)")
+
+    # 6) Retrain on every finished season and save
     final_data = done[done["season"].isin(full)]
     final = get_models()[best].fit(final_data[features], final_data["home_win"])
     explainer = get_models()["Logistic Regression"].fit(final_data[features], final_data["home_win"])
     MODEL_DIR.mkdir(exist_ok=True)
     scores = fit_score_models(final_data, features)
     joblib.dump({"name": best, "model": final, "features": features, "groups": groups, "explainer": explainer,
-                 "scores": scores},
+                 "scores": scores, "blend": fit_blend(oos)},
                 MODEL_DIR / "model.joblib")
     print(f"\nSaved {best} ({len(features)} features) to models/model.joblib")
 

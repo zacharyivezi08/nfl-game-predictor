@@ -73,8 +73,13 @@ TRAVEL_FEATURES = [
     "short_week_diff",   # playing on short rest, e.g. Thursday after Sunday (home minus away)
 ]
 INJURY_FEATURES = ["inj_diff"]  # starters' snaps missing to injury, offense + defense (home minus away)
+STAKES_FEATURES = [
+    "locked_diff",       # playoff spot clinched AND place in the conference can't change -> may rest starters (home minus away)
+    "eliminated_diff",   # mathematically out of the playoffs (home minus away)
+]
 FEATURE_GROUPS = {"base": BASE_FEATURES, "qb": QB_FEATURES, "weather": WEATHER_FEATURES,
-                  "epa": EPA_FEATURES, "injuries": INJURY_FEATURES, "travel": TRAVEL_FEATURES}
+                  "epa": EPA_FEATURES, "injuries": INJURY_FEATURES, "travel": TRAVEL_FEATURES,
+                  "stakes": STAKES_FEATURES}
 
 # Short, readable names used when explaining predictions
 FEATURE_LABELS = {
@@ -99,7 +104,67 @@ FEATURE_LABELS = {
     "early_body_clock": "Early body-clock kickoff",
     "bye_diff": "Coming off a bye",
     "short_week_diff": "Short week",
+    "locked_diff": "Playoff seed locked (may rest starters)",
+    "eliminated_diff": "Eliminated from playoffs",
 }
+
+# Conference for every team abbreviation nflverse has used since 2002 (old ones included)
+AFC = {"BUF", "MIA", "NE", "NYJ", "BAL", "CIN", "CLE", "PIT", "HOU", "IND", "JAX", "TEN",
+       "DEN", "KC", "LAC", "LV", "OAK", "SD"}
+
+
+def playoff_spots(season):
+    return 7 if season >= 2020 else 6
+
+
+def _add_stakes(df: pd.DataFrame) -> pd.DataFrame:
+    """Late-season motivation: has a team locked its seed, or been eliminated?
+
+    Built only from games played in EARLIER weeks, so it's known before kickoff.
+    Uses wins only (real tiebreakers are too complicated), and stays cautious:
+      locked     = clinched a playoff spot AND its place in the conference can't change either way
+                   (the classic "resting starters" situation, e.g. the 2020 Chiefs in Week 17)
+      eliminated = at least as many teams already have more wins than this team's best possible total
+                   as there are playoff spots
+    """
+    df["home_locked"] = df["away_locked"] = df["home_elim"] = df["away_elim"] = 0
+    reg = df[df["game_type"] == "REG"]
+    for season, s in reg.groupby("season"):
+        spots = playoff_spots(season)
+        teams = sorted(set(s["home_team"]) | set(s["away_team"]))
+        for week in sorted(s["week"].unique()):
+            before, after = s[s["week"] < week], s[s["week"] >= week]
+            left = pd.concat([after["home_team"], after["away_team"]]).value_counts()
+            if left.max() > 3:          # only matters in the last few weeks of the season
+                continue
+            wins = dict.fromkeys(teams, 0.0)
+            for r in before[before["played"]].itertuples():
+                if r.home_score > r.away_score:
+                    wins[r.home_team] += 1
+                elif r.home_score < r.away_score:
+                    wins[r.away_team] += 1
+                else:
+                    wins[r.home_team] += 0.5; wins[r.away_team] += 0.5
+            # unplayed games from earlier weeks (rare) still count as remaining
+            unplayed = before[~before["played"]]
+            left = left.add(pd.concat([unplayed["home_team"], unplayed["away_team"]]).value_counts(), fill_value=0)
+            mx = {t: wins[t] + left.get(t, 0) for t in teams}
+            locked, elim = {}, {}
+            for t in teams:
+                conf = [o for o in teams if o != t and (o in AFC) == (t in AFC)]
+                clinched = sum(mx[o] >= wins[t] for o in conf) < spots
+                can_move_up = any(wins[o] >= wins[t] and wins[o] <= mx[t] for o in conf)
+                can_drop = any(wins[o] <= wins[t] and mx[o] >= wins[t] for o in conf)
+                locked[t] = int(clinched and not can_move_up and not can_drop)
+                elim[t] = int(sum(wins[o] > mx[t] for o in conf) >= spots)
+            rows = (df["season"] == season) & (df["week"] == week) & (df["game_type"] == "REG")
+            df.loc[rows, "home_locked"] = df.loc[rows, "home_team"].map(locked).values
+            df.loc[rows, "away_locked"] = df.loc[rows, "away_team"].map(locked).values
+            df.loc[rows, "home_elim"] = df.loc[rows, "home_team"].map(elim).values
+            df.loc[rows, "away_elim"] = df.loc[rows, "away_team"].map(elim).values
+    df["locked_diff"] = df["home_locked"] - df["away_locked"]
+    df["eliminated_diff"] = df["home_elim"] - df["away_elim"]
+    return df
 
 
 # Every team's ratings going into each (season, week), plus "latest". Filled by build_features.
@@ -345,7 +410,7 @@ def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None,
     df["inj_off_diff"] = df["home_inj_off"] - df["away_inj_off"]
     df["inj_def_diff"] = df["home_inj_def"] - df["away_inj_def"]
     df["inj_diff"] = df["inj_off_diff"] + df["inj_def_diff"]
-    return df
+    return _add_stakes(df)
 
 
 def vegas_home_prob(df: pd.DataFrame) -> pd.Series:

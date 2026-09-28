@@ -1,6 +1,6 @@
 # NFL Game Predictor
 
-A machine learning model that predicts every NFL game: win probability, predicted score, spread and total, plus weekly power rankings and playoff odds from 10,000 season simulations. It explains each pick, compares itself honestly against Vegas, and updates its own website automatically.
+A machine learning model that predicts every NFL game: win probability, predicted score, spread and total, plus weekly power rankings and playoff odds from 10,000 season simulations. It explains each pick, compares itself honestly against Vegas, blends itself with Vegas for the most accurate forecast, keeps a permanent record of every pick, and updates its own website automatically.
 
 Built with Python, pandas and scikit-learn on free data from [nflverse](https://github.com/nflverse).
 
@@ -9,13 +9,16 @@ Built with Python, pandas and scikit-learn on free data from [nflverse](https://
 ## What's on the site
 
 - **Weekly picks**: win probability, predicted score, spread and total for every game, compared with Vegas, plus the top 3 reasons for each pick
+- **Model + Vegas blend**: the most accurate forecast on the site (see below)
 - **Most confident pick of each time slot** (Thursday night, Sunday 1 PM, 4 PM, Sunday night, Monday night)
 - **Season accuracy chart**: the model vs the Vegas favorite, week by week
 - **Power rankings**: all 32 teams ranked by the model, with weekly movement and offense/defense ranks
 - **Playoff odds**: playoffs, division, #1 seed and Super Bowl chances from 10,000 simulations
 - **Last week's results**: every pick marked right or wrong
+- **Pick tracker**: record by week for the model, Vegas and the blend, biggest upsets called, worst misses, and a page with [every pick](https://zacharyivezi08.github.io/nfl-game-predictor/history.html). Picks are saved before kickoff and frozen once the game starts, so the record can't be rewritten.
+- **Team pages**: one per team (e.g. [KC](https://zacharyivezi08.github.io/nfl-game-predictor/teams/KC.html)) with the schedule and picks, power rating by week and playoff odds by week
 
-It updates itself every Wednesday at 7 PM and Sunday at 12:30, 3:30 and 7:30 PM Eastern (GitHub Actions).
+It updates itself every 30 minutes (GitHub Actions) and only commits when something changed.
 
 ## How it works
 
@@ -29,6 +32,7 @@ It updates itself every Wednesday at 7 PM and Sunday at 12:30, 3:30 and 7:30 PM 
 | QB | Starting QB's EPA per dropback, plus a **backup-QB drop-off**: how much worse this week's QB is than the team's usual starter (catches injuries and resting starters) | ✅ |
 | Efficiency (EPA) | Offense and defense EPA per play and success rate, from play-by-play (garbage time removed) | ✅ |
 | Injuries | Snap share of injured starters (Out/Doubtful/Questionable), weighted by their recent role | ✅ |
+| Stakes | Late season only: has a team **locked its playoff seed** (may rest starters) or been **eliminated**? | ✅ |
 | Weather | Wind, cold, dome team playing outside in the cold | ❌ didn't help |
 | Travel | Time zones crossed, body-clock kickoffs, byes, short weeks | ❌ didn't help |
 
@@ -47,20 +51,31 @@ It updates itself every Wednesday at 7 PM and Sunday at 12:30, 3:30 and 7:30 PM 
 | Base only | 0.6348 |
 | + QB | 0.6297 |
 | + Efficiency (EPA) | 0.6278 |
-| + Injuries | 0.6275 |
-| + Weather | 0.6288 (worse, skipped) |
-| + Travel | 0.6330 (worse, skipped) |
+| + Stakes | 0.6272 |
+| + Injuries | 0.6269 |
+| + Weather | 0.6281 (worse, skipped) |
+| + Travel | 0.6322 (worse, skipped) |
 
 **Model vs Vegas**
 
 | | Accuracy | Log loss | Brier |
 |---|---|---|---|
-| **Our model** (logistic regression) | **63.9%** | 0.624 | 0.218 |
+| **Our model** (logistic regression) | **64.3%** | 0.622 | 0.217 |
 | Basic model (Elo + form only) | 63.2% | 0.635 | 0.223 |
 | Vegas | 67.6% | 0.607 | 0.210 |
+| **Model + Vegas blend** | **67.7%** | 0.607 | 0.210 |
 | Always pick home team | 55.4% | 0.688 | 0.247 |
 
 Vegas is still better. It has real-time injury news, depth charts and millions of dollars of bets moving the line. The model agrees with the Vegas favorite in 86% of games.
+
+### The Model + Vegas blend (the most accurate forecast)
+
+Two forecasts combined can beat either one alone, so `train.py` learns how much to trust each. It uses out-of-sample
+predictions from 2008–2021 (each season predicted by a model trained only on earlier seasons) and is then scored on the
+untouched 2022–2025 test. The blend gives Vegas about 8 times the weight of the model and ties Vegas (67.7% vs 67.6%,
+same log loss). Ten other ways of combining them were tried (Vegas + individual features, all features + Vegas, recent seasons only),
+and none beat Vegas by more than noise. The closing line already contains nearly everything this model knows. The blend is
+still the best number on the site, and when there's no Vegas line yet (games more than a week out) it falls back to the model.
 
 **Predicted scores**
 
@@ -88,8 +103,19 @@ The **backup-QB drop-off** feature was built to fix this. In 317 games where a c
 In those games the model's probabilities got much closer to Vegas (the log-loss gap shrank by about 40%), though it
 picks the same winners. Overall, headline accuracy moved slightly *down*, from 64.9% to 63.9% on the test seasons.
 That's about 11 games out of 1,136, which is within luck. Log loss, the more reliable measure, improved from 0.625 to
-0.624, so the feature was kept. Week 18, when playoff teams rest starters, is still the model's worst
-week (59.8% vs Vegas 64.7%).
+0.624, so the feature was kept.
+
+The **stakes** feature was built for the other half of that problem: the last week of the season, when teams that have
+locked their seed rest starters (the 2009 Colts, 2020 Chiefs, 2023 Ravens and 2024 Chiefs are all flagged). Uses only
+wins, not full tiebreakers, so it's cautious. Predicting 2016–2025 season by season:
+
+| Final regular-season week (160 games) | Accuracy | Log loss |
+|---|---|---|
+| Before | 70.0% | 0.599 |
+| After | 71.9% | 0.579 |
+| Vegas | 71.9% | |
+
+It now ties Vegas in the final week. The 7 games with a "locked" team went from 4-3 to 7-0, but that's a tiny sample.
 
 ### Things that didn't work (and why that matters)
 
@@ -122,7 +148,8 @@ python src/predict.py --team PHI # one team only
 python src/ratings.py            # power rankings
 python src/simulate.py           # playoff odds (10,000 simulations)
 python src/backtest.py           # would betting the picks have made money?
-python src/build_site.py         # builds the website in docs/
+python src/build_site.py         # builds the website: docs/index.html, history.html, teams/*.html
+python src/history.py            # pick tracker: record by week + biggest upsets called
 ```
 
 ## Project structure
@@ -137,8 +164,9 @@ src/predict.py     picks, explanations, predicted scores, most confident pick pe
 src/ratings.py     any-matchup predictions + power rankings
 src/simulate.py    10,000-season playoff simulator
 src/backtest.py    betting backtest against real odds
-src/build_site.py  builds the website (docs/index.html)
-.github/workflows  auto-updates the site Wed 7 PM + Sun 12:30/3:30/7:30 PM ET
+src/history.py     pick tracker: saves every pick before kickoff (docs/data/picks.json) + weekly playoff odds
+src/build_site.py  builds the website (docs/index.html, history.html, teams/*.html)
+.github/workflows  auto-updates the site every 30 minutes
 ```
 
 Project idea from @ethandojo's NFL Project Ideas list.
