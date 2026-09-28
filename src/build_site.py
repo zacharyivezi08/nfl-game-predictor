@@ -200,6 +200,26 @@ tr.me td{background:rgba(0,0,0,.18)}
 footer{color:var(--muted)}footer a{color:#a84400;font-weight:700}
 .teamnav a{color:#fff}
 .namerow button{color:#a84400}
+/* Important info = light-green highlight with dark green text (readable on the orange cards) */
+:root{--hl:#d6f5cd;--hlink:#0b3d17;--hlmid:#1d5c2b}
+.flag{background:var(--hl);color:var(--hlink);border-left:4px solid #1f8a3b}.flag b{color:var(--hlink)}.flag .meta{color:var(--hlmid)}
+.blend{background:var(--hl);color:var(--hlink)}.blend b{color:var(--hlink)}
+.pick{background:var(--hl);color:var(--hlink);padding:2px 10px;border-radius:999px}
+.tag{background:var(--hl);color:var(--hlink)}
+.sbt i{background:var(--hl);color:var(--hlink)}
+.edges li.big{background:var(--hl);color:var(--hlink)}.edges li.big .tb,.edges li.big b{color:var(--hlink)}
+.game .ok,.upset .ok,.cmp .ok{background:var(--hl);color:var(--hlink);padding:1px 8px;border-radius:999px;text-decoration:none}
+.game .no,.upset .no{text-decoration:none;background:rgba(0,0,0,.25);color:#fff;padding:1px 8px;border-radius:999px}
+.uprow b{background:var(--hl);color:var(--hlink);padding:0 10px;border-radius:10px}
+/* Easier reading: bigger base text, no tiny labels, a bit more line spacing */
+body{font-size:16px;line-height:1.55}
+.note,.meta,.why,.score,.blend,.flag,.glance li,.upset .meta,.slot small,footer{font-size:14.5px}
+h3,.slot span,.sbm,th,.glance h4,.cmp h4,.kicker,.star,.tag,.sbt i,.more,.legend{font-size:12.5px;letter-spacing:.04em}
+.stat span{font-size:14px}td,th{font-size:15px}.cmp th{font-size:12.5px}.cmp td{font-size:15.5px}
+.mypick button{font-size:14.5px}.edges li{font-size:14.5px}.sbt span{font-size:14.5px}
+/* chart text: sized in chart units, so it's bigger on phones where the chart shrinks */
+.chart svg text{font-size:14px}
+@media (max-width:600px){.chart svg text{font-size:22px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 """
 
@@ -332,7 +352,7 @@ def calibration_chart(cal):
     """Predicted chance vs how often it actually happened, for the model and the blend."""
     if not cal or not cal.get("blend"):
         return ""
-    W, H, L, R, T, B = 640, 300, 50, 20, 14, 40
+    W, H, L, R, T, B = 640, 320, 64, 48, 24, 60
     lo, hi = 0.45, 1.0
     x = lambda v: L + (v - lo) / (hi - lo) * (W - L - R)
     y = lambda v: T + (hi - v) / (hi - lo) * (H - T - B)
@@ -340,7 +360,7 @@ def calibration_chart(cal):
     for g in (0.5, 0.6, 0.7, 0.8, 0.9, 1.0):
         out += (f'<line x1="{L}" x2="{W - R}" y1="{y(g):.1f}" y2="{y(g):.1f}" stroke="var(--grid)"/>'
                 f'<text x="{L - 8}" y="{y(g) + 4:.1f}" text-anchor="end" font-size="11" fill="var(--muted)">{g:.0%}</text>'
-                f'<text x="{x(g):.1f}" y="{H - 22}" text-anchor="middle" font-size="11" fill="var(--muted)">{g:.0%}</text>')
+                f'<text x="{x(g):.1f}" y="{H - 32}" text-anchor="middle" font-size="11" fill="var(--muted)">{g:.0%}</text>')
     out += (f'<line x1="{x(.5):.1f}" y1="{y(.5):.1f}" x2="{x(1):.1f}" y2="{y(1):.1f}" stroke="var(--muted)" '
             f'stroke-dasharray="4 4"/><text x="{x(.93):.1f}" y="{y(.97):.1f}" font-size="11" fill="var(--muted)" '
             f'text-anchor="end">perfect</text>')
@@ -714,7 +734,7 @@ def accuracy_chart(all_preds, season):
                                   v=("vegas_correct", lambda s: (s == True).sum())).reset_index()  # noqa: E712
     wk["m_cum"] = wk["m"].cumsum() / wk["n"].cumsum()
     wk["v_cum"] = wk["v"].cumsum() / wk["vn"].cumsum().clip(lower=1)
-    W, H, L, R, T, B = 640, 240, 44, 86, 14, 30
+    W, H, L, R, T, B = 640, 280, 64, 130, 16, 38
     weeks = wk["week"].tolist()
     lo = min(0.4, wk[["m_cum", "v_cum"]].min().min() - 0.05)
     hi = max(0.85, wk[["m_cum", "v_cum"]].max().max() + 0.05)
@@ -726,8 +746,9 @@ def accuracy_chart(all_preds, season):
         if lo <= g <= hi:
             grid += (f'<line x1="{L}" x2="{W - R}" y1="{y(g):.1f}" y2="{y(g):.1f}" stroke="var(--grid)"/>'
                      f'<text x="{L - 8}" y="{y(g) + 4:.1f}" text-anchor="end" font-size="11" fill="var(--muted)">{g:.0%}</text>')
-    xlab = "".join(f'<text x="{x(w):.1f}" y="{H - 10}" text-anchor="middle" font-size="11" fill="var(--muted)">Wk {w}</text>'
-                   for w in weeks)
+    step = max(1, -(-len(weeks) // 7))  # at most ~7 week labels so they never overlap
+    xlab = "".join(f'<text x="{x(w):.1f}" y="{H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">Wk {w}</text>'
+                   for i, w in enumerate(weeks) if i % step == 0 or i == len(weeks) - 1)
     lines = ""
     for col, var, name in (("m_cum", "--s1", "Model"), ("v_cum", "--s2", "Vegas")):
         pts = " ".join(f"{x(w):.1f},{y(v):.1f}" for w, v in zip(weeks, wk[col]))
@@ -811,7 +832,7 @@ def line_chart(labels, series, label, lo=0.0, hi=1.0, ticks=(0, .25, .5, .75, 1)
     """Small SVG line chart. series = [(name, css color var, [values or None])]; values are 0-1."""
     if not labels:
         return '<p class="note">Not enough games yet.</p>'
-    W, H, L, R, T, B = 640, 200, 44, 70, 12, 28
+    W, H, L, R, T, B = 640, 230, 64, 90, 14, 36
     n = len(labels)
     x = lambda i: L + ((W - L - R) / 2 if n == 1 else i / (n - 1) * (W - L - R))
     y = lambda v: T + (hi - v) / (hi - lo) * (H - T - B)
@@ -819,7 +840,7 @@ def line_chart(labels, series, label, lo=0.0, hi=1.0, ticks=(0, .25, .5, .75, 1)
     for g in ticks:
         out += (f'<line x1="{L}" x2="{W - R}" y1="{y(g):.1f}" y2="{y(g):.1f}" stroke="var(--grid)"/>'
                 f'<text x="{L - 8}" y="{y(g) + 4:.1f}" text-anchor="end" font-size="11" fill="var(--muted)">{g:.0%}</text>')
-    step = max(1, n // 9)
+    step = max(1, -(-n // 7))
     out += "".join(f'<text x="{x(i):.1f}" y="{H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">{e(lb)}</text>'
                    for i, lb in enumerate(labels) if i % step == 0 or i == n - 1)
     legend = ""
