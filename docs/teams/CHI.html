@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>CHI · NFL Game Predictor</title>
-<meta name="theme-color" content="#F26A00"><style>
+<meta name="theme-color" content="#C85000"><style>
 :root{--bg:#f3f5f9;--card:#fff;--card2:#f7f8fb;--ink:#0f141c;--muted:#5b6472;--line:#e2e6ec;--grid:#e9ecf1;
 --s1:#2a78d6;--s2:#eb6834;--good:#1a7f37;--bad:#c2255c;--warn:#9a6700;--warnbg:#fff4d6;
 --hero1:#0b1a33;--hero2:#123a73;--glow:rgba(42,120,214,.18);--shadow:0 1px 2px rgba(15,20,28,.06),0 4px 16px rgba(15,20,28,.05)}
@@ -38,7 +38,7 @@ h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.1e
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .teams{font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px}.teams small{color:var(--muted);font-weight:500}
 .pick{font-weight:800;font-size:17px}.bar{display:flex;gap:3px;height:10px;margin:12px 0 8px}
-.bar i{display:block;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(128,128,128,.35)}
+.bar i{display:block;border-radius:5px;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55)}
 .meta{color:var(--muted);font-size:13px}.why{font-size:13px;margin-top:8px;color:var(--muted)}.why b{color:var(--ink)}
 .score{font-size:13px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
 .blend{font-size:13px;margin-top:6px;display:inline-block;padding:3px 10px;border-radius:8px;
@@ -129,29 +129,48 @@ font-family:"Arial Narrow","Roboto Condensed","Helvetica Neue",sans-serif;font-s
 .uprow{display:flex;align-items:center;gap:10px;margin:6px 0 4px}.uprow b{font-size:26px;font-weight:800;min-width:58px}
 .umeter{flex:1;height:8px;border-radius:4px;background:var(--grid);overflow:hidden}.umeter i{display:block;height:8px;max-width:100%;background:var(--tc)}
 @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-/* White page, bright orange header + cards (white text inside the orange) */
-:root,:root:not([data-theme="light"]){--bg:#ffffff;--ink:#14171c;--muted:#5b6472;--line:#e7e9ee;--grid:#eef0f3;--card2:#f6f7f9}
+/* White page, orange header + cards. Card orange (#C85000) is the brightest orange where white text meets the
+   4.5:1 readability standard; charts and tables sit on white cards so every line, label and number is easy to read. */
+:root,:root:not([data-theme="light"]){--bg:#ffffff;--ink:#14171c;--muted:#5b6472;--line:#e7e9ee;--grid:#eef0f3;--card2:#f6f7f9;
+--s1:#1f6fd1;--s2:#e0561b;--good:#1a7f37;--bad:#c2255c;--card:#fff;--orange:#C85000}
 body{background:#fff;color:var(--ink)}
-.hero{background:radial-gradient(1200px 400px at 85% -20%,rgba(255,170,90,.35),transparent 60%),
-linear-gradient(135deg,#e25d00,#ff8a1f)}
-.hero .sub,.hero .stat span{color:#fff5eb}.kicker,.back{color:#fff3e6}
-nav{background:rgba(255,255,255,.92);border-bottom-color:var(--line)}
-nav a{background:#fff;color:#b44d00;border-color:#ffc999}nav a:hover{border-color:#F26A00;color:#F26A00}
-h2::before{background:#F26A00}
-.game,.slot,.chart,.wrap,.glance>div,.upset,main .stat,.teamnav a,.card{
---card:#F26A00;--card2:rgba(255,255,255,.13);--ink:#fff;--muted:#fff1e3;--line:rgba(255,255,255,.28);--grid:rgba(255,255,255,.2);
---s1:#fff;--good:#b9f6b0;--bad:#ffc2d6;--warn:#fff3c4;--warnbg:rgba(0,0,0,.18);
-background:#F26A00;color:#fff;border-color:#dd6000;box-shadow:0 2px 10px rgba(242,106,0,.25)}
-.game:hover,.slot:hover{box-shadow:0 10px 28px rgba(242,106,0,.35)}
-.best{box-shadow:0 0 0 3px rgba(242,106,0,.35)}
-th{background:rgba(0,0,0,.12)}
-.blend{background:rgba(255,255,255,.18)}.star{background:#fff;color:#F26A00}
-.tag{background:rgba(0,0,0,.2);color:#fff3c4}
-.mypick button.on{background:#fff;color:#F26A00;border-color:#fff}
-.cmp td.win{background:rgba(255,255,255,.22)!important}
-.meter{background:rgba(255,255,255,.25)}.meter i{background:#fff}
-footer{color:var(--muted)}footer a{color:#F26A00;font-weight:700}
+.hero{background:radial-gradient(1200px 400px at 85% -20%,rgba(255,190,120,.35),transparent 60%),
+linear-gradient(135deg,#b84a00,#ec6a0c)}
+.hero .sub,.hero .stat span{color:#fff}.kicker,.back{color:#fff}
+nav{background:rgba(255,255,255,.94);border-bottom-color:var(--line)}
+nav a{background:#fff;color:#a84400;border-color:#f3c9a3}nav a:hover{border-color:var(--orange);color:#a84400}
+h2::before{background:var(--orange)}
+.game,.slot,.glance>div,.upset,main .stat,.teamnav a,.card{
+--card:#C85000;--card2:rgba(0,0,0,.14);--ink:#fff;--muted:#fff;--line:rgba(255,255,255,.35);--grid:rgba(255,255,255,.25);
+--s1:#fff;--good:#fff;--bad:#fff;--warn:#fff;--warnbg:rgba(0,0,0,.22);
+background:#C85000;color:#fff;border-color:#a84400;box-shadow:0 2px 10px rgba(200,80,0,.25)}
+.game:hover,.slot:hover{box-shadow:0 10px 28px rgba(200,80,0,.35)}.best{box-shadow:0 0 0 3px rgba(200,80,0,.35)}
+th{background:rgba(0,0,0,.14)}
+/* tables: white card, orange header row */
+.wrap{background:#fff;color:#14171c;border-color:#ecd9c9;--ink:#14171c;--muted:#4b5563;--line:#eceef1;--grid:#eef0f3;
+--card2:#fbf4ee;--good:#1a7f37;--bad:#c2255c;--s1:#a84400}
+.wrap th{background:#C85000;color:#fff}.wrap tr:hover td{background:#fbf4ee}.wrap .meter{background:#f1e2d6}.wrap .meter i{background:#C85000}
+.wrap .ok,.wrap .no{text-decoration:none}.wrap tr.me td{background:#fbe6d6}
+.cmp .wrap,.game .wrap{--ink:#14171c}
+.blend{background:rgba(0,0,0,.18)}.star{background:#fff;color:#a84400}.tag{background:rgba(0,0,0,.25);color:#fff}
+.ok{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+.no{text-decoration:line-through;text-decoration-thickness:2px}
+.chart .ok,.chart .no{text-decoration:none}
+.mypick button{color:#fff}.mypick button.on{background:#fff;color:#a84400;border-color:#fff}
+.mypick button:disabled{opacity:1;border-style:dashed;cursor:default}
+.cmp td.win{background:rgba(0,0,0,.2)!important}
+.meter{background:rgba(255,255,255,.3)}.meter i{background:#fff}
+.sb{background:rgba(0,0,0,.16);border-color:rgba(0,0,0,.1)}.sbt b{color:rgba(255,255,255,.85)}.sbt b.w{color:#fff}
+.sbt i{background:#fff;color:#a84400;padding:2px 8px;border-radius:999px}
+.flag{background:rgba(0,0,0,.2);border-left-color:#fff}.flag b{color:#fff}
+.edges li.big{background:rgba(0,0,0,.22)}
+tr.me td{background:rgba(0,0,0,.18)}
+/* charts: white card, normal colors */
+.chart{background:#fff;color:#14171c;border-color:var(--line);box-shadow:0 2px 10px rgba(20,23,28,.08)}
+.tip{background:#14171c!important;color:#fff!important}
+footer{color:var(--muted)}footer a{color:#a84400;font-weight:700}
 .teamnav a{color:#fff}
+.namerow button{color:#a84400}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style></head><body>
 <header class="hero thero" style="--tc:#C83803"><div class="in"><a class="back" href="../index.html">← All picks</a><img class="hlogo" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/chi.png&h=176&w=176" alt="" width="88" height="88" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/chi.png'"><div class="kicker">NFC North · 2026</div><h1>CHI <span style="opacity:.6">1-1</span></h1>
