@@ -94,6 +94,12 @@ details[open] .more{color:var(--muted)}details[open]{transform:none!important}
 .cmp td.ct{font-size:16px;border-bottom:1px solid var(--line)}.cmp tr:hover td{background:none}
 .cmp td.win{font-weight:800;background:color-mix(in srgb,var(--tc) 18%,transparent)!important;border-radius:8px}
 .cmp .note{margin:10px 0 0;font-size:12px}
+.flag{font-size:13px;margin-top:8px;padding:8px 10px;border-radius:10px;background:var(--warnbg);border-left:3px solid var(--warn)}
+.flag b{color:var(--warn)}.flag .meta{display:block;margin-top:2px}
+.upsets{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.upset{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--tc);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
+.uprow{display:flex;align-items:center;gap:10px;margin:6px 0 4px}.uprow b{font-size:26px;font-weight:800;min-width:58px}
+.umeter{flex:1;height:8px;border-radius:4px;background:var(--grid);overflow:hidden}.umeter i{display:block;height:8px;max-width:100%;background:var(--tc)}
 @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style></head><body>
