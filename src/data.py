@@ -71,25 +71,33 @@ def _shrink_pbp(raw_path):
 
     Only real runs and passes count. Kneel-downs, spikes and "garbage time"
     (when one team's win chance is below 5% or above 95%) are left out, since
-    those plays say little about how good a team is.
+    those plays say little about how good a team is. Passing and running are also
+    kept separately, for pass/run matchups.
     """
     cols = ["game_id", "posteam", "defteam", "play_type", "epa", "success", "wp", "qb_kneel", "qb_spike"]
     p = pd.read_csv(raw_path, usecols=cols, low_memory=False)
     p = p[p["play_type"].isin(["pass", "run"]) & p["epa"].notna() & p["posteam"].notna()]
     p = p[(p["qb_kneel"].fillna(0) == 0) & (p["qb_spike"].fillna(0) == 0)]
     p = p[p["wp"].between(0.05, 0.95)]
-    off = p.groupby(["game_id", "posteam"]).agg(off_plays=("epa", "size"), off_epa=("epa", "sum"),
-                                                off_success=("success", "sum"))
-    off.index = off.index.set_names(["game_id", "team"])
-    dfn = p.groupby(["game_id", "defteam"]).agg(def_plays=("epa", "size"), def_epa=("epa", "sum"),
-                                                def_success=("success", "sum"))
-    dfn.index = dfn.index.set_names(["game_id", "team"])
-    return off.join(dfn, how="outer").reset_index()
+    parts = []
+    for side, team_col in (("off", "posteam"), ("def", "defteam")):
+        agg = {f"{side}_plays": ("epa", "size"), f"{side}_epa": ("epa", "sum"), f"{side}_success": ("success", "sum")}
+        g = p.groupby(["game_id", team_col]).agg(**agg)
+        for kind in ("pass", "run"):
+            k = p[p["play_type"] == kind].groupby(["game_id", team_col]).agg(
+                **{f"{side}_{kind}_plays": ("epa", "size"), f"{side}_{kind}_epa": ("epa", "sum")})
+            g = g.join(k)
+        g.index = g.index.set_names(["game_id", "team"])
+        parts.append(g)
+    return parts[0].join(parts[1], how="outer").fillna(0).reset_index()
 
 
 def load_team_epa(seasons, force_download: bool = False) -> pd.DataFrame:
-    """Offense and defense EPA + success rate totals for every team in every game."""
-    return _per_season("epa", seasons, PBP_URL, _shrink_pbp, force_download)
+    """Offense and defense EPA + success rate totals (overall, passing, running) for every team in every game.
+
+    Saved as "teameff" (the older "epa" files didn't split passing and running, so they're re-downloaded once).
+    """
+    return _per_season("teameff", seasons, PBP_URL, _shrink_pbp, force_download)
 
 
 INJ_URL = RELEASES + "/injuries/injuries_{season}.csv"

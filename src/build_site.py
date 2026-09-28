@@ -125,6 +125,20 @@ details[open] .more{color:var(--muted)}details[open]{transform:none!important}
 .cmp .note{margin:10px 0 0;font-size:12px}
 .flag{font-size:13px;margin-top:8px;padding:8px 10px;border-radius:10px;background:var(--warnbg);border-left:3px solid var(--warn)}
 .flag b{color:var(--warn)}.flag .meta{display:block;margin-top:2px}
+.glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.glance>div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 16px;box-shadow:var(--shadow)}
+.glance h4,.cmp h4{margin:0 0 8px;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.glance ul,.edges{list-style:none;margin:0;padding:0}.glance li{padding:6px 0;border-bottom:1px solid var(--grid);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.glance li:last-child{border-bottom:0}
+.edges li{padding:7px 10px;margin:0 0 6px;border-radius:10px;font-size:13.5px;background:var(--card2)}
+.edges li.big{background:color-mix(in srgb,var(--good) 14%,transparent)}.cmp h4{margin-top:4px}
+.mypick{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.mypick button{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13px;font-weight:700;color:var(--ink);
+background:var(--card2);border:1.5px solid var(--line);border-radius:999px;padding:4px 12px 4px 6px;cursor:pointer}
+.mypick button .lg{width:20px;height:20px}.mypick button:hover:not(:disabled){border-color:var(--s1)}
+.mypick button.on{border-color:var(--s1);background:color-mix(in srgb,var(--s1) 16%,transparent)}
+.mypick button:disabled{opacity:.5;cursor:default}.mypick button.on:disabled{opacity:1}
+#myrec:empty{display:none}
 .upsets{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
 .upset{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--tc);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
 .uprow{display:flex;align-items:center;gap:10px;margin:6px 0 4px}.uprow b{font-size:26px;font-weight:800;min-width:58px}
@@ -280,6 +294,108 @@ def calibration_chart(cal):
 <tr><th>Favorite's chance</th><th class="n">Said</th><th class="n">Actually won</th><th class="n">Games</th></tr>{rows}</table></div></details>"""
 
 
+# ---------- this week at a glance ----------
+
+def glance_card(week_preds, prefix=""):
+    """One box: safest picks, best upset chances, and spread/total flags for the games still to be played."""
+    g = week_preds[~week_preds["played"]]
+    if g.empty:
+        g = week_preds
+    safest = g.sort_values("blend_conf", ascending=False).head(3)
+    safe = "".join(f"<li>{tl(r.blend_pick, prefix)} <b>{r.blend_conf:.0%}</b> <span class='meta'>vs "
+                   f"{e(r.home_team if r.blend_pick == r.away_team else r.away_team)}</span></li>" for r in safest.itertuples())
+    dogs = g.assign(dog_p=1 - g["blend_conf"]).sort_values("dog_p", ascending=False).head(3)
+    ups = "".join(f"<li>{tl(r.home_team if r.blend_pick == r.away_team else r.away_team, prefix)} <b>{r.dog_p:.0%}</b> "
+                  f"<span class='meta'>to beat {e(r.blend_pick)}</span></li>" for r in dogs.itertuples())
+    flags = []
+    for r in g.itertuples():
+        if "pred_margin" not in g or pd.isna(r.spread_line) or pd.isna(r.total_line):
+            continue
+        sg, tg = r.pred_margin - r.spread_line, r.pred_total - r.total_line
+        if abs(sg) >= 4:
+            flags.append(f"<li>{tl(r.home_team if sg > 0 else r.away_team, prefix)} to cover "
+                         f"<span class='meta'>({e(spread_text(r.home_team, r.away_team, r.spread_line))})</span></li>")
+        if abs(tg) >= 4:
+            flags.append(f"<li><b>{'Over' if tg > 0 else 'Under'} {r.total_line:g}</b> <span class='meta'>"
+                         f"{e(r.away_team)} @ {e(r.home_team)}</span></li>")
+    fl = "".join(flags[:5]) or "<li class='meta'>None this week</li>"
+    return f"""<div class="glance">
+<div><h4>Safest picks</h4><ul>{safe}</ul></div>
+<div><h4>Best upset chances</h4><ul>{ups}</ul></div>
+<div><h4>Spread / total flags</h4><ul>{fl}</ul></div></div>"""
+
+
+# ---------- make your own picks (saved in the viewer's browser) ----------
+
+def pick_buttons(r):
+    from history import kickoff
+    return (f'<div class="mypick" data-g="{e(r.game_id)}" data-k="{kickoff(r).isoformat()}"><span class="meta">Your pick:</span>'
+            f'<button type="button" data-t="{e(r.away_team)}">{logo(r.away_team)}{e(r.away_team)}</button>'
+            f'<button type="button" data-t="{e(r.home_team)}">{logo(r.home_team)}{e(r.home_team)}</button>'
+            f'<span class="res"></span></div>')
+
+
+def my_picks_script(all_preds):
+    """Results for every finished game this season, so the viewer's record can be scored in the browser."""
+    res = {}
+    for r in all_preds.itertuples():
+        if r.played:
+            res[r.game_id] = {"w": r.winner if isinstance(r.winner, str) else "TIE", "m": r.pick,
+                              "v": r.vegas_pick if isinstance(r.vegas_pick, str) else None}
+    return """<script>
+(function(){const R=%s;let P={};
+try{P=JSON.parse(localStorage.getItem('nflgp-picks')||'{}')}catch(e){}
+function save(){try{localStorage.setItem('nflgp-picks',JSON.stringify(P))}catch(e){}}
+function rec(a,b){return a+'-'+(b-a)+(b?' ('+Math.round(100*a/b)+'%%)':'')}
+function render(){
+ document.querySelectorAll('.mypick').forEach(el=>{const g=el.dataset.g,done=R[g],locked=done||Date.now()>=Date.parse(el.dataset.k);
+  el.querySelectorAll('button').forEach(b=>{b.classList.toggle('on',P[g]===b.dataset.t);b.disabled=!!locked;});
+  const s=el.querySelector('.res');
+  if(done&&P[g])s.innerHTML=done.w===P[g]?'<span class="ok">✓ Right</span>':(done.w==='TIE'?'Tie':'<span class="no">✗ Wrong</span>');
+  else s.textContent=locked&&!P[g]?'Locked (kicked off)':'';});
+ let n=0,y=0,m=0,v=0,vn=0,open=0;
+ for(const g in P){const r=R[g];if(!r){open++;continue}if(r.w==='TIE')continue;n++;if(P[g]===r.w)y++;if(r.m===r.w)m++;
+  if(r.v){vn++;if(r.v===r.w)v++}}
+ const box=document.getElementById('myrec');if(!box)return;
+ box.innerHTML=n?'<div class="stat"><b>'+rec(y,n)+'</b><span>Your picks</span></div><div class="stat"><b>'+rec(m,n)+
+  '</b><span>Model on the same games</span></div><div class="stat"><b>'+rec(v,vn)+'</b><span>Vegas on the same games</span></div>'+
+  (open?'<div class="stat"><b>'+open+'</b><span>Picks waiting on results</span></div>':'')
+  :'<p class="note">'+(open?'You have '+open+' pick(s) waiting on results. ':'')+'Tap a team under any game below to make your pick. '+
+  'Picks lock at kickoff, and your record vs the model shows up here once games finish.</p>';}
+document.addEventListener('click',ev=>{const b=ev.target.closest('.mypick button');if(!b)return;ev.preventDefault();ev.stopPropagation();
+ if(b.disabled)return;const g=b.closest('.mypick').dataset.g;if(P[g]===b.dataset.t)delete P[g];else P[g]=b.dataset.t;save();render();});
+render();})();
+</script>""" % json.dumps(res)
+
+
+# ---------- plain-English matchup edges ----------
+
+def edge_lines(r, stats):
+    """Pass/run offense vs the other team's pass/run defense, in plain English."""
+    lines = []
+    for off, dfn in ((r.away_team, r.home_team), (r.home_team, r.away_team)):
+        for kind, word in (("pass", "passing"), ("run", "running")):
+            o, d = stats[off].get(f"{kind}_off_rank"), stats[dfn].get(f"{kind}_def_rank")
+            if o is None or d is None:
+                continue
+            gap = d - o  # positive = the offense ranks better than the defense it faces
+            if gap >= 15:
+                verdict, who, cls = "Big edge", off, "big"
+            elif gap >= 8:
+                verdict, who, cls = "Edge", off, "edge"
+            elif gap <= -15:
+                verdict, who, cls = "Big edge", dfn, "big"
+            elif gap <= -8:
+                verdict, who, cls = "Edge", dfn, "edge"
+            else:
+                continue
+            lines.append((abs(gap), f'<li class="{cls}">{tl(off)} {word} offense <b>#{o}</b> vs {tl(dfn)} {kind} defense '
+                                    f'<b>#{d}</b>: <b>{verdict} {e(who)}</b></li>'))
+    if not lines:
+        return '<p class="note">No big pass or run mismatches in this game: the units are evenly matched.</p>'
+    return "<ul class='edges'>" + "".join(x for _, x in sorted(lines, key=lambda t: -t[0])) + "</ul>"
+
+
 # ---------- click-to-compare team stats ----------
 
 # (label, key, which is better: "hi" / "lo" / None, format)
@@ -298,6 +414,10 @@ COMPARE_STATS = [
     ("Defense success rate allowed", "def_sr", "lo", "{:.1%}"),
     ("Offense rank (EPA)", "off_rank", "lo", "#{:.0f}"),
     ("Defense rank (EPA)", "def_rank", "lo", "#{:.0f}"),
+    ("Pass offense rank", "pass_off_rank", "lo", "#{:.0f}"),
+    ("Run offense rank", "run_off_rank", "lo", "#{:.0f}"),
+    ("Pass defense rank", "pass_def_rank", "lo", "#{:.0f}"),
+    ("Run defense rank", "run_def_rank", "lo", "#{:.0f}"),
     ("Starting QB: EPA per dropback", "qb", "hi", "{:+.3f}"),
     ("Elo rating", "elo", "hi", "{:.0f}"),
     ("Starters' snaps lost to injury", "inj", "lo", "{:.1f}"),
@@ -316,6 +436,10 @@ def team_stats(df, season, ranks, odds):
     rk = ranks.set_index("team")
     od = odds.set_index("team")
     out = {}
+    unit_rank = {}
+    for key, best_high in (("off_pass", True), ("off_run", True), ("def_pass", False), ("def_run", False)):
+        vals = pd.Series({t: state[t][key] for t in TEAMS})
+        unit_rank[key] = vals.rank(ascending=not best_high, method="min").astype(int).to_dict()
     for t in TEAMS:
         home, away = before[before["home_team"] == t], before[before["away_team"] == t]
         pts = list(home["home_score"]) + list(away["away_score"])
@@ -327,7 +451,9 @@ def team_stats(df, season, ranks, odds):
              "pdpg": (sum(pts) - sum(opp)) / n if n else None,
              "form_pd": state[t]["pd"] if n else None, "form_win": state[t]["win_pct"] if n else None,
              "qb": state[t]["qb"], "elo": state[t]["elo"], "playoffs": od.loc[t, "playoffs"],
-             "off_epa": None, "def_epa": None, "off_sr": None, "def_sr": None}
+             "off_epa": None, "def_epa": None, "off_sr": None, "def_sr": None,
+             "pass_off_rank": unit_rank["off_pass"][t], "run_off_rank": unit_rank["off_run"][t],
+             "pass_def_rank": unit_rank["def_pass"][t], "run_def_rank": unit_rank["def_run"][t]}
         te = epa[epa["team"] == t] if len(epa) else epa
         if len(te) and te["off_plays"].sum() and te["def_plays"].sum():
             s["off_epa"] = te["off_epa"].sum() / te["off_plays"].sum()
@@ -354,8 +480,9 @@ def compare_panel(r, stats):
             a_wins = (va > vh) if better == "hi" else (va < vh)
             wa, wh = (" class='win'", "") if a_wins else ("", " class='win'")
         rows.append(f"<tr><td{wa} style='--tc:{ca}'>{show(va)}</td><th>{label}</th><td{wh} style='--tc:{ch}'>{show(vh)}</td></tr>")
-    return (f'<div class="cmp"><table><tr><td class="ct">{tl(r.away_team)}</td><th></th><td class="ct">{tl(r.home_team)}</td></tr>'
-            + "".join(rows) + '</table><p class="note">Season averages so far (— = no games yet). '
+    return (f'<div class="cmp"><h4>Matchup edges</h4>{edge_lines(r, stats)}<table><tr><td class="ct">{tl(r.away_team)}</td><th></th><td class="ct">{tl(r.home_team)}</td></tr>'
+            + "".join(rows) + '</table><p class="note">Pass/run ranks use the model\'s running ratings (recent games count most). '
+            'Season averages so far (— = no games yet). '
             'Highlighted = better. * Can include games from last season. EPA = expected points added per play, the best single measure of efficiency.</p></div>')
 
 
@@ -407,6 +534,7 @@ def game_card(r, is_best=False, stats=None, gaps=None):
     <i style="width:{away_pct}%;background:{ca}"></i><i style="width:{100 - away_pct}%;background:{ch}"></i></div>
   <div class="row meta"><span>{e(r.away_team)} {away_pct}% · {e(r.home_team)} {100 - away_pct}%</span><span>{vegas}</span></div>
   <div class="meta">{qbs}{r.gameday:%a %b %-d}</div>
+  {pick_buttons(r)}
   {score}
   {line_flags(r, gaps)}
   {blend}
@@ -761,9 +889,14 @@ def main():
 <p class="sub">Machine learning picks, predicted scores, power rankings and playoff odds for every game.</p>
 {stats}</div></header>
 <main>
-<nav><a href="#slots">Top picks</a><a href="#upsets">Upset watch</a><a href="#picks">All picks</a><a href="#accuracy">Accuracy</a><a href="#tracker">Pick tracker</a>
+<nav><a href="#glance">At a glance</a><a href="#mine">Your picks</a><a href="#slots">Top picks</a><a href="#upsets">Upset watch</a><a href="#picks">All picks</a><a href="#accuracy">Accuracy</a><a href="#tracker">Pick tracker</a>
 <a href="#rankings">Power rankings</a><a href="#playoffs">Playoff odds</a>{'<a href="#results">Last week</a>' if lw_total else ''}
 <a href="history.html">Every pick</a></nav>
+<h2 id="glance">Week {week} at a glance</h2>
+{glance_card(this_week)}
+<h2 id="mine">Your picks</h2>
+<div class="stats" id="myrec"></div>
+<p class="note">Saved in this browser only (not shared, not sent anywhere). Picks lock at kickoff.</p>
 <h2 id="slots">Most confident pick of each time slot</h2>
 <div class="slots">{''.join(slot_card(r) for _, r in best.iterrows())}</div>
 <h2 id="upsets">Upset watch</h2>
@@ -804,7 +937,7 @@ Code: <a href="https://github.com/zacharyivezi08/nfl-game-predictor">github.com/
 <br><br><b>Not betting advice.</b> "Most confident" means most likely to win, not a good bet. In a 10-season backtest
 against real odds, betting the model's picks lost about 2–6% of the money wagered, and its spread and over/under
 picks hit about 49–50%, below the 52.4% needed to break even. Vegas is more accurate than this model.</footer>
-</main></body></html>"""
+</main>{my_picks_script(all_preds)}</body></html>"""
 
     DOCS.mkdir(exist_ok=True)
     (DOCS / "index.html").write_text(html_page)

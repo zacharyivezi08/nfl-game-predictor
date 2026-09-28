@@ -10,6 +10,9 @@ Built with Python, pandas and scikit-learn on free data from [nflverse](https://
 
 - **Weekly picks**: win probability, predicted score, spread and total for every game, compared with Vegas, plus the top 3 reasons for each pick
 - **Model + Vegas blend**: the most accurate forecast on the site (see below)
+- **Week at a glance**: the safest picks, best upset chances and spread/total flags in one box
+- **Make your own picks**: tap a team on any game before kickoff; your record vs the model and Vegas is kept in your browser
+- **Matchup edges**: in each game's stat comparison, plain-English pass/run mismatches (e.g. "BUF passing offense #2 vs MIA pass defense #28: Big edge BUF")
 - **Upset watch**: every underdog with a 35%+ chance, with how often underdogs at that level have actually won
 - **Spread and total flags**: highlighted when the predicted score is 4+ points away from the Vegas spread or total, with the historical hit rate
 - **Most confident pick of each time slot** (Thursday night, Sunday 1 PM, 4 PM, Sunday night, Monday night)
@@ -151,6 +154,13 @@ It now ties Vegas in the final week. The 7 games with a "locked" team went from 
 - **Early-season fixes didn't help.** The model trails Vegas most in weeks 3–6. Tested: a new-head-coach flag, letting the
   model trust ratings less before teams have played 6 games, and last season's point differential. None improved both
   validation and test, so none were kept. Early in the season the blend is the fix, since Vegas knows about offseason moves.
+- **Pass/run matchups passed validation but failed the test.** Splitting efficiency into passing and running (each offense
+  vs the other team's matching defense) improved validation slightly (0.6265 vs 0.6269) but made the untouched test worse
+  (0.6223 vs 0.6218), the same overfitting pattern as tuning, so the model doesn't use them. The site still shows them as matchup edges.
+- **Actual kickoff weather would help totals a little.** For past games, knowing the real wind and temperature instead of the
+  stadium's typical weather cut the average total miss from 10.39 to 10.31 points (10.54 to 10.18 in games with 15+ mph wind).
+  Vegas is still better (9.31 in windy games). Not added yet: it would need a live forecast for upcoming games.
+- **Line movement couldn't be tested**: the free data has one betting line per game, not the opening line.
 - **QB accuracy (CPOE) added nothing.** Completion % over expected, from nflfastR's completion probability model, was tested as its own feature group. Validation got slightly worse (0.6271 vs 0.6269) and the test was unchanged (64.3%), because it overlaps heavily with the QB EPA rating the model already uses (correlation 0.68): accurate QBs already show up as efficient ones. It was left out so the site updates stay fast.
 - **Splitting injuries into offense and defense** added noise. A single "total missing talent" number worked.
 - **Choosing the model type on the test seasons** was accidental peeking. It's now chosen on validation. Gradient boosting and random forest looked slightly better on the test, but logistic regression won on validation, so that's what's used.

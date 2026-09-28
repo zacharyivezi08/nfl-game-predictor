@@ -32,6 +32,8 @@ def matchup_row(state: dict, home: str, away: str, neutral: bool = False) -> dic
         "off_epa_diff": h["off_epa"] - a["off_epa"],
         "def_epa_diff": h["def_epa"] - a["def_epa"],
         "net_sr_diff": (h["off_sr"] - h["def_sr"]) - (a["off_sr"] - a["def_sr"]),
+        "pass_matchup_diff": (h["off_pass"] - a["def_pass"]) - (a["off_pass"] - h["def_pass"]),
+        "run_matchup_diff": (h["off_run"] - a["def_run"]) - (a["off_run"] - h["def_run"]),
         "inj_diff": 0, "locked_diff": 0, "eliminated_diff": 0,
         "tz_travel": 0, "early_body_clock": 0, "bye_diff": 0, "short_week_diff": 0,
     }

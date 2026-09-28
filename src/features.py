@@ -72,6 +72,12 @@ TRAVEL_FEATURES = [
     "bye_diff",          # coming off a bye week (home minus away)
     "short_week_diff",   # playing on short rest, e.g. Thursday after Sunday (home minus away)
 ]
+# Pass/run matchups: tested as a feature group (validation 0.6265 vs 0.6269, but the untouched test got slightly
+# WORSE, 0.6223 vs 0.6218), so they're not used by the model. They're still computed for the site's matchup edges.
+PASSRUN_FEATURES = [
+    "pass_matchup_diff",  # (home pass offense vs away pass defense) minus (away pass offense vs home pass defense), EPA/play
+    "run_matchup_diff",   # same for running
+]
 INJURY_FEATURES = ["inj_diff"]  # starters' snaps missing to injury, offense + defense (home minus away)
 STAKES_FEATURES = [
     "locked_diff",       # playoff spot clinched AND place in the conference can't change -> may rest starters (home minus away)
@@ -100,6 +106,8 @@ FEATURE_LABELS = {
     "def_epa_diff": "Defense efficiency (EPA)",
     "net_sr_diff": "Success rate",
     "inj_diff": "Injuries",
+    "pass_matchup_diff": "Passing matchup",
+    "run_matchup_diff": "Running matchup",
     "tz_travel": "Travel / time zones",
     "early_body_clock": "Early body-clock kickoff",
     "bye_diff": "Coming off a bye",
@@ -223,15 +231,22 @@ def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None,
     """Return one row per game with pre-game features and (if played) the result."""
     games = _add_travel(_add_weather(games))
 
-    # Team efficiency per game: {game_id: {team: (off_epa/play, def_epa/play, off_sr, def_sr)}}
+    # Team efficiency per game: {game_id: {team: (off_epa/play, def_epa/play, off_sr, def_sr,
+    #                                            off_pass, off_run, def_pass, def_run)}}  (EPA per play)
     epa_by_game = defaultdict(dict)
     if team_epa is not None and len(team_epa):
         e = team_epa.dropna(subset=["off_plays", "def_plays"])
         for r in e.itertuples(index=False):
             if r.off_plays > 0 and r.def_plays > 0:
-                epa_by_game[r.game_id][r.team] = (r.off_epa / r.off_plays, r.def_epa / r.def_plays,
-                                                  r.off_success / r.off_plays, r.def_success / r.def_plays)
-    eff = defaultdict(lambda: [0.0, 0.0, SR_MEAN, SR_MEAN])  # team -> running [off_epa, def_epa, off_sr, def_sr]
+                oe, de = r.off_epa / r.off_plays, r.def_epa / r.def_plays
+                per = lambda epa, n, fallback: epa / n if n > 0 else fallback
+                epa_by_game[r.game_id][r.team] = (
+                    oe, de, r.off_success / r.off_plays, r.def_success / r.def_plays,
+                    per(r.off_pass_epa, r.off_pass_plays, oe), per(r.off_run_epa, r.off_run_plays, oe),
+                    per(r.def_pass_epa, r.def_pass_plays, de), per(r.def_run_epa, r.def_run_plays, de))
+    # team -> running [off_epa, def_epa, off_sr, def_sr, off_pass, off_run, def_pass, def_run]
+    eff = defaultdict(lambda: [0.0, 0.0, SR_MEAN, SR_MEAN, 0.0, 0.0, 0.0, 0.0])
+    EFF_MEANS = (0.0, 0.0, SR_MEAN, SR_MEAN, 0.0, 0.0, 0.0, 0.0)
 
     # Index QB stats by game so we can update each QB's history after every game
     qb_by_game = defaultdict(list)
@@ -260,7 +275,8 @@ def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None,
         return {"elo": elo[t], "pd": avg(pdl), "off": avg(scored[t]), "def": avg(allowed[t]),
                 "win_pct": avg([1.0 if x > 0 else 0.5 if x == 0 else 0.0 for x in pdl]),
                 "qb": qb_rating(None, t), "qb_id": last_qb.get(t),
-                "off_epa": eff[t][0], "def_epa": eff[t][1], "off_sr": eff[t][2], "def_sr": eff[t][3]}
+                "off_epa": eff[t][0], "def_epa": eff[t][1], "off_sr": eff[t][2], "def_sr": eff[t][3],
+                "off_pass": eff[t][4], "off_run": eff[t][5], "def_pass": eff[t][6], "def_run": eff[t][7]}
 
     def qb_rating(qb_id, team):
         qb_id = qb_id if isinstance(qb_id, str) else last_qb.get(team)
@@ -277,7 +293,7 @@ def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None,
             for team in list(elo):
                 elo[team] = elo[team] + ELO_SEASON_REVERT * (ELO_START - elo[team])
             for team, v in eff.items():
-                for i, mean in enumerate((0.0, 0.0, SR_MEAN, SR_MEAN)):
+                for i, mean in enumerate(EFF_MEANS):
                     v[i] += EPA_SEASON_REVERT * (mean - v[i])
             current_season = g.season
             snapshots[(g.season, g.week)] = {t: team_state(t) for t in list(elo)}
@@ -348,6 +364,8 @@ def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None,
             "off_epa_diff": eff[h][0] - eff[a][0],
             "def_epa_diff": eff[h][1] - eff[a][1],
             "net_sr_diff": (eff[h][2] - eff[h][3]) - (eff[a][2] - eff[a][3]),
+            "pass_matchup_diff": (eff[h][4] - eff[a][6]) - (eff[a][4] - eff[h][6]),
+            "run_matchup_diff": (eff[h][5] - eff[a][7]) - (eff[a][5] - eff[h][7]),
             "off_epa_sum": eff[h][0] + eff[a][0],
             "def_epa_sum": eff[h][1] + eff[a][1],
             "off_form_sum": avg(scored[h]) + avg(scored[a]),
@@ -371,7 +389,7 @@ def build_features(games: pd.DataFrame, qb_stats: pd.DataFrame | None = None,
 
         for team, stats in epa_by_game.get(g.game_id, {}).items():
             v = eff[team]
-            for i in range(4):
+            for i in range(8):
                 v[i] += EPA_ALPHA * (stats[i] - v[i])
 
         recent_totals.append(g.home_score + g.away_score)
