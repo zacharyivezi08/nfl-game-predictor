@@ -96,6 +96,20 @@ details[open] .more{color:var(--muted)}details[open]{transform:none!important}
 .cmp .note{margin:10px 0 0;font-size:12px}
 .flag{font-size:13px;margin-top:8px;padding:8px 10px;border-radius:10px;background:var(--warnbg);border-left:3px solid var(--warn)}
 .flag b{color:var(--warn)}.flag .meta{display:block;margin-top:2px}
+.glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.glance>div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 16px;box-shadow:var(--shadow)}
+.glance h4,.cmp h4{margin:0 0 8px;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.glance ul,.edges{list-style:none;margin:0;padding:0}.glance li{padding:6px 0;border-bottom:1px solid var(--grid);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.glance li:last-child{border-bottom:0}
+.edges li{padding:7px 10px;margin:0 0 6px;border-radius:10px;font-size:13.5px;background:var(--card2)}
+.edges li.big{background:color-mix(in srgb,var(--good) 14%,transparent)}.cmp h4{margin-top:4px}
+.mypick{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.mypick button{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13px;font-weight:700;color:var(--ink);
+background:var(--card2);border:1.5px solid var(--line);border-radius:999px;padding:4px 12px 4px 6px;cursor:pointer}
+.mypick button .lg{width:20px;height:20px}.mypick button:hover:not(:disabled){border-color:var(--s1)}
+.mypick button.on{border-color:var(--s1);background:color-mix(in srgb,var(--s1) 16%,transparent)}
+.mypick button:disabled{opacity:.5;cursor:default}.mypick button.on:disabled{opacity:1}
+#myrec:empty{display:none}
 .upsets{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
 .upset{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--tc);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
 .uprow{display:flex;align-items:center;gap:10px;margin:6px 0 4px}.uprow b{font-size:26px;font-weight:800;min-width:58px}
