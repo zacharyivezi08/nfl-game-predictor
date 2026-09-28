@@ -108,6 +108,17 @@ a.tb:hover{color:var(--s1)}
 .teamnav a:hover{border-color:var(--s1)}
 .thero{background:radial-gradient(900px 300px at 90% -30%,color-mix(in srgb,var(--tc) 70%,transparent),transparent 65%),
 linear-gradient(135deg,var(--hero1),var(--hero2))}
+details.game>summary{list-style:none;cursor:pointer}details.game>summary::-webkit-details-marker{display:none}
+.more{margin-top:10px;font-size:12.5px;font-weight:700;color:var(--s1);display:flex;align-items:center;gap:6px}
+.more::after{content:"▾";transition:transform .2s}details[open] .more::after{transform:rotate(180deg)}
+details[open] .more{color:var(--muted)}details[open]{transform:none!important}
+.cmp{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);animation:fade .2s ease-out}
+.cmp table{table-layout:fixed}.cmp td,.cmp th{white-space:normal;padding:7px 6px;text-align:center;border-bottom:1px solid var(--grid)}
+.cmp th{background:none;font-size:11.5px;letter-spacing:.03em;width:46%}.cmp td{font-weight:600;font-size:14.5px}
+.cmp td.ct{font-size:16px;border-bottom:1px solid var(--line)}.cmp tr:hover td{background:none}
+.cmp td.win{font-weight:800;background:color-mix(in srgb,var(--tc) 18%,transparent)!important;border-radius:8px}
+.cmp .note{margin:10px 0 0;font-size:12px}
+@keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 """
 
@@ -165,7 +176,86 @@ def slot_card(r):
             f'<small>over {opp} · {n}</small></div>')
 
 
-def game_card(r, is_best=False):
+# ---------- click-to-compare team stats ----------
+
+# (label, key, which is better: "hi" / "lo" / None, format)
+COMPARE_STATS = [
+    ("Record", "record", None, "{}"),
+    ("Power ranking", "rank", "lo", "#{:.0f}"),
+    ("Power rating", "rating", "hi", "{:.0%}"),
+    ("Points per game", "ppg", "hi", "{:.1f}"),
+    ("Points allowed per game", "papg", "lo", "{:.1f}"),
+    ("Point differential per game", "pdpg", "hi", "{:+.1f}"),
+    ("Last 5 games*: avg margin", "form_pd", "hi", "{:+.1f}"),
+    ("Last 5 games*: win %", "form_win", "hi", "{:.0%}"),
+    ("Offense EPA per play", "off_epa", "hi", "{:+.3f}"),
+    ("Defense EPA per play allowed", "def_epa", "lo", "{:+.3f}"),
+    ("Offense success rate", "off_sr", "hi", "{:.1%}"),
+    ("Defense success rate allowed", "def_sr", "lo", "{:.1%}"),
+    ("Offense rank (EPA)", "off_rank", "lo", "#{:.0f}"),
+    ("Defense rank (EPA)", "def_rank", "lo", "#{:.0f}"),
+    ("Starting QB: EPA per dropback", "qb", "hi", "{:+.3f}"),
+    ("Elo rating", "elo", "hi", "{:.0f}"),
+    ("Starters' snaps lost to injury", "inj", "lo", "{:.1f}"),
+    ("Playoff odds", "playoffs", "hi", "{:.0%}"),
+]
+
+
+def team_stats(df, season, ranks, odds):
+    """Every team's stats so far: season averages (all games played) + the model's current ratings."""
+    from data import load_team_epa
+    before = df[(df["season"] == season) & df["played"]]
+    epa = load_team_epa([season])
+    if len(epa):
+        epa = epa[epa["game_id"].isin(before["game_id"])]
+    state = SNAPSHOTS["latest"]
+    rk = ranks.set_index("team")
+    od = odds.set_index("team")
+    out = {}
+    for t in TEAMS:
+        home, away = before[before["home_team"] == t], before[before["away_team"] == t]
+        pts = list(home["home_score"]) + list(away["away_score"])
+        opp = list(home["away_score"]) + list(away["home_score"])
+        n = len(pts)
+        s = {"record": rk.loc[t, "record"], "rank": rk.loc[t, "rank"], "rating": rk.loc[t, "rating"],
+             "off_rank": rk.loc[t, "off_rank"], "def_rank": rk.loc[t, "def_rank"],
+             "ppg": sum(pts) / n if n else None, "papg": sum(opp) / n if n else None,
+             "pdpg": (sum(pts) - sum(opp)) / n if n else None,
+             "form_pd": state[t]["pd"] if n else None, "form_win": state[t]["win_pct"] if n else None,
+             "qb": state[t]["qb"], "elo": state[t]["elo"], "playoffs": od.loc[t, "playoffs"],
+             "off_epa": None, "def_epa": None, "off_sr": None, "def_sr": None}
+        te = epa[epa["team"] == t] if len(epa) else epa
+        if len(te) and te["off_plays"].sum() and te["def_plays"].sum():
+            s["off_epa"] = te["off_epa"].sum() / te["off_plays"].sum()
+            s["def_epa"] = te["def_epa"].sum() / te["def_plays"].sum()
+            s["off_sr"] = te["off_success"].sum() / te["off_plays"].sum()
+            s["def_sr"] = te["def_success"].sum() / te["def_plays"].sum()
+        out[t] = s
+    return out
+
+
+def compare_panel(r, stats):
+    a, h = stats[r.away_team], stats[r.home_team]
+    a = {**a, "inj": r.away_inj_off + r.away_inj_def}
+    h = {**h, "inj": r.home_inj_off + r.home_inj_def}
+    ca, ch = bar_colors(r.away_team, r.home_team)
+    rows = []
+    for label, key, better, fmt in COMPARE_STATS:
+        va, vh = a.get(key), h.get(key)
+        if key == "qb" and isinstance(r.home_qb, str):
+            label = f"QB EPA per dropback ({e(str(r.away_qb).split()[-1])} / {e(str(r.home_qb).split()[-1])})"
+        show = lambda v: "—" if v is None or v != v else fmt.format(v)
+        wa = wh = ""
+        if better and va is not None and vh is not None and va == va and vh == vh and show(va) != show(vh):
+            a_wins = (va > vh) if better == "hi" else (va < vh)
+            wa, wh = (" class='win'", "") if a_wins else ("", " class='win'")
+        rows.append(f"<tr><td{wa} style='--tc:{ca}'>{show(va)}</td><th>{label}</th><td{wh} style='--tc:{ch}'>{show(vh)}</td></tr>")
+    return (f'<div class="cmp"><table><tr><td class="ct">{tl(r.away_team)}</td><th></th><td class="ct">{tl(r.home_team)}</td></tr>'
+            + "".join(rows) + '</table><p class="note">Season averages so far (— = no games yet). '
+            'Highlighted = better. * Can include games from last season. EPA = expected points added per play, the best single measure of efficiency.</p></div>')
+
+
+def game_card(r, is_best=False, stats=None):
     away_pct = round((1 - r.home_prob) * 100)
     ca, ch = bar_colors(r.away_team, r.home_team)
     disagree = isinstance(r.vegas_pick, str) and r.vegas_pick != r.pick
@@ -185,7 +275,7 @@ def game_card(r, is_best=False):
     badges = ('<span class="star">★ Top pick of slot</span> ' if is_best and r.games_in_slot > 1 else '') + \
              ('<span class="tag">Disagrees with Vegas</span> ' if disagree else '')
     return f"""
-<div class="game{' best' if is_best else ''}">
+<details class="game{' best' if is_best else ''}"><summary>
   <div class="row"><div class="teams">{tl(r.away_team)} <small>@</small> {tl(r.home_team)}</div>
   <div>{badges}<span class="pick">{e(r.pick)} {r.confidence:.0%}</span></div></div>
   <div class="bar" role="img" aria-label="{e(r.away_team)} {away_pct}%, {e(r.home_team)} {100 - away_pct}%">
@@ -195,7 +285,9 @@ def game_card(r, is_best=False):
   {score}
   {blend}
   <div class="why"><b>Why:</b> {why}</div>
-</div>"""
+  <div class="more">Compare team stats</div>
+</summary>{compare_panel(r, stats) if stats else ''}
+</details>"""
 
 
 def results_table(preds):
@@ -500,10 +592,6 @@ def main():
     this_week["games_in_slot"] = this_week.groupby("slot")["game_id"].transform("count")
     best = best_picks(this_week)
     best_ids = set(best["game_id"])
-    cards = []
-    for slot in best["slot"]:
-        cards.append(f"<h3>{e(slot)}</h3>")
-        cards += [game_card(r, r.game_id in best_ids) for _, r in this_week[this_week["slot"] == slot].iterrows()]
     last_week = all_preds[all_preds["week"] == week - 1]
     lw_right = int(last_week["correct"].isin([True]).sum())
     lw_total = int(last_week["correct"].isin([True, False]).sum())
@@ -512,6 +600,11 @@ def main():
     odds = simulate_season(df, saved, season)
     records = team_records(df, season)
     ranks = power_rankings(saved, df, SNAPSHOTS, season)
+    stats = team_stats(df, season, ranks, odds)
+    cards = []
+    for slot in best["slot"]:
+        cards.append(f"<h3>{e(slot)}</h3>")
+        cards += [game_card(r, r.game_id in best_ids, stats) for _, r in this_week[this_week["slot"] == slot].iterrows()]
 
     # Pick tracker + odds history (saved in docs/data/ so they build up over the season)
     picks = picks_frame(update_picks(all_preds), season)
