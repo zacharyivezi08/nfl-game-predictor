@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>MIA · NFL Game Predictor</title>
-<meta name="theme-color" content="#BF5700"><style>
+<meta name="theme-color" content="#F26A00"><style>
 :root{--bg:#f3f5f9;--card:#fff;--card2:#f7f8fb;--ink:#0f141c;--muted:#5b6472;--line:#e2e6ec;--grid:#e9ecf1;
 --s1:#2a78d6;--s2:#eb6834;--good:#1a7f37;--bad:#c2255c;--warn:#9a6700;--warnbg:#fff4d6;
 --hero1:#0b1a33;--hero2:#123a73;--glow:rgba(42,120,214,.18);--shadow:0 1px 2px rgba(15,20,28,.06),0 4px 16px rgba(15,20,28,.05)}
@@ -124,22 +124,29 @@ font-family:"Arial Narrow","Roboto Condensed","Helvetica Neue",sans-serif;font-s
 .uprow{display:flex;align-items:center;gap:10px;margin:6px 0 4px}.uprow b{font-size:26px;font-weight:800;min-width:58px}
 .umeter{flex:1;height:8px;border-radius:4px;background:var(--grid);overflow:hidden}.umeter i{display:block;height:8px;max-width:100%;background:var(--tc)}
 @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-/* Texas burnt orange page background: text sitting on the page is white, cards keep their own colors */
-:root{--page:#BF5700;--onpage:#fff;--onpage-muted:#ffe6d1}
-body{background:var(--page)}
+/* White page, bright orange header + cards (white text inside the orange) */
+:root,:root:not([data-theme="light"]){--bg:#ffffff;--ink:#14171c;--muted:#5b6472;--line:#e7e9ee;--grid:#eef0f3;--card2:#f6f7f9}
+body{background:#fff;color:var(--ink)}
 .hero{background:radial-gradient(1200px 400px at 85% -20%,rgba(255,170,90,.35),transparent 60%),
-linear-gradient(135deg,#6e3200,#a84c00)}
-.hero .sub,.stat span{color:#ffe6d1}.kicker,.back{color:#ffd2ad}
-main{color:var(--onpage)}
-main>h2,main>section>h2,main>h3,main>section>h3{color:var(--onpage)}
-main h3,main .note,main details>summary{color:var(--onpage-muted)}
-.game .note,.chart .note,.cmp .note,.wrap .note,.upset .note,.glance .note,.card .note,.game summary,.game details>summary{color:var(--muted)}
-main>.note a,main>section>.note a{color:#fff;font-weight:700}
-h2::before{background:#fff}
-nav{background:color-mix(in srgb,var(--page) 88%,transparent);border-bottom-color:rgba(255,255,255,.25)}
-footer{color:var(--onpage-muted);border-top-color:rgba(255,255,255,.3)}footer a{color:#fff;font-weight:700}footer b{color:#fff}
-.game,.slot,.chart,.wrap,.glance>div,.upset,main .stat,.teamnav a,nav a,.card{color:var(--ink)}
-main .stat span{color:var(--muted)}
+linear-gradient(135deg,#e25d00,#ff8a1f)}
+.hero .sub,.hero .stat span{color:#fff5eb}.kicker,.back{color:#fff3e6}
+nav{background:rgba(255,255,255,.92);border-bottom-color:var(--line)}
+nav a{background:#fff;color:#b44d00;border-color:#ffc999}nav a:hover{border-color:#F26A00;color:#F26A00}
+h2::before{background:#F26A00}
+.game,.slot,.chart,.wrap,.glance>div,.upset,main .stat,.teamnav a,.card{
+--card:#F26A00;--card2:rgba(255,255,255,.13);--ink:#fff;--muted:#fff1e3;--line:rgba(255,255,255,.28);--grid:rgba(255,255,255,.2);
+--s1:#fff;--good:#b9f6b0;--bad:#ffc2d6;--warn:#fff3c4;--warnbg:rgba(0,0,0,.18);
+background:#F26A00;color:#fff;border-color:#dd6000;box-shadow:0 2px 10px rgba(242,106,0,.25)}
+.game:hover,.slot:hover{box-shadow:0 10px 28px rgba(242,106,0,.35)}
+.best{box-shadow:0 0 0 3px rgba(242,106,0,.35)}
+th{background:rgba(0,0,0,.12)}
+.blend{background:rgba(255,255,255,.18)}.star{background:#fff;color:#F26A00}
+.tag{background:rgba(0,0,0,.2);color:#fff3c4}
+.mypick button.on{background:#fff;color:#F26A00;border-color:#fff}
+.cmp td.win{background:rgba(255,255,255,.22)!important}
+.meter{background:rgba(255,255,255,.25)}.meter i{background:#fff}
+footer{color:var(--muted)}footer a{color:#F26A00;font-weight:700}
+.teamnav a{color:#fff}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style></head><body>
 <header class="hero thero" style="--tc:#008E97"><div class="in"><a class="back" href="../index.html">← All picks</a><img class="hlogo" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/mia.png&h=176&w=176" alt="" width="88" height="88" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/mia.png'"><div class="kicker">AFC East · 2026</div><h1>MIA <span style="opacity:.6">0-3</span></h1>

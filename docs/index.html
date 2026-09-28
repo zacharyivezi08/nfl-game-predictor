@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>NFL Game Predictor</title>
 <meta name="description" content="Machine learning picks, predicted scores, power rankings and playoff odds for every NFL game.">
-<meta name="theme-color" content="#BF5700"><style>
+<meta name="theme-color" content="#F26A00"><style>
 :root{--bg:#f3f5f9;--card:#fff;--card2:#f7f8fb;--ink:#0f141c;--muted:#5b6472;--line:#e2e6ec;--grid:#e9ecf1;
 --s1:#2a78d6;--s2:#eb6834;--good:#1a7f37;--bad:#c2255c;--warn:#9a6700;--warnbg:#fff4d6;
 --hero1:#0b1a33;--hero2:#123a73;--glow:rgba(42,120,214,.18);--shadow:0 1px 2px rgba(15,20,28,.06),0 4px 16px rgba(15,20,28,.05)}
@@ -125,22 +125,29 @@ font-family:"Arial Narrow","Roboto Condensed","Helvetica Neue",sans-serif;font-s
 .uprow{display:flex;align-items:center;gap:10px;margin:6px 0 4px}.uprow b{font-size:26px;font-weight:800;min-width:58px}
 .umeter{flex:1;height:8px;border-radius:4px;background:var(--grid);overflow:hidden}.umeter i{display:block;height:8px;max-width:100%;background:var(--tc)}
 @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-/* Texas burnt orange page background: text sitting on the page is white, cards keep their own colors */
-:root{--page:#BF5700;--onpage:#fff;--onpage-muted:#ffe6d1}
-body{background:var(--page)}
+/* White page, bright orange header + cards (white text inside the orange) */
+:root,:root:not([data-theme="light"]){--bg:#ffffff;--ink:#14171c;--muted:#5b6472;--line:#e7e9ee;--grid:#eef0f3;--card2:#f6f7f9}
+body{background:#fff;color:var(--ink)}
 .hero{background:radial-gradient(1200px 400px at 85% -20%,rgba(255,170,90,.35),transparent 60%),
-linear-gradient(135deg,#6e3200,#a84c00)}
-.hero .sub,.stat span{color:#ffe6d1}.kicker,.back{color:#ffd2ad}
-main{color:var(--onpage)}
-main>h2,main>section>h2,main>h3,main>section>h3{color:var(--onpage)}
-main h3,main .note,main details>summary{color:var(--onpage-muted)}
-.game .note,.chart .note,.cmp .note,.wrap .note,.upset .note,.glance .note,.card .note,.game summary,.game details>summary{color:var(--muted)}
-main>.note a,main>section>.note a{color:#fff;font-weight:700}
-h2::before{background:#fff}
-nav{background:color-mix(in srgb,var(--page) 88%,transparent);border-bottom-color:rgba(255,255,255,.25)}
-footer{color:var(--onpage-muted);border-top-color:rgba(255,255,255,.3)}footer a{color:#fff;font-weight:700}footer b{color:#fff}
-.game,.slot,.chart,.wrap,.glance>div,.upset,main .stat,.teamnav a,nav a,.card{color:var(--ink)}
-main .stat span{color:var(--muted)}
+linear-gradient(135deg,#e25d00,#ff8a1f)}
+.hero .sub,.hero .stat span{color:#fff5eb}.kicker,.back{color:#fff3e6}
+nav{background:rgba(255,255,255,.92);border-bottom-color:var(--line)}
+nav a{background:#fff;color:#b44d00;border-color:#ffc999}nav a:hover{border-color:#F26A00;color:#F26A00}
+h2::before{background:#F26A00}
+.game,.slot,.chart,.wrap,.glance>div,.upset,main .stat,.teamnav a,.card{
+--card:#F26A00;--card2:rgba(255,255,255,.13);--ink:#fff;--muted:#fff1e3;--line:rgba(255,255,255,.28);--grid:rgba(255,255,255,.2);
+--s1:#fff;--good:#b9f6b0;--bad:#ffc2d6;--warn:#fff3c4;--warnbg:rgba(0,0,0,.18);
+background:#F26A00;color:#fff;border-color:#dd6000;box-shadow:0 2px 10px rgba(242,106,0,.25)}
+.game:hover,.slot:hover{box-shadow:0 10px 28px rgba(242,106,0,.35)}
+.best{box-shadow:0 0 0 3px rgba(242,106,0,.35)}
+th{background:rgba(0,0,0,.12)}
+.blend{background:rgba(255,255,255,.18)}.star{background:#fff;color:#F26A00}
+.tag{background:rgba(0,0,0,.2);color:#fff3c4}
+.mypick button.on{background:#fff;color:#F26A00;border-color:#fff}
+.cmp td.win{background:rgba(255,255,255,.22)!important}
+.meter{background:rgba(255,255,255,.25)}.meter i{background:#fff}
+footer{color:var(--muted)}footer a{color:#F26A00;font-weight:700}
+.teamnav a{color:#fff}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style></head><body>
 <header class="hero"><div class="in">
@@ -644,7 +651,8 @@ ones that improved predictions. Data from <a href="https://github.com/nflverse">
 Code: <a href="https://github.com/zacharyivezi08/nfl-game-predictor">github.com/zacharyivezi08/nfl-game-predictor</a>.
 <br><br><b>Not betting advice.</b> "Most confident" means most likely to win, not a good bet. In a 10-season backtest
 against real odds, betting the model's picks lost about 2–6% of the money wagered, and its spread and over/under
-picks hit about 49–50%, below the 52.4% needed to break even. Vegas is more accurate than this model.</footer>
+picks hit about 49–50%, below the 52.4% needed to break even. Vegas is more accurate than this model.
+<br><br>© 2026 Zachary Ivezi. All rights reserved.</footer>
 </main><script>
 (function(){const R={"2026_01_NE_SEA": {"w": "SEA", "m": "SEA", "v": "SEA"}, "2026_01_SF_LA": {"w": "SF", "m": "LA", "v": "LA"}, "2026_01_ARI_LAC": {"w": "ARI", "m": "LAC", "v": "LAC"}, "2026_01_ATL_PIT": {"w": "PIT", "m": "PIT", "v": "PIT"}, "2026_01_BAL_IND": {"w": "BAL", "m": "BAL", "v": "BAL"}, "2026_01_BUF_HOU": {"w": "BUF", "m": "HOU", "v": "BUF"}, "2026_01_CHI_CAR": {"w": "CHI", "m": "CHI", "v": "CHI"}, "2026_01_CLE_JAX": {"w": "JAX", "m": "JAX", "v": "JAX"}, "2026_01_DAL_NYG": {"w": "NYG", "m": "DAL", "v": "DAL"}, "2026_01_GB_MIN": {"w": "MIN", "m": "MIN", "v": "MIN"}, "2026_01_MIA_LV": {"w": "LV", "m": "MIA", "v": "LV"}, "2026_01_NO_DET": {"w": "DET", "m": "DET", "v": "DET"}, "2026_01_NYJ_TEN": {"w": "NYJ", "m": "TEN", "v": "TEN"}, "2026_01_TB_CIN": {"w": "CIN", "m": "CIN", "v": "CIN"}, "2026_01_WAS_PHI": {"w": "PHI", "m": "PHI", "v": "PHI"}, "2026_01_DEN_KC": {"w": "KC", "m": "DEN", "v": "KC"}, "2026_02_DET_BUF": {"w": "BUF", "m": "BUF", "v": "BUF"}, "2026_02_CAR_ATL": {"w": "CAR", "m": "ATL", "v": "CAR"}, "2026_02_CIN_HOU": {"w": "CIN", "m": "HOU", "v": "HOU"}, "2026_02_CLE_TB": {"w": "CLE", "m": "TB", "v": "TB"}, "2026_02_GB_NYJ": {"w": "GB", "m": "GB", "v": "GB"}, "2026_02_IND_KC": {"w": "KC", "m": "KC", "v": "KC"}, "2026_02_JAX_DEN": {"w": "DEN", "m": "JAX", "v": "DEN"}, "2026_02_LV_LAC": {"w": "LV", "m": "LAC", "v": "LAC"}, "2026_02_MIA_SF": {"w": "SF", "m": "SF", "v": "SF"}, "2026_02_MIN_CHI": {"w": "MIN", "m": "CHI", "v": "CHI"}, "2026_02_NO_BAL": {"w": "NO", "m": "BAL", "v": "BAL"}, "2026_02_PHI_TEN": {"w": "PHI", "m": "PHI", "v": "PHI"}, "2026_02_PIT_NE": {"w": "NE", "m": "NE", "v": "NE"}, "2026_02_SEA_ARI": {"w": "SEA", "m": "SEA", "v": "SEA"}, "2026_02_WAS_DAL": {"w": "DAL", "m": "DAL", "v": "DAL"}, "2026_02_NYG_LA": {"w": "LA", "m": "LA", "v": "LA"}, "2026_03_ATL_GB": {"w": "ATL", "m": "GB", "v": "GB"}, "2026_03_ARI_SF": {"w": "SF", "m": "SF", "v": "SF"}, "2026_03_BAL_DAL": {"w": "BAL", "m": "BAL", "v": "BAL"}, "2026_03_CAR_CLE": {"w": "CLE", "m": "CLE", "v": "CAR"}, "2026_03_CIN_PIT": {"w": "PIT", "m": "CIN", "v": "CIN"}, "2026_03_HOU_IND": {"w": "IND", "m": "HOU", "v": "HOU"}, "2026_03_KC_MIA": {"w": "KC", "m": "KC", "v": "KC"}, "2026_03_LAC_BUF": {"w": "BUF", "m": "BUF", "v": "BUF"}, "2026_03_LA_DEN": {"w": "DEN", "m": "DEN", "v": "DEN"}, "2026_03_LV_NO": {"w": "LV", "m": "NO", "v": "NO"}, "2026_03_MIN_TB": {"w": "MIN", "m": "MIN", "v": "MIN"}, "2026_03_NE_JAX": {"w": "JAX", "m": "JAX", "v": "JAX"}, "2026_03_NYJ_DET": {"w": "DET", "m": "DET", "v": "DET"}, "2026_03_SEA_WAS": {"w": "WAS", "m": "SEA", "v": "SEA"}, "2026_03_TEN_NYG": {"w": "NYG", "m": "NYG", "v": "NYG"}};let P={};
 try{P=JSON.parse(localStorage.getItem('nflgp-picks')||'{}')}catch(e){}
