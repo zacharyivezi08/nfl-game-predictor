@@ -67,7 +67,7 @@ h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.1e
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .teams{font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px}.teams small{color:var(--muted);font-weight:500}
 .pick{font-weight:800;font-size:17px}.bar{display:flex;gap:3px;height:10px;margin:12px 0 8px}
-.bar i{display:block;border-radius:5px}.a{background:var(--s2)}.h{background:var(--s1)}
+.bar i{display:block;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(128,128,128,.35)}
 .meta{color:var(--muted);font-size:13px}.why{font-size:13px;margin-top:8px;color:var(--muted)}.why b{color:var(--ink)}
 .score{font-size:13px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
 .blend{font-size:13px;margin-top:6px;display:inline-block;padding:3px 10px;border-radius:8px;
@@ -120,6 +120,34 @@ TEAM_COLORS = {
     "NYJ": "#125740", "PHI": "#004C54", "PIT": "#FFB612", "SEA": "#69BE28", "SF": "#AA0000", "TB": "#D50A0A",
     "TEN": "#4B92DB", "WAS": "#5A1414",
 }
+# Second color, used for the away team's bar when both teams' main colors look too alike
+TEAM_ALT_COLORS = {
+    "ARI": "#FFB612", "ATL": "#A5ACAF", "BAL": "#9E7C0C", "BUF": "#C60C30", "CAR": "#BFC0BF", "CHI": "#0B162A",
+    "CIN": "#1A1A1A", "CLE": "#311D00", "DAL": "#869397", "DEN": "#002244", "DET": "#B0B7BC", "GB": "#FFB612",
+    "HOU": "#03202F", "IND": "#A2AAAD", "JAX": "#D7A22A", "KC": "#FFB81C", "LA": "#FFA300", "LAC": "#FFC20E",
+    "LV": "#1A1A1A", "MIA": "#FC4C02", "MIN": "#FFC62F", "NE": "#002244", "NO": "#101820", "NYG": "#A71930",
+    "NYJ": "#1A1A1A", "PHI": "#A5ACAF", "PIT": "#101820", "SEA": "#002244", "SF": "#B3995D", "TB": "#34302B",
+    "TEN": "#0C2340", "WAS": "#FFB612",
+}
+
+
+def _rgb(c):
+    return tuple(int(c[i:i + 2], 16) for i in (1, 3, 5))
+
+
+def _too_close(c1, c2):
+    return sum((a - b) ** 2 for a, b in zip(_rgb(c1), _rgb(c2))) ** 0.5 < 100
+
+
+def bar_colors(away, home):
+    """Each team's own color; if they'd look the same, the away team switches to its second color."""
+    h = TEAM_COLORS.get(home, "#2a78d6")
+    a = TEAM_COLORS.get(away, "#eb6834")
+    if _too_close(a, h):
+        a = TEAM_ALT_COLORS.get(away, a)
+        if _too_close(a, h):
+            a = "#8a96a8"  # neutral gray as a last resort
+    return a, h
 
 
 def tl(team, prefix=""):
@@ -139,6 +167,7 @@ def slot_card(r):
 
 def game_card(r, is_best=False):
     away_pct = round((1 - r.home_prob) * 100)
+    ca, ch = bar_colors(r.away_team, r.home_team)
     disagree = isinstance(r.vegas_pick, str) and r.vegas_pick != r.pick
     vegas = f"Vegas: {e(r.vegas_pick)} {r.vegas_conf:.0%}" if isinstance(r.vegas_pick, str) else "Vegas: no line yet"
     qbs = f"{e(str(r.away_qb))} vs {e(str(r.home_qb))} · " if isinstance(r.home_qb, str) else ""
@@ -160,7 +189,7 @@ def game_card(r, is_best=False):
   <div class="row"><div class="teams">{tl(r.away_team)} <small>@</small> {tl(r.home_team)}</div>
   <div>{badges}<span class="pick">{e(r.pick)} {r.confidence:.0%}</span></div></div>
   <div class="bar" role="img" aria-label="{e(r.away_team)} {away_pct}%, {e(r.home_team)} {100 - away_pct}%">
-    <i class="a" style="width:{away_pct}%"></i><i class="h" style="width:{100 - away_pct}%"></i></div>
+    <i style="width:{away_pct}%;background:{ca}"></i><i style="width:{100 - away_pct}%;background:{ch}"></i></div>
   <div class="row meta"><span>{e(r.away_team)} {away_pct}% · {e(r.home_team)} {100 - away_pct}%</span><span>{vegas}</span></div>
   <div class="meta">{qbs}{r.gameday:%a %b %-d}</div>
   {score}
@@ -519,7 +548,7 @@ def main():
 <h2 id="slots">Most confident pick of each time slot</h2>
 <div class="slots">{''.join(slot_card(r) for _, r in best.iterrows())}</div>
 <h2 id="picks">Week {week} picks</h2>
-<p class="note">Blue = home team, orange = away team. Predicted scores come from separate spread and total models.
+<p class="note">Bars are in team colors: away team on the left, home team on the right. Predicted scores come from separate spread and total models.
 "Model + Vegas blend" combines the model with the betting line. It's the most accurate forecast on this page (in 2022–2025
 testing it matched Vegas, 67.7% vs 67.6%). When there's no line yet, it's just the model.</p>
 {''.join(cards)}
