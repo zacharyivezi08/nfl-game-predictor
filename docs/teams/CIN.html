@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>CIN · NFL Game Predictor</title>
-<meta name="theme-color" content="#0b1a33"><style>
+<meta name="theme-color" content="#BF5700"><style>
 :root{--bg:#f3f5f9;--card:#fff;--card2:#f7f8fb;--ink:#0f141c;--muted:#5b6472;--line:#e2e6ec;--grid:#e9ecf1;
 --s1:#2a78d6;--s2:#eb6834;--good:#1a7f37;--bad:#c2255c;--warn:#9a6700;--warnbg:#fff4d6;
 --hero1:#0b1a33;--hero2:#123a73;--glow:rgba(42,120,214,.18);--shadow:0 1px 2px rgba(15,20,28,.06),0 4px 16px rgba(15,20,28,.05)}
@@ -110,11 +110,36 @@ background:var(--card2);border:1.5px solid var(--line);border-radius:999px;paddi
 .mypick button.on{border-color:var(--s1);background:color-mix(in srgb,var(--s1) 16%,transparent)}
 .mypick button:disabled{opacity:.5;cursor:default}.mypick button.on:disabled{opacity:1}
 #myrec:empty{display:none}
+.sb{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:12px 0 4px;padding:14px 8px;
+border-radius:14px;background:var(--card2);border:1px solid var(--grid)}
+.sbt{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.sbt .sblg{width:52px;height:52px;object-fit:contain}.sbt span{font-size:13px;font-weight:700;color:var(--muted)}
+.sbt b{font-size:clamp(34px,8vw,46px);line-height:1;font-weight:900;letter-spacing:-.02em;color:var(--muted);
+font-family:"Arial Narrow","Roboto Condensed","Helvetica Neue",sans-serif;font-stretch:condensed}
+.sbt b.w{color:var(--good)}.sbt i.hid{visibility:hidden}.sbt i{font-style:normal;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--good)}
+.sbm{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:center;line-height:1.3}
+.sbf{text-align:center;font-size:13px;font-weight:700;margin:2px 0}
 .upsets{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
 .upset{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--tc);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
 .uprow{display:flex;align-items:center;gap:10px;margin:6px 0 4px}.uprow b{font-size:26px;font-weight:800;min-width:58px}
 .umeter{flex:1;height:8px;border-radius:4px;background:var(--grid);overflow:hidden}.umeter i{display:block;height:8px;max-width:100%;background:var(--tc)}
 @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+/* Texas burnt orange page background: text sitting on the page is white, cards keep their own colors */
+:root{--page:#BF5700;--onpage:#fff;--onpage-muted:#ffe6d1}
+body{background:var(--page)}
+.hero{background:radial-gradient(1200px 400px at 85% -20%,rgba(255,170,90,.35),transparent 60%),
+linear-gradient(135deg,#6e3200,#a84c00)}
+.hero .sub,.stat span{color:#ffe6d1}.kicker,.back{color:#ffd2ad}
+main{color:var(--onpage)}
+main>h2,main>section>h2,main>h3,main>section>h3{color:var(--onpage)}
+main h3,main .note,main details>summary{color:var(--onpage-muted)}
+.game .note,.chart .note,.cmp .note,.wrap .note,.upset .note,.glance .note,.card .note,.game summary,.game details>summary{color:var(--muted)}
+main>.note a,main>section>.note a{color:#fff;font-weight:700}
+h2::before{background:#fff}
+nav{background:color-mix(in srgb,var(--page) 88%,transparent);border-bottom-color:rgba(255,255,255,.25)}
+footer{color:var(--onpage-muted);border-top-color:rgba(255,255,255,.3)}footer a{color:#fff;font-weight:700}footer b{color:#fff}
+.game,.slot,.chart,.wrap,.glance>div,.upset,main .stat,.teamnav a,nav a,.card{color:var(--ink)}
+main .stat span{color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style></head><body>
 <header class="hero thero" style="--tc:#FB4F14"><div class="in"><a class="back" href="../index.html">← All picks</a><img class="hlogo" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/cin.png&h=176&w=176" alt="" width="88" height="88" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/cin.png'"><div class="kicker">AFC North · 2026</div><h1>CIN <span style="opacity:.6">2-1</span></h1>

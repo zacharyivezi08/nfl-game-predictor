@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>NFL Game Predictor</title>
 <meta name="description" content="Machine learning picks, predicted scores, power rankings and playoff odds for every NFL game.">
-<meta name="theme-color" content="#0b1a33"><style>
+<meta name="theme-color" content="#BF5700"><style>
 :root{--bg:#f3f5f9;--card:#fff;--card2:#f7f8fb;--ink:#0f141c;--muted:#5b6472;--line:#e2e6ec;--grid:#e9ecf1;
 --s1:#2a78d6;--s2:#eb6834;--good:#1a7f37;--bad:#c2255c;--warn:#9a6700;--warnbg:#fff4d6;
 --hero1:#0b1a33;--hero2:#123a73;--glow:rgba(42,120,214,.18);--shadow:0 1px 2px rgba(15,20,28,.06),0 4px 16px rgba(15,20,28,.05)}
@@ -111,11 +111,36 @@ background:var(--card2);border:1.5px solid var(--line);border-radius:999px;paddi
 .mypick button.on{border-color:var(--s1);background:color-mix(in srgb,var(--s1) 16%,transparent)}
 .mypick button:disabled{opacity:.5;cursor:default}.mypick button.on:disabled{opacity:1}
 #myrec:empty{display:none}
+.sb{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:12px 0 4px;padding:14px 8px;
+border-radius:14px;background:var(--card2);border:1px solid var(--grid)}
+.sbt{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.sbt .sblg{width:52px;height:52px;object-fit:contain}.sbt span{font-size:13px;font-weight:700;color:var(--muted)}
+.sbt b{font-size:clamp(34px,8vw,46px);line-height:1;font-weight:900;letter-spacing:-.02em;color:var(--muted);
+font-family:"Arial Narrow","Roboto Condensed","Helvetica Neue",sans-serif;font-stretch:condensed}
+.sbt b.w{color:var(--good)}.sbt i.hid{visibility:hidden}.sbt i{font-style:normal;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--good)}
+.sbm{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:center;line-height:1.3}
+.sbf{text-align:center;font-size:13px;font-weight:700;margin:2px 0}
 .upsets{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
 .upset{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--tc);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
 .uprow{display:flex;align-items:center;gap:10px;margin:6px 0 4px}.uprow b{font-size:26px;font-weight:800;min-width:58px}
 .umeter{flex:1;height:8px;border-radius:4px;background:var(--grid);overflow:hidden}.umeter i{display:block;height:8px;max-width:100%;background:var(--tc)}
 @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+/* Texas burnt orange page background: text sitting on the page is white, cards keep their own colors */
+:root{--page:#BF5700;--onpage:#fff;--onpage-muted:#ffe6d1}
+body{background:var(--page)}
+.hero{background:radial-gradient(1200px 400px at 85% -20%,rgba(255,170,90,.35),transparent 60%),
+linear-gradient(135deg,#6e3200,#a84c00)}
+.hero .sub,.stat span{color:#ffe6d1}.kicker,.back{color:#ffd2ad}
+main{color:var(--onpage)}
+main>h2,main>section>h2,main>h3,main>section>h3{color:var(--onpage)}
+main h3,main .note,main details>summary{color:var(--onpage-muted)}
+.game .note,.chart .note,.cmp .note,.wrap .note,.upset .note,.glance .note,.card .note,.game summary,.game details>summary{color:var(--muted)}
+main>.note a,main>section>.note a{color:#fff;font-weight:700}
+h2::before{background:#fff}
+nav{background:color-mix(in srgb,var(--page) 88%,transparent);border-bottom-color:rgba(255,255,255,.25)}
+footer{color:var(--onpage-muted);border-top-color:rgba(255,255,255,.3)}footer a{color:#fff;font-weight:700}footer b{color:#fff}
+.game,.slot,.chart,.wrap,.glance>div,.upset,main .stat,.teamnav a,nav a,.card{color:var(--ink)}
+main .stat span{color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style></head><body>
 <header class="hero"><div class="in">
@@ -186,12 +211,21 @@ Break-even for betting is 52.4%, so these are interesting, not proven: see the h
 <details class="game best"><summary>
   <div class="row"><div class="teams"><a class="tb" style="--tc:#A71930" href="teams/ATL.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/atl.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/atl.png'">ATL</a> <small>@</small> <a class="tb" style="--tc:#203731" href="teams/GB.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/gb.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/gb.png'">GB</a></div>
   <div><span class="pick">GB 66%</span></div></div>
+  <div class="sb">
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/atl.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/atl.png'"><span>ATL</span><b class="">18.7</b>
+    <i class="hid">Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/gb.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/gb.png'"><span>GB</span><b class="w">24.7</b>
+    <i>Winner</i></div>
+</div><div class="sbf">Final: ATL 35, GB 14</div>
   <div class="bar" role="img" aria-label="ATL 34%, GB 66%">
     <i style="width:34%;background:#A71930"></i><i style="width:66%;background:#203731"></i></div>
   <div class="row meta"><span>ATL 34% · GB 66%</span><span>Vegas: GB 67%</span></div>
   <div class="meta">Michael Penix Jr. vs Jordan Love · Thu Sep 24</div>
   <div class="mypick" data-g="2026_03_ATL_GB" data-k="2026-09-24T20:15:00-04:00"><span class="meta">Your pick:</span><button type="button" data-t="ATL"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/atl.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/atl.png'">ATL</button><button type="button" data-t="GB"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/gb.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/gb.png'">GB</button><span class="res"></span></div>
-  <div class="score"><b>Predicted:</b> ATL 19, GB 25 · Spread GB -6 <span class="meta">(Vegas GB -4.5)</span> · Total 43.4 <span class="meta">(Vegas 43.5)</span></div>
+  <div class="score">Spread GB -6
+ <span class="meta">(Vegas GB -4.5)</span>
+ · Total 43.4 <span class="meta">(Vegas 43.5)</span></div>
   
   <div class="blend"><b>Model + Vegas blend: GB 67%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → GB · Starting QB → GB · Injuries → ATL</div>
@@ -201,12 +235,21 @@ Break-even for betting is 52.4%, so these are interesting, not proven: see the h
 <details class="game"><summary>
   <div class="row"><div class="teams"><a class="tb" style="--tc:#0085CA" href="teams/CAR.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/car.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/car.png'">CAR</a> <small>@</small> <a class="tb" style="--tc:#FF3C00" href="teams/CLE.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/cle.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/cle.png'">CLE</a></div>
   <div><span class="tag">Disagrees with Vegas</span> <span class="pick">CLE 53%</span></div></div>
+  <div class="sb">
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/car.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/car.png'"><span>CAR</span><b class="">20.0</b>
+    <i class="hid">Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/cle.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/cle.png'"><span>CLE</span><b class="w">20.5</b>
+    <i>Winner</i></div>
+</div><div class="sbf">Final: CAR 18, CLE 21</div>
   <div class="bar" role="img" aria-label="CAR 47%, CLE 53%">
     <i style="width:47%;background:#0085CA"></i><i style="width:53%;background:#FF3C00"></i></div>
   <div class="row meta"><span>CAR 47% · CLE 53%</span><span>Vegas: CAR 55%</span></div>
   <div class="meta">Bryce Young vs Deshaun Watson · Sun Sep 27</div>
   <div class="mypick" data-g="2026_03_CAR_CLE" data-k="2026-09-27T13:00:00-04:00"><span class="meta">Your pick:</span><button type="button" data-t="CAR"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/car.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/car.png'">CAR</button><button type="button" data-t="CLE"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/cle.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/cle.png'">CLE</button><span class="res"></span></div>
-  <div class="score"><b>Predicted:</b> CAR 20, CLE 20 · Spread CLE -0.5 <span class="meta">(Vegas CAR -2.5)</span> · Total 40.4 <span class="meta">(Vegas 41.5)</span></div>
+  <div class="score">Spread CLE -0.5
+ <span class="meta">(Vegas CAR -2.5)</span>
+ · Total 40.4 <span class="meta">(Vegas 41.5)</span></div>
   
   <div class="blend"><b>Model + Vegas blend: CAR 56%</b></div>
   <div class="why"><b>Why:</b> Starting QB → CAR · Success rate → CAR · Offense efficiency (EPA) → CLE</div>
@@ -216,12 +259,21 @@ Break-even for betting is 52.4%, so these are interesting, not proven: see the h
 <details class="game"><summary>
   <div class="row"><div class="teams"><a class="tb" style="--tc:#FB4F14" href="teams/CIN.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/cin.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/cin.png'">CIN</a> <small>@</small> <a class="tb" style="--tc:#FFB612" href="teams/PIT.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/pit.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/pit.png'">PIT</a></div>
   <div><span class="pick">CIN 60%</span></div></div>
+  <div class="sb">
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/cin.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/cin.png'"><span>CIN</span><b class="w">21.7</b>
+    <i>Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/pit.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/pit.png'"><span>PIT</span><b class="">19.2</b>
+    <i class="hid">Winner</i></div>
+</div><div class="sbf">Final: CIN 27, PIT 30</div>
   <div class="bar" role="img" aria-label="CIN 60%, PIT 40%">
     <i style="width:60%;background:#FB4F14"></i><i style="width:40%;background:#FFB612"></i></div>
   <div class="row meta"><span>CIN 60% · PIT 40%</span><span>Vegas: CIN 62%</span></div>
   <div class="meta">Joe Burrow vs Aaron Rodgers · Sun Sep 27</div>
   <div class="mypick" data-g="2026_03_CIN_PIT" data-k="2026-09-27T13:00:00-04:00"><span class="meta">Your pick:</span><button type="button" data-t="CIN"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/cin.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/cin.png'">CIN</button><button type="button" data-t="PIT"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/pit.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/pit.png'">PIT</button><span class="res"></span></div>
-  <div class="score"><b>Predicted:</b> CIN 22, PIT 19 · Spread CIN -2.5 <span class="meta">(Vegas CIN -3.5)</span> · Total 40.9 <span class="meta">(Vegas 42.5)</span></div>
+  <div class="score">Spread CIN -2.5
+ <span class="meta">(Vegas CIN -3.5)</span>
+ · Total 40.9 <span class="meta">(Vegas 42.5)</span></div>
   
   <div class="blend"><b>Model + Vegas blend: CIN 63%</b></div>
   <div class="why"><b>Why:</b> Starting QB → CIN · Recent offense → CIN · Recent point differential → CIN</div>
@@ -231,12 +283,21 @@ Break-even for betting is 52.4%, so these are interesting, not proven: see the h
 <details class="game"><summary>
   <div class="row"><div class="teams"><a class="tb" style="--tc:#A71930" href="teams/HOU.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/hou.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/hou.png'">HOU</a> <small>@</small> <a class="tb" style="--tc:#002C5F" href="teams/IND.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ind.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/ind.png'">IND</a></div>
   <div><span class="pick">HOU 58%</span></div></div>
+  <div class="sb">
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/hou.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/hou.png'"><span>HOU</span><b class="w">24.4</b>
+    <i>Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ind.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/ind.png'"><span>IND</span><b class="">22.2</b>
+    <i class="hid">Winner</i></div>
+</div><div class="sbf">Final: HOU 17, IND 19</div>
   <div class="bar" role="img" aria-label="HOU 58%, IND 42%">
     <i style="width:58%;background:#A71930"></i><i style="width:42%;background:#002C5F"></i></div>
   <div class="row meta"><span>HOU 58% · IND 42%</span><span>Vegas: HOU 53%</span></div>
   <div class="meta">C.J. Stroud vs Daniel Jones · Sun Sep 27</div>
   <div class="mypick" data-g="2026_03_HOU_IND" data-k="2026-09-27T13:00:00-04:00"><span class="meta">Your pick:</span><button type="button" data-t="HOU"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/hou.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/hou.png'">HOU</button><button type="button" data-t="IND"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ind.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/ind.png'">IND</button><span class="res"></span></div>
-  <div class="score"><b>Predicted:</b> HOU 24, IND 22 · Spread HOU -2 <span class="meta">(Vegas HOU -1.5)</span> · Total 46.6 <span class="meta">(Vegas 41.5)</span></div>
+  <div class="score">Spread HOU -2
+ <span class="meta">(Vegas HOU -1.5)</span>
+ · Total 46.6 <span class="meta">(Vegas 41.5)</span></div>
   <div class="flag"><b>Total: model says OVER 41.5</b>. It predicts 46.6, 5.1 pts higher. <span class="meta">4+ pt gaps have been right 54% (599 games, 2012–2025)</span></div>
   <div class="blend"><b>Model + Vegas blend: HOU 55%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → HOU · Success rate → HOU · Division game → HOU</div>
@@ -246,12 +307,21 @@ Break-even for betting is 52.4%, so these are interesting, not proven: see the h
 <details class="game"><summary>
   <div class="row"><div class="teams"><a class="tb" style="--tc:#E31837" href="teams/KC.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/kc.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/kc.png'">KC</a> <small>@</small> <a class="tb" style="--tc:#008E97" href="teams/MIA.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/mia.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/mia.png'">MIA</a></div>
   <div><span class="pick">KC 63%</span></div></div>
+  <div class="sb">
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/kc.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/kc.png'"><span>KC</span><b class="w">24.4</b>
+    <i>Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/mia.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/mia.png'"><span>MIA</span><b class="">20.4</b>
+    <i class="hid">Winner</i></div>
+</div><div class="sbf">Final: KC 24, MIA 10</div>
   <div class="bar" role="img" aria-label="KC 63%, MIA 37%">
     <i style="width:63%;background:#E31837"></i><i style="width:37%;background:#008E97"></i></div>
   <div class="row meta"><span>KC 63% · MIA 37%</span><span>Vegas: KC 82%</span></div>
   <div class="meta">Patrick Mahomes vs Malik Willis · Sun Sep 27</div>
   <div class="mypick" data-g="2026_03_KC_MIA" data-k="2026-09-27T13:00:00-04:00"><span class="meta">Your pick:</span><button type="button" data-t="KC"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/kc.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/kc.png'">KC</button><button type="button" data-t="MIA"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/mia.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/mia.png'">MIA</button><span class="res"></span></div>
-  <div class="score"><b>Predicted:</b> KC 24, MIA 20 · Spread KC -4 <span class="meta">(Vegas KC -10)</span> · Total 44.8 <span class="meta">(Vegas 45.5)</span></div>
+  <div class="score">Spread KC -4
+ <span class="meta">(Vegas KC -10)</span>
+ · Total 44.8 <span class="meta">(Vegas 45.5)</span></div>
   <div class="flag"><b>Spread: model likes MIA to cover</b> (KC -10). Its predicted margin is 6.0 pts better for MIA. <span class="meta">4+ pt gaps have been right 54% (562 games, 2012–2025)</span></div>
   <div class="blend"><b>Model + Vegas blend: KC 83%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → KC · Success rate → KC · Recent point differential → KC</div>
@@ -261,12 +331,21 @@ Break-even for betting is 52.4%, so these are interesting, not proven: see the h
 <details class="game best"><summary>
   <div class="row"><div class="teams"><a class="tb" style="--tc:#0080C6" href="teams/LAC.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/lac.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/lac.png'">LAC</a> <small>@</small> <a class="tb" style="--tc:#00338D" href="teams/BUF.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/buf.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/buf.png'">BUF</a></div>
   <div><span class="star">★ Top pick of slot</span> <span class="pick">BUF 85%</span></div></div>
+  <div class="sb">
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/lac.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/lac.png'"><span>LAC</span><b class="">15.9</b>
+    <i class="hid">Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/buf.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/buf.png'"><span>BUF</span><b class="w">28.3</b>
+    <i>Winner</i></div>
+</div><div class="sbf">Final: LAC 16, BUF 24</div>
   <div class="bar" role="img" aria-label="LAC 15%, BUF 85%">
     <i style="width:15%;background:#FFC20E"></i><i style="width:85%;background:#00338D"></i></div>
   <div class="row meta"><span>LAC 15% · BUF 85%</span><span>Vegas: BUF 73%</span></div>
   <div class="meta">Justin Herbert vs Josh Allen · Sun Sep 27</div>
   <div class="mypick" data-g="2026_03_LAC_BUF" data-k="2026-09-27T13:00:00-04:00"><span class="meta">Your pick:</span><button type="button" data-t="LAC"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/lac.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/lac.png'">LAC</button><button type="button" data-t="BUF"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/buf.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/buf.png'">BUF</button><span class="res"></span></div>
-  <div class="score"><b>Predicted:</b> LAC 16, BUF 28 · Spread BUF -12.5 <span class="meta">(Vegas BUF -7)</span> · Total 44.2 <span class="meta">(Vegas 50.5)</span></div>
+  <div class="score">Spread BUF -12.5
+ <span class="meta">(Vegas BUF -7)</span>
+ · Total 44.2 <span class="meta">(Vegas 50.5)</span></div>
   <div class="flag"><b>Spread: model likes BUF to cover</b> (BUF -7). Its predicted margin is 5.3 pts better for BUF. <span class="meta">4+ pt gaps have been right 54% (562 games, 2012–2025)</span></div><div class="flag"><b>Total: model says UNDER 50.5</b>. It predicts 44.2, 6.3 pts lower. <span class="meta">4+ pt gaps have been right 54% (599 games, 2012–2025)</span></div>
   <div class="blend"><b>Model + Vegas blend: BUF 75%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → BUF · Starting QB → BUF · Recent offense → BUF</div>
@@ -276,12 +355,21 @@ Break-even for betting is 52.4%, so these are interesting, not proven: see the h
 <details class="game"><summary>
   <div class="row"><div class="teams"><a class="tb" style="--tc:#C60C30" href="teams/NE.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ne.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/ne.png'">NE</a> <small>@</small> <a class="tb" style="--tc:#006778" href="teams/JAX.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/jax.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/jax.png'">JAX</a></div>
   <div><span class="pick">JAX 59%</span></div></div>
+  <div class="sb">
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ne.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/ne.png'"><span>NE</span><b class="">19.6</b>
+    <i class="hid">Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/jax.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/jax.png'"><span>JAX</span><b class="w">22.4</b>
+    <i>Winner</i></div>
+</div><div class="sbf">Final: NE 6, JAX 35</div>
   <div class="bar" role="img" aria-label="NE 41%, JAX 59%">
     <i style="width:41%;background:#C60C30"></i><i style="width:59%;background:#006778"></i></div>
   <div class="row meta"><span>NE 41% · JAX 59%</span><span>Vegas: JAX 59%</span></div>
   <div class="meta">Drake Maye vs Trevor Lawrence · Sun Sep 27</div>
   <div class="mypick" data-g="2026_03_NE_JAX" data-k="2026-09-27T13:00:00-04:00"><span class="meta">Your pick:</span><button type="button" data-t="NE"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ne.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/ne.png'">NE</button><button type="button" data-t="JAX"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/jax.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/jax.png'">JAX</button><span class="res"></span></div>
-  <div class="score"><b>Predicted:</b> NE 20, JAX 22 · Spread JAX -3 <span class="meta">(Vegas JAX -3)</span> · Total 42.1 <span class="meta">(Vegas 46.5)</span></div>
+  <div class="score">Spread JAX -3
+ <span class="meta">(Vegas JAX -3)</span>
+ · Total 42.1 <span class="meta">(Vegas 46.5)</span></div>
   <div class="flag"><b>Total: model says UNDER 46.5</b>. It predicts 42.1, 4.4 pts lower. <span class="meta">4+ pt gaps have been right 54% (599 games, 2012–2025)</span></div>
   <div class="blend"><b>Model + Vegas blend: JAX 59%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → NE · Recent offense → JAX · Injuries → JAX</div>
@@ -291,12 +379,21 @@ Break-even for betting is 52.4%, so these are interesting, not proven: see the h
 <details class="game"><summary>
   <div class="row"><div class="teams"><a class="tb" style="--tc:#125740" href="teams/NYJ.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/nyj.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png'">NYJ</a> <small>@</small> <a class="tb" style="--tc:#0076B6" href="teams/DET.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/det.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/det.png'">DET</a></div>
   <div><span class="pick">DET 81%</span></div></div>
+  <div class="sb">
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/nyj.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png'"><span>NYJ</span><b class="">18.0</b>
+    <i class="hid">Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/det.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/det.png'"><span>DET</span><b class="w">29.0</b>
+    <i>Winner</i></div>
+</div><div class="sbf">Final: NYJ 24, DET 31</div>
   <div class="bar" role="img" aria-label="NYJ 19%, DET 81%">
     <i style="width:19%;background:#125740"></i><i style="width:81%;background:#0076B6"></i></div>
   <div class="row meta"><span>NYJ 19% · DET 81%</span><span>Vegas: DET 73%</span></div>
   <div class="meta">Geno Smith vs Jared Goff · Sun Sep 27</div>
   <div class="mypick" data-g="2026_03_NYJ_DET" data-k="2026-09-27T13:00:00-04:00"><span class="meta">Your pick:</span><button type="button" data-t="NYJ"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/nyj.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png'">NYJ</button><button type="button" data-t="DET"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/det.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/det.png'">DET</button><span class="res"></span></div>
-  <div class="score"><b>Predicted:</b> NYJ 18, DET 29 · Spread DET -11 <span class="meta">(Vegas DET -7)</span> · Total 47.0 <span class="meta">(Vegas 49.5)</span></div>
+  <div class="score">Spread DET -11
+ <span class="meta">(Vegas DET -7)</span>
+ · Total 47.0 <span class="meta">(Vegas 49.5)</span></div>
   
   <div class="blend"><b>Model + Vegas blend: DET 75%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → DET · Starting QB → DET · Success rate → DET</div>
@@ -306,12 +403,21 @@ Break-even for betting is 52.4%, so these are interesting, not proven: see the h
 <details class="game"><summary>
   <div class="row"><div class="teams"><a class="tb" style="--tc:#69BE28" href="teams/SEA.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/sea.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/sea.png'">SEA</a> <small>@</small> <a class="tb" style="--tc:#5A1414" href="teams/WAS.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/wsh.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png'">WAS</a></div>
   <div><span class="pick">SEA 66%</span></div></div>
+  <div class="sb">
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/sea.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/sea.png'"><span>SEA</span><b class="w">24.3</b>
+    <i>Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/wsh.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png'"><span>WAS</span><b class="">20.4</b>
+    <i class="hid">Winner</i></div>
+</div><div class="sbf">Final: SEA 31, WAS 33</div>
   <div class="bar" role="img" aria-label="SEA 66%, WAS 34%">
     <i style="width:66%;background:#69BE28"></i><i style="width:34%;background:#5A1414"></i></div>
   <div class="row meta"><span>SEA 66% · WAS 34%</span><span>Vegas: SEA 77%</span></div>
   <div class="meta">Drew Lock vs Jayden Daniels · Sun Sep 27</div>
   <div class="mypick" data-g="2026_03_SEA_WAS" data-k="2026-09-27T13:00:00-04:00"><span class="meta">Your pick:</span><button type="button" data-t="SEA"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/sea.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/sea.png'">SEA</button><button type="button" data-t="WAS"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/wsh.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png'">WAS</button><span class="res"></span></div>
-  <div class="score"><b>Predicted:</b> SEA 24, WAS 20 · Spread SEA -4 <span class="meta">(Vegas SEA -8.5)</span> · Total 44.7 <span class="meta">(Vegas 40.5)</span></div>
+  <div class="score">Spread SEA -4
+ <span class="meta">(Vegas SEA -8.5)</span>
+ · Total 44.7 <span class="meta">(Vegas 40.5)</span></div>
   <div class="flag"><b>Spread: model likes WAS to cover</b> (SEA -8.5). Its predicted margin is 4.5 pts better for WAS. <span class="meta">4+ pt gaps have been right 54% (562 games, 2012–2025)</span></div><div class="flag"><b>Total: model says OVER 40.5</b>. It predicts 44.7, 4.2 pts higher. <span class="meta">4+ pt gaps have been right 54% (599 games, 2012–2025)</span></div>
   <div class="blend"><b>Model + Vegas blend: SEA 79%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → SEA · Success rate → SEA · Backup / new QB → WAS</div>
@@ -321,12 +427,21 @@ Break-even for betting is 52.4%, so these are interesting, not proven: see the h
 <details class="game"><summary>
   <div class="row"><div class="teams"><a class="tb" style="--tc:#4B92DB" href="teams/TEN.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ten.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/ten.png'">TEN</a> <small>@</small> <a class="tb" style="--tc:#0B2265" href="teams/NYG.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/nyg.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png'">NYG</a></div>
   <div><span class="pick">NYG 68%</span></div></div>
+  <div class="sb">
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ten.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/ten.png'"><span>TEN</span><b class="">19.6</b>
+    <i class="hid">Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/nyg.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png'"><span>NYG</span><b class="w">24.6</b>
+    <i>Winner</i></div>
+</div><div class="sbf">Final: TEN 7, NYG 12</div>
   <div class="bar" role="img" aria-label="TEN 32%, NYG 68%">
     <i style="width:32%;background:#4B92DB"></i><i style="width:68%;background:#0B2265"></i></div>
   <div class="row meta"><span>TEN 32% · NYG 68%</span><span>Vegas: NYG 54%</span></div>
   <div class="meta">Cam Ward vs Jameis Winston · Sun Sep 27</div>
   <div class="mypick" data-g="2026_03_TEN_NYG" data-k="2026-09-27T13:00:00-04:00"><span class="meta">Your pick:</span><button type="button" data-t="TEN"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ten.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/ten.png'">TEN</button><button type="button" data-t="NYG"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/nyg.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png'">NYG</button><span class="res"></span></div>
-  <div class="score"><b>Predicted:</b> TEN 20, NYG 25 · Spread NYG -5 <span class="meta">(Vegas NYG -2.5)</span> · Total 44.1 <span class="meta">(Vegas 37.5)</span></div>
+  <div class="score">Spread NYG -5
+ <span class="meta">(Vegas NYG -2.5)</span>
+ · Total 44.1 <span class="meta">(Vegas 37.5)</span></div>
   <div class="flag"><b>Total: model says OVER 37.5</b>. It predicts 44.1, 6.6 pts higher. <span class="meta">4+ pt gaps have been right 54% (599 games, 2012–2025)</span></div>
   <div class="blend"><b>Model + Vegas blend: NYG 55%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → NYG · Backup / new QB → TEN · Recent point differential → NYG</div>
@@ -336,12 +451,21 @@ Break-even for betting is 52.4%, so these are interesting, not proven: see the h
 <details class="game best"><summary>
   <div class="row"><div class="teams"><a class="tb" style="--tc:#97233F" href="teams/ARI.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ari.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/ari.png'">ARI</a> <small>@</small> <a class="tb" style="--tc:#AA0000" href="teams/SF.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/sf.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/sf.png'">SF</a></div>
   <div><span class="star">★ Top pick of slot</span> <span class="pick">SF 77%</span></div></div>
+  <div class="sb">
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ari.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/ari.png'"><span>ARI</span><b class="">19.0</b>
+    <i class="hid">Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/sf.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/sf.png'"><span>SF</span><b class="w">28.0</b>
+    <i>Winner</i></div>
+</div><div class="sbf">Final: ARI 30, SF 36</div>
   <div class="bar" role="img" aria-label="ARI 23%, SF 77%">
     <i style="width:23%;background:#FFB612"></i><i style="width:77%;background:#AA0000"></i></div>
   <div class="row meta"><span>ARI 23% · SF 77%</span><span>Vegas: SF 77%</span></div>
   <div class="meta">Jacoby Brissett vs Brock Purdy · Sun Sep 27</div>
   <div class="mypick" data-g="2026_03_ARI_SF" data-k="2026-09-27T16:05:00-04:00"><span class="meta">Your pick:</span><button type="button" data-t="ARI"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ari.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/ari.png'">ARI</button><button type="button" data-t="SF"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/sf.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/sf.png'">SF</button><span class="res"></span></div>
-  <div class="score"><b>Predicted:</b> ARI 19, SF 28 · Spread SF -9 <span class="meta">(Vegas SF -7.5)</span> · Total 47.0 <span class="meta">(Vegas 48.5)</span></div>
+  <div class="score">Spread SF -9
+ <span class="meta">(Vegas SF -7.5)</span>
+ · Total 47.0 <span class="meta">(Vegas 48.5)</span></div>
   
   <div class="blend"><b>Model + Vegas blend: SF 77%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → SF · Success rate → SF · Starting QB → SF</div>
@@ -351,12 +475,21 @@ Break-even for betting is 52.4%, so these are interesting, not proven: see the h
 <details class="game"><summary>
   <div class="row"><div class="teams"><a class="tb" style="--tc:#4F2683" href="teams/MIN.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/min.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/min.png'">MIN</a> <small>@</small> <a class="tb" style="--tc:#D50A0A" href="teams/TB.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/tb.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/tb.png'">TB</a></div>
   <div><span class="pick">MIN 64%</span></div></div>
+  <div class="sb">
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/min.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/min.png'"><span>MIN</span><b class="w">21.8</b>
+    <i>Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/tb.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/tb.png'"><span>TB</span><b class="">18.7</b>
+    <i class="hid">Winner</i></div>
+</div><div class="sbf">Final: MIN 23, TB 16</div>
   <div class="bar" role="img" aria-label="MIN 64%, TB 36%">
     <i style="width:64%;background:#4F2683"></i><i style="width:36%;background:#D50A0A"></i></div>
   <div class="row meta"><span>MIN 64% · TB 36%</span><span>Vegas: MIN 50%</span></div>
   <div class="meta">Kyler Murray vs Baker Mayfield · Sun Sep 27</div>
   <div class="mypick" data-g="2026_03_MIN_TB" data-k="2026-09-27T16:05:00-04:00"><span class="meta">Your pick:</span><button type="button" data-t="MIN"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/min.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/min.png'">MIN</button><button type="button" data-t="TB"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/tb.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/tb.png'">TB</button><span class="res"></span></div>
-  <div class="score"><b>Predicted:</b> MIN 22, TB 19 · Spread MIN -3 <span class="meta">(Vegas MIN -1.5)</span> · Total 40.5 <span class="meta">(Vegas 42.5)</span></div>
+  <div class="score">Spread MIN -3
+ <span class="meta">(Vegas MIN -1.5)</span>
+ · Total 40.5 <span class="meta">(Vegas 42.5)</span></div>
   
   <div class="blend"><b>Model + Vegas blend: MIN 53%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → MIN · Starting QB → MIN · Recent point differential → MIN</div>
@@ -366,12 +499,21 @@ Break-even for betting is 52.4%, so these are interesting, not proven: see the h
 <details class="game"><summary>
   <div class="row"><div class="teams"><a class="tb" style="--tc:#241773" href="teams/BAL.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/bal.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/bal.png'">BAL</a> <small>@</small> <a class="tb" style="--tc:#003594" href="teams/DAL.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/dal.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/dal.png'">DAL</a></div>
   <div><span class="pick">BAL 58%</span></div></div>
+  <div class="sb">
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/bal.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/bal.png'"><span>BAL</span><b class="w">27.0</b>
+    <i>Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/dal.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/dal.png'"><span>DAL</span><b class="">24.9</b>
+    <i class="hid">Winner</i></div>
+</div><div class="sbf">Final: BAL 34, DAL 31</div>
   <div class="bar" role="img" aria-label="BAL 58%, DAL 42%">
     <i style="width:58%;background:#9E7C0C"></i><i style="width:42%;background:#003594"></i></div>
   <div class="row meta"><span>BAL 58% · DAL 42%</span><span>Vegas: BAL 60%</span></div>
   <div class="meta">Lamar Jackson vs Dak Prescott · Sun Sep 27</div>
   <div class="mypick" data-g="2026_03_BAL_DAL" data-k="2026-09-27T16:25:00-04:00"><span class="meta">Your pick:</span><button type="button" data-t="BAL"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/bal.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/bal.png'">BAL</button><button type="button" data-t="DAL"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/dal.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/dal.png'">DAL</button><span class="res"></span></div>
-  <div class="score"><b>Predicted:</b> BAL 27, DAL 25 · Spread BAL -2 <span class="meta">(Vegas BAL -3)</span> · Total 51.9 <span class="meta">(Vegas 53.5)</span></div>
+  <div class="score">Spread BAL -2
+ <span class="meta">(Vegas BAL -3)</span>
+ · Total 51.9 <span class="meta">(Vegas 53.5)</span></div>
   
   <div class="blend"><b>Model + Vegas blend: BAL 62%</b></div>
   <div class="why"><b>Why:</b> Neutral site, no home edge → BAL · Team strength (Elo) → BAL · Starting QB → DAL</div>
@@ -381,12 +523,21 @@ Break-even for betting is 52.4%, so these are interesting, not proven: see the h
 <details class="game"><summary>
   <div class="row"><div class="teams"><a class="tb" style="--tc:#A5ACAF" href="teams/LV.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/lv.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/lv.png'">LV</a> <small>@</small> <a class="tb" style="--tc:#D3BC8D" href="teams/NO.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/no.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/no.png'">NO</a></div>
   <div><span class="pick">NO 66%</span></div></div>
+  <div class="sb">
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/lv.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/lv.png'"><span>LV</span><b class="">19.4</b>
+    <i class="hid">Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/no.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/no.png'"><span>NO</span><b class="w">24.8</b>
+    <i>Winner</i></div>
+</div><div class="sbf">Final: LV 35, NO 27</div>
   <div class="bar" role="img" aria-label="LV 34%, NO 66%">
     <i style="width:34%;background:#1A1A1A"></i><i style="width:66%;background:#D3BC8D"></i></div>
   <div class="row meta"><span>LV 34% · NO 66%</span><span>Vegas: NO 63%</span></div>
   <div class="meta">Kirk Cousins vs Tyler Shough · Sun Sep 27</div>
   <div class="mypick" data-g="2026_03_LV_NO" data-k="2026-09-27T16:25:00-04:00"><span class="meta">Your pick:</span><button type="button" data-t="LV"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/lv.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/lv.png'">LV</button><button type="button" data-t="NO"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/no.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/no.png'">NO</button><span class="res"></span></div>
-  <div class="score"><b>Predicted:</b> LV 19, NO 25 · Spread NO -5.5 <span class="meta">(Vegas NO -3.5)</span> · Total 44.2 <span class="meta">(Vegas 43.5)</span></div>
+  <div class="score">Spread NO -5.5
+ <span class="meta">(Vegas NO -3.5)</span>
+ · Total 44.2 <span class="meta">(Vegas 43.5)</span></div>
   
   <div class="blend"><b>Model + Vegas blend: NO 63%</b></div>
   <div class="why"><b>Why:</b> Team strength (Elo) → NO · Starting QB → NO · Recent offense → NO</div>
@@ -396,12 +547,21 @@ Break-even for betting is 52.4%, so these are interesting, not proven: see the h
 <details class="game best"><summary>
   <div class="row"><div class="teams"><a class="tb" style="--tc:#003594" href="teams/LA.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/lar.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/lar.png'">LA</a> <small>@</small> <a class="tb" style="--tc:#FB4F14" href="teams/DEN.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/den.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/den.png'">DEN</a></div>
   <div><span class="pick">DEN 56%</span></div></div>
+  <div class="sb">
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/lar.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/lar.png'"><span>LA</span><b class="">20.8</b>
+    <i class="hid">Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/den.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/den.png'"><span>DEN</span><b class="w">23.1</b>
+    <i>Winner</i></div>
+</div><div class="sbf">Final: LA 26, DEN 30</div>
   <div class="bar" role="img" aria-label="LA 44%, DEN 56%">
     <i style="width:44%;background:#003594"></i><i style="width:56%;background:#FB4F14"></i></div>
   <div class="row meta"><span>LA 44% · DEN 56%</span><span>Vegas: DEN 50%</span></div>
   <div class="meta">Matthew Stafford vs Bo Nix · Sun Sep 27</div>
   <div class="mypick" data-g="2026_03_LA_DEN" data-k="2026-09-27T20:20:00-04:00"><span class="meta">Your pick:</span><button type="button" data-t="LA"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/lar.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/lar.png'">LA</button><button type="button" data-t="DEN"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/den.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/den.png'">DEN</button><span class="res"></span></div>
-  <div class="score"><b>Predicted:</b> LA 21, DEN 23 · Spread DEN -2.5 <span class="meta">(Vegas DEN -1.5)</span> · Total 43.9 <span class="meta">(Vegas 43.5)</span></div>
+  <div class="score">Spread DEN -2.5
+ <span class="meta">(Vegas DEN -1.5)</span>
+ · Total 43.9 <span class="meta">(Vegas 43.5)</span></div>
   
   <div class="blend"><b>Model + Vegas blend: LA 50%</b></div>
   <div class="why"><b>Why:</b> Starting QB → LA · Injuries → DEN · Offense efficiency (EPA) → DEN</div>
@@ -411,12 +571,21 @@ Break-even for betting is 52.4%, so these are interesting, not proven: see the h
 <details class="game best"><summary>
   <div class="row"><div class="teams"><a class="tb" style="--tc:#004C54" href="teams/PHI.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/phi.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/phi.png'">PHI</a> <small>@</small> <a class="tb" style="--tc:#C83803" href="teams/CHI.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/chi.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/chi.png'">CHI</a></div>
   <div><span class="pick">PHI 55%</span></div></div>
+  <div class="sb">
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/phi.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/phi.png'"><span>PHI</span><b class="w">23.4</b>
+    <i>Winner</i></div>
+  <div class="sbm">Predicted<br>final score</div>
+  <div class="sbt"><img class="sblg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/chi.png&h=128&w=128" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/chi.png'"><span>CHI</span><b class="">21.8</b>
+    <i class="hid">Winner</i></div>
+</div>
   <div class="bar" role="img" aria-label="PHI 55%, CHI 45%">
     <i style="width:55%;background:#004C54"></i><i style="width:45%;background:#C83803"></i></div>
   <div class="row meta"><span>PHI 55% · CHI 45%</span><span>Vegas: PHI 63%</span></div>
   <div class="meta">Jalen Hurts vs Tyson Bagent · Mon Sep 28</div>
   <div class="mypick" data-g="2026_03_PHI_CHI" data-k="2026-09-28T20:15:00-04:00"><span class="meta">Your pick:</span><button type="button" data-t="PHI"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/phi.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/phi.png'">PHI</button><button type="button" data-t="CHI"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/chi.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/chi.png'">CHI</button><span class="res"></span></div>
-  <div class="score"><b>Predicted:</b> PHI 23, CHI 22 · Spread PHI -1.5 <span class="meta">(Vegas PHI -3.5)</span> · Total 45.2 <span class="meta">(Vegas 41.5)</span></div>
+  <div class="score">Spread PHI -1.5
+ <span class="meta">(Vegas PHI -3.5)</span>
+ · Total 45.2 <span class="meta">(Vegas 41.5)</span></div>
   
   <div class="blend"><b>Model + Vegas blend: PHI 64%</b></div>
   <div class="why"><b>Why:</b> Backup / new QB → PHI · Starting QB → PHI · Team strength (Elo) → PHI</div>
