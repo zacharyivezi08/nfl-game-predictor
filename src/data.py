@@ -100,6 +100,22 @@ def load_team_epa(seasons, force_download: bool = False) -> pd.DataFrame:
     return _per_season("teameff", seasons, PBP_URL, _shrink_pbp, force_download)
 
 
+PLAYER_COLS = ["player_id", "player_display_name", "position", "season", "week", "season_type", "game_id", "team",
+               "opponent_team", "attempts", "passing_yards", "carries", "rushing_yards", "targets", "receptions",
+               "receiving_yards", "receiving_air_yards", "target_share", "air_yards_share", "wopr"]
+
+
+def _shrink_players(raw_path):
+    p = pd.read_csv(raw_path, low_memory=False)
+    p = p[p["position"].isin(["QB", "RB", "WR", "TE"])]
+    return p[[c for c in PLAYER_COLS if c in p.columns]]
+
+
+def load_player_stats(seasons, force_download: bool = False) -> pd.DataFrame:
+    """Weekly passing, rushing and receiving stats for every QB, RB, WR and TE (official NFL stats via nflverse)."""
+    return _per_season("players", seasons, QB_URL, _shrink_players, force_download)
+
+
 INJ_URL = RELEASES + "/injuries/injuries_{season}.csv"
 SNAP_URL = RELEASES + "/snap_counts/snap_counts_{season}.csv"
 

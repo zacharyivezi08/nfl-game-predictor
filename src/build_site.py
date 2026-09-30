@@ -153,6 +153,14 @@ font-family:"Arial Narrow","Roboto Condensed","Helvetica Neue",sans-serif;font-s
 .sbt b.w{color:var(--good)}.sbt i.hid{visibility:hidden}.sbt i{font-style:normal;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--good)}
 .sbm{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:center;line-height:1.3}
 .sbf{text-align:center;font-size:13px;font-weight:700;margin:2px 0}
+.ppgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media (max-width:520px){.ppgrid{grid-template-columns:1fr}}
+.ppgrid h5{margin:0 0 6px;font-size:15px}td.wrapcell{white-space:normal}table.acc td,table.acc th{padding:8px 8px;white-space:normal}td.wrapcell .meta{display:block}.pgame h4{margin:12px 0 6px}.pgame .teams{margin-bottom:4px}.pp{list-style:none;margin:0;padding:0}
+.pp li{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--line)}
+.pp li:last-child{border-bottom:0}.pp b{font-size:18px}.pp small{font-size:13.5px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 18px}
+.tabs a{color:#fff;text-decoration:none;font-weight:800;font-size:15px;padding:8px 16px;border-radius:999px;
+border:2px solid rgba(255,255,255,.55)}.tabs a:hover{background:rgba(255,255,255,.15)}
+.tabs a.on{background:#fff;color:#a84400;border-color:#fff}
 .upsets{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
 .upset{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--tc);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
 .uprow{display:flex;align-items:center;gap:10px;margin:6px 0 4px}.uprow b{font-size:26px;font-weight:800;min-width:58px}
@@ -546,6 +554,64 @@ def edge_lines(r, stats):
     return "<ul class='edges'>" + "".join(x for _, x in sorted(lines, key=lambda t: -t[0])) + "</ul>"
 
 
+# ---------- player yardage projections ----------
+
+STAT_SHORT = {"pass": "pass yds", "rush": "rush yds", "rec": "rec yds"}
+
+
+def player_block(proj, r):
+    """Projected yards for both teams, shown inside a game's expanded card."""
+    if proj is None or proj.empty:
+        return ""
+    g = proj[proj["game_id"] == r.game_id]
+    if g.empty:
+        return ""
+    cols = []
+    for team in (r.away_team, r.home_team):
+        t = g[g["team"] == team]
+        items = "".join(f"<li><span>{e(x.player)} <small>{e(x.position)}</small></span><b>{x.proj:.0f}</b>"
+                        f"<small>{STAT_SHORT[x.stat]}</small></li>" for x in t.itertuples())
+        cols.append(f"<div><h5>{tl(team)}</h5><ul class='pp'>{items}</ul></div>")
+    return (f'<h4>Projected yards</h4><div class="ppgrid">{"".join(cols)}</div>'
+            '')
+
+
+def players_page(proj, ev, season, week, week_games=None):
+    if proj is None or proj.empty:
+        body = "<p class='note'>Player projections appear once this week's games are on the schedule.</p>"
+    else:
+        boards = []
+        for key, title in (("pass", "Passing yards"), ("rush", "Rushing yards"), ("rec", "Receiving yards")):
+            t = proj[proj["stat"] == key].sort_values("proj", ascending=False)
+            rows = "".join(f"<tr><td class='n'>{i + 1}</td><td class='wrapcell'><b>{e(x.player)}</b> "
+                           f"<span class='meta'>{e(x.position)} · {e(x.team)} vs {e(x.opp)}</span></td>"
+                           f"<td class='n'><b>{x.proj:.0f}</b></td></tr>" for i, x in enumerate(t.itertuples()))
+            boards.append(f"<h2 id='{key}'>{title} leaders</h2><div class='wrap'><table><tr><th class='n'>#</th><th>Player</th>"
+                          f"<th class='n'>Yds</th></tr>{rows}</table></div>")
+        by_game = ""
+        if week_games is not None:
+            for r in week_games.itertuples():
+                blk = player_block(proj, r)
+                if blk:
+                    by_game += f'<div class="game pgame"><div class="teams">{tl(r.away_team)} <small>@</small> {tl(r.home_team)}' \
+                               f' <span class="meta">{r.gameday:%a %b %-d}</span></div>{blk}</div>'
+        nav = ('<nav><a href="#g">By game</a><a href="#pass">Passing</a><a href="#rush">Rushing</a><a href="#rec">Receiving</a>'
+               '<a href="#acc">Accuracy</a></nav>')
+        body = nav + (f'<h2 id="g">By game</h2>{by_game}' if by_game else "") + "".join(boards)
+    test = ""
+    if ev is not None and len(ev):
+        rows = "".join(f"<tr><td class='wrapcell'>{e(x.stat)}</td><td class='n'><b>{x.our_miss:.1f}</b></td><td class='n'>{x.recent_avg_miss:.1f}</td>"
+                       f"<td class='n'>{x.season_avg_miss:.1f}</td></tr>" for x in ev.itertuples())
+        test = ("<h2 id='acc'>How accurate are these?</h2><p class='note'>Tested on 2022–2025 with models trained only on earlier seasons. "
+                "Average miss in yards (lower is better). Single-game yardage is very noisy, so even the best projections miss by a lot; "
+                "these beat simple averages but not by much.</p><div class='wrap'><table class='acc'><tr><th>Stat</th><th class='n'>Model</th>"
+                "<th class='n'>Recent avg</th><th class='n'>Season avg</th></tr>" + rows + "</table></div>")
+    hero = (f"<div class='kicker'>Week {week} · {season}</div><h1>Player projections</h1>"
+            "<p class='sub'>Projected passing, rushing and receiving yards for this week's likely starters. "
+            "Players listed Out or Doubtful are left off. Projections assume the player plays.</p>")
+    return page(f"Player projections · Week {week}", hero, body + test, active="players")
+
+
 # ---------- click-to-compare team stats ----------
 
 # (label, key, which is better: "hi" / "lo" / None, format)
@@ -657,7 +723,7 @@ def line_flags(r, gaps):
     return "".join(out)
 
 
-def game_card(r, is_best=False, stats=None, gaps=None):
+def game_card(r, is_best=False, stats=None, gaps=None, proj=None):
     away_pct = round((1 - r.home_prob) * 100)
     ca, ch = bar_colors(r.away_team, r.home_team)
     disagree = isinstance(r.vegas_pick, str) and r.vegas_pick != r.pick
@@ -898,13 +964,22 @@ def tracker_section(p, prefix=""):
             f'<p class="note" style="margin-top:10px"><a href="{prefix}history.html">See every pick →</a></p>')
 
 
-def page(title, hero, body, prefix="", color=None):
+def tabs(active, prefix=""):
+    """Top tab bar shared by every page."""
+    items = (("picks", "index.html", "Game Picks"), ("players", "players.html", "Player Projections"),
+             ("history", "history.html", "Every Pick"))
+    return '<div class="tabs">' + "".join(
+        f'<a href="{prefix}{href}"{" class=on aria-current=page" if key == active else ""}>{label}</a>'
+        for key, href, label in items) + "</div>"
+
+
+def page(title, hero, body, prefix="", color=None, active=None):
     """Sub-page shell: colored header + content + team links."""
     style = f' style="--tc:{color}"' if color else ""
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>{e(title)}</title>
 <meta name="theme-color" content="#C85000"><style>{CSS}</style></head><body>
-<header class="hero{' thero' if color else ''}"{style}><div class="in"><a class="back" href="{prefix}index.html">← All picks</a>{hero}</div></header>
+<header class="hero{' thero' if color else ''}"{style}><div class="in">{tabs(active, prefix)}{hero}</div></header>
 <main>{body}
 <footer><b>Teams</b><div class="teamnav">{''.join(tl(t, prefix) for t in TEAMS)}</div><br><b>Not betting advice.</b>
 Data from <a href="https://github.com/nflverse">nflverse</a>.</footer></main></body></html>"""
@@ -930,7 +1005,7 @@ def history_page(p, season):
     hero = f"""<div class="kicker">Pick tracker</div><h1>Every {season} pick</h1>
 <p class="sub">Each pick is saved before kickoff and frozen once the game starts, so this record can't be changed after
 the fact.</p>"""
-    return page(f"Every pick · {season}", hero, f"""<h2>Record</h2>{tracker_section(p, '') if not p.empty else ''}
+    return page(f"Every pick · {season}", hero, active="history", body= f"""<h2>Record</h2>{tracker_section(p, '') if not p.empty else ''}
 <h2>All picks</h2><p class="note">* = from before the tracker started: what the model would have said (it was trained
 only on earlier seasons).</p>{body}""")
 
@@ -1019,10 +1094,16 @@ def main():
     records = team_records(df, season)
     ranks = power_rankings(saved, df, SNAPSHOTS, season)
     stats = team_stats(df, season, ranks, odds)
+    try:  # player projections are extra: never let them break the site
+        from players import evaluate as eval_players, player_features, weekly_projections
+        proj = weekly_projections(season, week)
+    except Exception as err:  # noqa: BLE001
+        print(f"(player projections skipped: {err})")
+        proj = None
     cards = []
     for slot in best["slot"]:
         cards.append(f"<h3>{e(slot)}</h3>")
-        cards += [game_card(r, r.game_id in best_ids, stats, saved.get('line_gaps')) for _, r in this_week[this_week["slot"] == slot].iterrows()]
+        cards += [game_card(r, r.game_id in best_ids, stats, saved.get('line_gaps'), proj) for _, r in this_week[this_week["slot"] == slot].iterrows()]
 
     # Pick tracker + odds history (saved in docs/data/ so they build up over the season)
     picks = picks_frame(update_picks(all_preds), season)
@@ -1049,7 +1130,7 @@ def main():
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>NFL Game Predictor</title>
 <meta name="description" content="Machine learning picks, predicted scores, power rankings and playoff odds for every NFL game.">
 <meta name="theme-color" content="#C85000"><style>{CSS}</style></head><body>
-<header class="hero"><div class="in">
+<header class="hero"><div class="in">{tabs("picks")}
 <div class="kicker">Week {week} · {season} season · updated {datetime.now():%b %-d, %Y}</div>
 <h1>NFL Game Predictor</h1>
 <p class="sub">Machine learning picks, predicted scores, power rankings and playoff odds for every game.</p>
@@ -1108,6 +1189,17 @@ picks hit about 49–50%, below the 52.4% needed to break even. Vegas is more ac
     DOCS.mkdir(exist_ok=True)
     (DOCS / "index.html").write_text(html_page)
     (DOCS / "history.html").write_text(history_page(picks, season))
+    ev = None
+    try:
+        from data import load_games, load_player_stats
+        g_all = load_games()
+        f_all, _, _ = player_features(load_player_stats(g_all["season"].unique()), g_all)
+        done_seasons = sorted(df[df["played"] & (df["game_type"] == "SB")]["season"].unique())
+        ev = eval_players(f_all, done_seasons[-4:])
+    except Exception as err:  # noqa: BLE001
+        print(f"(player accuracy table skipped: {err})")
+    unplayed = this_week[~this_week["played"]] if len(this_week) else this_week
+    (DOCS / "players.html").write_text(players_page(proj, ev, season, week, unplayed))
     (DOCS / "teams").mkdir(exist_ok=True)
     rating_hist = rating_history(saved, season, week)
     for t in TEAMS:

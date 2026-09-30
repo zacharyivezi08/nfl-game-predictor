@@ -12,6 +12,7 @@ Built with Python, pandas and scikit-learn on free data from [nflverse](https://
 - **Model + Vegas blend**: the most accurate forecast on the site (see below)
 - **Week at a glance**: the safest picks, best upset chances and spread/total flags in one box
 - **Make your own picks**: tap a team on any game before kickoff; your record vs the model and Vegas is kept in your browser
+- **Player projections** (its own tab): projected passing, rushing and receiving yards for each game's likely starters, with weekly leaders
 - **Leaderboard**: anyone with the link can enter a name and make picks; picks are saved to a Google Sheet and everyone's record is ranked (see "Shared picks setup" below)
 - **Matchup edges**: in each game's stat comparison, plain-English pass/run mismatches (e.g. "BUF passing offense #2 vs MIA pass defense #28: Big edge BUF")
 - **Upset watch**: every underdog with a 35%+ chance, with how often underdogs at that level have actually won
@@ -108,6 +109,31 @@ the better it has done (walk-forward, 2012–2025):
 Break-even after the sportsbook's cut is 52.4%. The 4+ point results are above it, but with ~600 games that's still within
 the range luck could produce, so the flags are "worth a look," not proven. **Not betting advice.**
 
+### Player projections
+
+For each QB, RB, WR and TE, a ridge regression per stat combines the player's recent production and usage (recent games
+weighted most), how many yards the opponent has allowed to that position lately, and Vegas's implied points and spread for
+his team. Passing and rushing also use the starting QB (his recent yards per attempt, and whether he's a new starter),
+and running backs get a share of the carries left behind by teammates who are out. Players listed Out or Doubtful are
+skipped; a backup QB listed as the starter is projected for a full game.
+Stats come from nflverse (official NFL play-by-play); spot-checked against StatMuse (e.g. 2025 Week 1: Allen 394 passing,
+Barkley 60 rushing, Chase 26 receiving; all matched).
+
+Honest test, 2022–2025, average miss in yards (settings chosen on 2018–2021):
+
+| Stat | This model | Recent average | Season average |
+|---|---|---|---|
+| Passing yards | **65.5** | 67.9 | 69.3 |
+| Rushing yards | **22.9** | 23.4 | 24.2 |
+| Receiving yards | **23.1** | 23.3 | 24.2 |
+
+What was tested (chosen on 2018–2021, confirmed on 2022–2025): the starting-QB features cut the passing miss from 66.9 to
+65.5 yards; teammate absences cut the rushing miss from 23.2 to 22.9. Target share, air yards and snap share didn't help
+receiving (changes of about 0.02 yards, which is noise), and snap counts could only be matched to about half of players
+by name, so they were left out.
+
+Single-game yardage is very noisy, so the gain over simple averages is real but small.
+
 **Predicted scores**
 
 | | Our model | Vegas |
@@ -152,6 +178,10 @@ It now ties Vegas in the final week. The 7 games with a "locked" team went from 
 
 - **Tuning the settings overfit.** Grid-searching Elo, EPA and QB settings (about 200 combinations) improved the validation score but made the untouched test *worse*. Re-tuning across 12 rolling seasons gained only about 0.001, which is noise, so the standard settings were kept.
 - **Travel hurt because home-field advantage has shrunk.** Home teams won 57.6% of games in 1999–2009, 50.4% in 2020 (no fans), and 54.5% in 2021–2026. Travel features mostly acted like extra home-field advantage, which older seasons overstated.
+- **Situational underdog spots didn't hold up.** Division games, home underdogs, teams off a bye, night games and high wind were
+  each tested against the blend (learned 2012–2021, checked 2022–2025). High wind looked great at first (underdogs won 38% vs
+  33% expected) and then flipped in the test (23% vs 32%); together they made predictions slightly worse (0.6105 vs 0.6071).
+  Recalibrating the blend didn't help either (0.6072), so the underdog chances are left as they are.
 - **Early-season fixes didn't help.** The model trails Vegas most in weeks 3–6. Tested: a new-head-coach flag, letting the
   model trust ratings less before teams have played 6 games, and last season's point differential. None improved both
   validation and test, so none were kept. Early in the season the blend is the fix, since Vegas knows about offseason moves.
@@ -192,6 +222,7 @@ python src/simulate.py           # playoff odds (10,000 simulations)
 python src/backtest.py           # would betting the picks have made money?
 python src/build_site.py         # builds the website: docs/index.html, history.html, teams/*.html
 python src/history.py            # pick tracker: record by week + biggest upsets called
+python src/players.py            # player projections: honest test vs simple averages
 ```
 
 ## Shared picks setup (leaderboard)
@@ -218,6 +249,7 @@ src/predict.py     picks, explanations, predicted scores, most confident pick pe
 src/ratings.py     any-matchup predictions + power rankings
 src/simulate.py    10,000-season playoff simulator
 src/backtest.py    betting backtest against real odds
+src/players.py     player yardage projections (passing, rushing, receiving) + honest test
 src/history.py     pick tracker: saves every pick before kickoff (docs/data/picks.json) + weekly playoff odds
 apps_script/Code.gs  Google Sheet script that stores shared picks for the leaderboard
 site_config.json   site settings (the leaderboard's Google Sheet web app URL)
