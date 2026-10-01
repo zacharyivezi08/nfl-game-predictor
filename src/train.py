@@ -129,7 +129,20 @@ def calibration(oos, first_blend_season=2012):
     for lo, hi in [(0.20, 0.30), (0.30, 0.35), (0.35, 0.40), (0.40, 0.45), (0.45, 0.50)]:
         m = (dog >= lo) & (dog < hi)
         upsets.append({"lo": lo, "hi": hi, "n": int(m.sum()), "won": float(dog_won[m].mean())})
-    return {"seasons": f"{int(c['season'].min())}–{int(c['season'].max())}", "games": len(c),
+    # When the model and Vegas pick the same winner vs different winners
+    m_pick = c["p_model"] >= 0.5
+    v_pick = c["vegas_prob"] >= 0.5
+    agree = m_pick == v_pick
+    home_won = c["home_win"] == 1
+    agreement = {
+        "agree_share": float(agree.mean()),
+        "agree_won": float((m_pick[agree] == home_won[agree]).mean()),
+        "agree_n": int(agree.sum()),
+        "split_vegas_won": float((v_pick[~agree] == home_won[~agree]).mean()),
+        "split_model_won": float((m_pick[~agree] == home_won[~agree]).mean()),
+        "split_n": int((~agree).sum()),
+    }
+    return {"seasons": f"{int(c['season'].min())}–{int(c['season'].max())}", "games": len(c), "agreement": agreement,
             "model": fav_bins(c["p_model"].values), "blend": fav_bins(c["p_blend"].values), "upsets": upsets}
 
 

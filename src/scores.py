@@ -20,7 +20,11 @@ def fit_score_models(train, win_features):
         train[win_features], train["home_score"] - train["away_score"])
     total = make_pipeline(StandardScaler(), Ridge(alpha=10)).fit(
         train[TOTAL_FEATURES], train["home_score"] + train["away_score"])
-    return {"margin": margin, "total": total, "win_features": win_features}
+    # typical miss sizes, for "likely range" displays (80% of games land within ±1.28 standard deviations)
+    m_res = (train["home_score"] - train["away_score"]) - margin.predict(train[win_features])
+    t_res = (train["home_score"] + train["away_score"]) - total.predict(train[TOTAL_FEATURES])
+    return {"margin": margin, "total": total, "win_features": win_features,
+            "margin_sd": float(np.std(m_res)), "total_sd": float(np.std(t_res))}
 
 
 def predict_scores(models, games):

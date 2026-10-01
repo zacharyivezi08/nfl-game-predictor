@@ -8,6 +8,12 @@ Built with Python, pandas and scikit-learn on free data from [nflverse](https://
 
 ## What's on the site
 
+Tabs: **Picks** (this week's games as compact cards; tap one for its own page), **Rankings**, **Players**, **Results**,
+**Leaderboard**, plus a **Stats glossary**. Each game page has a **Simulation** tab (predicted final score, win probability
+chart, fair moneyline odds, projected team stats) and a **Team comparison** tab (overall, defense, advanced and betting
+stats side by side, better value in green).
+
+
 - **Weekly picks**: win probability, predicted score, spread and total for every game, compared with Vegas, plus the top 3 reasons for each pick
 - **Model + Vegas blend**: the most accurate forecast on the site (see below)
 - **Week at a glance**: the safest picks, best upset chances and spread/total flags in one box
@@ -15,6 +21,10 @@ Built with Python, pandas and scikit-learn on free data from [nflverse](https://
 - **Player projections** (its own tab): projected passing, rushing and receiving yards for each game's likely starters, with weekly leaders
 - **Leaderboard**: anyone with the link can enter a name and make picks; picks are saved to a Google Sheet and everyone's record is ranked (see "Shared picks setup" below)
 - **Matchup edges**: in each game's stat comparison, plain-English pass/run mismatches (e.g. "BUF passing offense #2 vs MIA pass defense #28: Big edge BUF")
+- **On every game**: fair odds from the Model + Vegas blend next to the sportsbook moneyline; a likely score range (where 8 in 10
+  games like it land); and whether the model and Vegas agree (agreed picks have won 68% since 2012; in splits, Vegas's side has won 56%)
+- **Rankings and team pages**: a rating in points vs an average team, "luck" (actual wins minus the wins a team's points
+  scored and allowed would normally produce), and against-the-spread and over/under records
 - **Upset watch**: every underdog with a 35%+ chance, with how often underdogs at that level have actually won
 - **Spread and total flags**: highlighted when the predicted score is 4+ points away from the Vegas spread or total, with the historical hit rate
 - **Most confident pick of each time slot** (Thursday night, Sunday 1 PM, 4 PM, Sunday night, Monday night)

@@ -100,6 +100,36 @@ def load_team_epa(seasons, force_download: bool = False) -> pd.DataFrame:
     return _per_season("teameff", seasons, PBP_URL, _shrink_pbp, force_download)
 
 
+def _shrink_team_extra(raw_path):
+    """Box-score style team stats per game from play-by-play: yards, plays, first downs, third downs,
+    turnovers and explosive plays (runs of 10+ yards, passes of 20+), for offense and defense."""
+    cols = ["game_id", "posteam", "defteam", "play_type", "yards_gained", "passing_yards", "rushing_yards",
+            "first_down", "third_down_converted", "third_down_failed", "interception", "fumble_lost"]
+    p = pd.read_csv(raw_path, usecols=cols, low_memory=False)
+    p = p[p["posteam"].notna() & p["defteam"].notna()]
+    plays = p[p["play_type"].isin(["pass", "run"])].copy()
+    plays["explosive"] = (((plays["play_type"] == "pass") & (plays["yards_gained"] >= 20))
+                          | ((plays["play_type"] == "run") & (plays["yards_gained"] >= 10))).astype(int)
+    p["turnover"] = p["interception"].fillna(0) + p["fumble_lost"].fillna(0)
+    agg = {"plays": ("yards_gained", "size"), "yards": ("yards_gained", "sum"), "pass_yds": ("passing_yards", "sum"),
+           "rush_yds": ("rushing_yards", "sum"), "explosive": ("explosive", "sum")}
+    out = []
+    for side, col in (("off", "posteam"), ("def", "defteam")):
+        a = plays.groupby(["game_id", col]).agg(**agg)
+        b = p.groupby(["game_id", col]).agg(first_downs=("first_down", "sum"), third_conv=("third_down_converted", "sum"),
+                                            third_fail=("third_down_failed", "sum"), turnovers=("turnover", "sum"))
+        t = a.join(b, how="outer")
+        t.columns = [f"{side}_{c}" for c in t.columns]
+        t.index = t.index.set_names(["game_id", "team"])
+        out.append(t)
+    return out[0].join(out[1], how="outer").fillna(0).reset_index()
+
+
+def load_team_extra(seasons, force_download: bool = False) -> pd.DataFrame:
+    """Yards, plays, first downs, third downs, turnovers, explosive plays per team per game (offense + defense)."""
+    return _per_season("teamextra", seasons, PBP_URL, _shrink_team_extra, force_download)
+
+
 PLAYER_COLS = ["player_id", "player_display_name", "position", "season", "week", "season_type", "game_id", "team",
                "opponent_team", "attempts", "passing_yards", "carries", "rushing_yards", "targets", "receptions",
                "receiving_yards", "receiving_air_yards", "target_share", "air_yards_share", "wopr"]

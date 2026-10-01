@@ -15,6 +15,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from features import SNAPSHOTS
@@ -228,6 +229,55 @@ h3,.slot span,.sbm,th,.glance h4,.cmp h4,.kicker,.star,.tag,.sbt i,.more,.legend
 /* chart text: sized in chart units, so it's bigger on phones where the chart shrinks */
 .chart svg text{font-size:14px}
 @media (max-width:600px){.chart svg text{font-size:22px}}
+.odds,.range{font-size:14.5px;margin-top:6px}.agree{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag.split{background:rgba(0,0,0,.25);color:#fff}
+/* compact game rows: tap to open everything */
+details.game{padding:0;margin:8px 0;overflow:hidden}
+summary.crow{display:grid;grid-template-columns:1fr auto 1fr auto 18px;align-items:center;gap:8px;padding:12px 14px;cursor:pointer;list-style:none}
+summary.crow::-webkit-details-marker{display:none}
+.cteam{display:flex;align-items:center;gap:6px;min-width:0}.cteam .clg{width:28px;height:28px;object-fit:contain;flex:none}
+.cab{font-weight:800;font-size:16px}.cteam b{font-size:22px;font-weight:900;margin-left:auto;opacity:.8}.cteam b.cw{opacity:1}
+.cat{opacity:.85;font-size:13px}
+.cside{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:92px}.cside .pick{font-size:15px}
+.ckick{font-size:12.5px;white-space:nowrap}.cicons{display:flex;gap:4px}
+.ic{font-style:normal;font-size:11.5px;font-weight:800;padding:1px 7px;border-radius:999px;background:var(--hl);color:var(--hlink)}
+.ic.split{background:rgba(0,0,0,.28);color:#fff}.ic.star{background:#fff;color:#a84400}
+.cchev{font-size:14px;transition:transform .2s;text-align:center}details[open] .cchev{transform:rotate(180deg)}
+details.game .details{padding:0 14px 14px;border-top:1px solid rgba(255,255,255,.3);animation:fade .2s ease-out}
+details.game .details .sb{margin-top:12px}
+@media (max-width:430px){summary.crow{grid-template-columns:1fr 1fr auto 14px;row-gap:4px}.cat{display:none}
+ .cteam b{font-size:20px}.cside{grid-column:3;grid-row:1/3}.cchev{grid-column:4;grid-row:1/3}
+ .cteam:nth-child(3){grid-column:2;grid-row:1}}
+/* game list rows (link to game page) */
+a.glink{display:grid;grid-template-columns:1fr auto 16px;gap:10px;align-items:center;text-decoration:none;color:#fff;padding:12px 14px;margin:8px 0}
+.gteams{display:flex;flex-direction:column;gap:6px}.gt{display:flex;align-items:center;gap:8px}
+.gt .clg{width:30px;height:30px;object-fit:contain}.gt span{font-weight:800;font-size:17px}.gt b{margin-left:auto;font-size:22px;font-weight:900;opacity:.75}
+.gt b.cw{opacity:1}.gmeta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:13px;text-align:right}
+.gmeta .venue{max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+a.glink .cchev{font-size:26px;font-weight:800}
+/* game page */
+.ghead{display:flex;align-items:center;justify-content:center;gap:18px;margin:6px 0}.ghead div{display:flex;flex-direction:column;align-items:center;gap:4px}
+.ghead .glg{width:72px;height:72px;object-fit:contain}.ghead b{font-size:22px}.ghead span{font-size:20px;opacity:.85}
+.gtabs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.gtabs button,.gtabs a{font:inherit;font-weight:800;font-size:15px;padding:8px 16px;border-radius:999px;border:2px solid rgba(255,255,255,.6);
+background:transparent;color:#fff;cursor:pointer;text-decoration:none}.gtabs button.on{background:#fff;color:#a84400;border-color:#fff}
+.ch{margin:0 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#fff}.ch2{margin:0 0 8px;font-size:14px;letter-spacing:.04em;text-transform:uppercase}
+.simcard{padding:16px}.dcard{text-align:center}.dlegend{display:flex;justify-content:center;gap:16px;font-weight:700;font-size:15px;margin:6px 0}
+.dlegend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.fair{background:var(--hl);color:var(--hlink);border-radius:16px;padding:14px 16px;border:1px solid #b9e6ad}.fair .meta{color:var(--hlmid)}
+.fodds{display:flex;justify-content:space-around;margin:6px 0}.fodds div{display:flex;flex-direction:column;align-items:center}
+.fodds span{font-weight:700}.fodds b{font-size:34px;font-weight:900}
+.pstat{margin:4px 4px 14px}.pstat h5{margin:0 0 6px;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:#4b5563}
+.pbar{margin:4px 0}.prow{display:flex;justify-content:space-between;font-size:15px}.ptrack{height:14px;border-radius:7px;background:#eef0f3;overflow:hidden}
+.ptrack i{display:block;height:14px;border-radius:7px}
+details.sect{margin:10px 0}details.sect>summary{cursor:pointer;font-weight:800;font-size:18px;padding:8px 2px;list-style:none;color:var(--ink)}
+details.sect>summary::after{content:" ▾"}details.sect:not([open])>summary::after{content:" ▸"}
+table.cmpt th{text-transform:none;letter-spacing:0;font-size:15px;font-weight:600;background:none;color:#14171c;white-space:normal}
+table.cmpt td{text-align:center;font-weight:700;font-size:15.5px}table.cmpt td.vs{color:#6b7280;font-weight:500;width:28px}
+table.cmpt td.good{background:#d6f5cd!important;color:#0b3d17;border-radius:8px}table.cmpt td.bad{background:#fde2e2!important;color:#7f1d1d;border-radius:8px}
+table.cmpt td.ct .tb{color:#14171c}
+.glist{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}.gl{padding:12px 14px;border-radius:14px}
+.gl p{margin:6px 0 0;font-size:14.5px}.chip{font-size:12px;font-weight:800;padding:2px 10px;border-radius:999px;background:#fff;color:#a84400}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 """
 
@@ -449,7 +499,7 @@ def write_schedule(all_preds):
     (DOCS / "data" / "schedule.json").write_text(json.dumps(sched))
 
 
-def my_picks_section(url):
+def my_picks_section(url, standalone=False):
     if not url:
         return ('<div class="stats" id="myrec"></div>'
                 '<p class="note">Saved in this browser only (not shared, not sent anywhere). Picks lock at kickoff.</p>')
@@ -459,7 +509,7 @@ def my_picks_section(url):
 <div class="stats" id="myrec"></div>
 <p class="note">Picks lock at kickoff. <b>Your name and picks are saved to the site owner's Google Sheet and shown on the
 leaderboard</b> once each game kicks off. Leave the name blank to keep your picks private in this browser only.</p>
-<h2 id="leaderboard">Leaderboard</h2>
+<h2 id="leaderboard">Standings</h2>
 <div id="lb"><p class="note">Loading…</p></div>"""
 
 
@@ -612,11 +662,370 @@ def players_page(proj, ev, season, week, week_games=None):
     return page(f"Player projections · Week {week}", hero, body + test, active="players")
 
 
+# ---------- fair odds, score ranges, model agreement, luck, ATS/OU records ----------
+
+def american(p):
+    """Win probability -> fair American odds (no sportsbook cut), e.g. 0.64 -> -178, 0.36 -> +178."""
+    p = min(max(float(p), 0.01), 0.99)
+    return f"−{round(100 * p / (1 - p))}" if p >= 0.5 else f"+{round(100 * (1 - p) / p)}"
+
+
+def book_odds(ml):
+    return "-" if pd.isna(ml) else (f"+{int(ml)}" if ml > 0 else f"−{abs(int(ml))}")
+
+
+def odds_line(r):
+    """Fair odds from the Model + Vegas blend next to the sportsbook's moneyline."""
+    fair = f"{e(r.away_team)} {american(1 - r.blend_prob)} · {e(r.home_team)} {american(r.blend_prob)}"
+    book = ""
+    if pd.notna(r.home_moneyline) and pd.notna(r.away_moneyline):
+        book = (f' <span class="meta">· Sportsbook: {e(r.away_team)} {book_odds(r.away_moneyline)} · '
+                f'{e(r.home_team)} {book_odds(r.home_moneyline)}</span>')
+    return f'<div class="odds"><b>Fair odds:</b> {fair}{book}</div>'
+
+
+def range_line(r, scores):
+    """Where 8 in 10 games like this land (±1.28 typical misses around the predicted margin and total)."""
+    if not scores or "margin_sd" not in scores or "pred_margin" not in r:
+        return ""
+    k = 1.28
+    lo, hi = r.pred_margin - k * scores["margin_sd"], r.pred_margin + k * scores["margin_sd"]
+
+    def side(m):
+        if abs(m) < 0.5:
+            return "a tie"
+        return f"{e(r.home_team if m > 0 else r.away_team)} by {abs(m):.0f}"
+    tlo, thi = r.pred_total - k * scores["total_sd"], r.pred_total + k * scores["total_sd"]
+    return (f'<div class="range"><b>Likely range</b> <span class="meta">(8 in 10 games like this)</span>: '
+            f'{side(lo)} to {side(hi)} · total {tlo:.0f}–{thi:.0f} points</div>')
+
+
+def agreement_line(r, cal):
+    """Do the model and Vegas pick the same winner? And how have those picks done?"""
+    a = (cal or {}).get("agreement")
+    if not a or not isinstance(r.vegas_pick, str):
+        return ""
+    if r.vegas_pick == r.pick:
+        return (f'<div class="agree"><span class="tag">✓ Model &amp; Vegas agree</span> '
+                f'<span class="meta">Agreed picks have won {a["agree_won"]:.0%} ({a["agree_n"]:,} games since 2012)</span></div>')
+    return (f'<div class="agree"><span class="tag split">Split: model {e(r.pick)}, Vegas {e(r.vegas_pick)}</span> '
+            f'<span class="meta">In splits, Vegas\'s side has won {a["split_vegas_won"]:.0%} '
+            f'({a["split_n"]:,} games since 2012)</span></div>')
+
+
+def season_extras(df, season):
+    """Per team: Pythagorean luck (actual wins minus wins expected from points), and ATS / over-under records."""
+    g = df[(df["season"] == season) & (df["game_type"] == "REG") & df["played"]]
+    out = {}
+    for t in TEAMS:
+        home, away = g[g["home_team"] == t], g[g["away_team"] == t]
+        pf = home["home_score"].sum() + away["away_score"].sum()
+        pa = home["away_score"].sum() + away["home_score"].sum()
+        n = len(home) + len(away)
+        wins = ((home["home_score"] > home["away_score"]).sum() + (away["away_score"] > away["home_score"]).sum()
+                + 0.5 * ((home["home_score"] == home["away_score"]).sum() + (away["away_score"] == away["home_score"]).sum()))
+        exp = n * pf ** 2.37 / (pf ** 2.37 + pa ** 2.37) if pf + pa > 0 else 0
+        ats, ou = [0, 0, 0], [0, 0, 0]  # wins/covers, losses, pushes
+        for side, d in (("home", home), ("away", away)):
+            for x in d.itertuples():
+                if pd.notna(x.spread_line):
+                    m = (x.home_score - x.away_score) - x.spread_line
+                    m = m if side == "home" else -m
+                    ats[0 if m > 0 else 1 if m < 0 else 2] += 1
+                if pd.notna(x.total_line):
+                    o = x.home_score + x.away_score - x.total_line
+                    ou[0 if o > 0 else 1 if o < 0 else 2] += 1
+        fmt = lambda a: f"{a[0]}-{a[1]}" + (f"-{a[2]}" if a[2] else "")
+        out[t] = {"luck": wins - exp, "exp_wins": exp, "ats": fmt(ats), "ou": fmt(ou)}
+    return out
+
+
+def points_rating(p):
+    """Chance to beat an average team (neutral field) -> points better/worse than average."""
+    p = min(max(float(p), 0.01), 0.99)
+    return 6.5 * np.log(p / (1 - p))
+
+
+# ---------- season box-score stats (for game pages) ----------
+
+def team_box(df, season):
+    """Season-to-date team stats: yards, third downs, turnovers, explosive plays, SRS, home/away margins, betting."""
+    from data import load_team_extra
+    played = df[(df["season"] == season) & df["played"] & (df["game_type"] == "REG")]
+    try:
+        ex = load_team_extra([season])
+        ex = ex[ex["game_id"].isin(played["game_id"])]
+    except Exception as err:  # noqa: BLE001
+        print(f"(box-score stats skipped: {err})")
+        ex = pd.DataFrame()
+    games = []
+    for r in played.itertuples():
+        games.append((r.home_team, r.away_team, r.home_score - r.away_score, True, r))
+        games.append((r.away_team, r.home_team, r.away_score - r.home_score, False, r))
+    # SRS (simple rating system): average margin + average opponent rating, solved by repeating until it settles
+    srs = dict.fromkeys(TEAMS, 0.0)
+    for _ in range(60):
+        new = {}
+        for t in TEAMS:
+            g = [(opp, m) for team, opp, m, _, _ in games if team == t]
+            new[t] = (np.mean([m for _, m in g]) + np.mean([srs.get(o, 0) for o, _ in g])) if g else 0.0
+        mean = np.mean(list(new.values()))
+        srs = {t: v - mean for t, v in new.items()}
+    out = {}
+    for t in TEAMS:
+        g = [x for x in games if x[0] == t]
+        n = len(g)
+        d = {"srs": srs[t], "games": n}
+        home_m = [m for team, _, m, home, _ in g if home]
+        away_m = [m for team, _, m, home, _ in g if not home]
+        d["home_margin"] = np.mean(home_m) if home_m else None
+        d["away_margin"] = np.mean(away_m) if away_m else None
+        ats_m, overs = [], []
+        for team, _, m, home, r in g:
+            if pd.notna(r.spread_line):
+                ats_m.append(m - r.spread_line if home else m + r.spread_line)
+            if pd.notna(r.total_line):
+                tot = r.home_score + r.away_score - r.total_line
+                if tot != 0:
+                    overs.append(tot > 0)
+        covers = [x for x in ats_m if x != 0]
+        d["ats_pct"] = np.mean([x > 0 for x in covers]) if covers else None
+        d["ats_margin"] = np.mean(ats_m) if ats_m else None
+        d["over_pct"] = np.mean(overs) if overs else None
+        if len(ex):
+            e_ = ex[ex["team"] == t]
+            k = max(len(e_), 1)
+            s_ = e_.sum(numeric_only=True)
+            d.update({
+                "ypg": s_["off_yards"] / k, "pass_ypg": s_["off_pass_yds"] / k, "rush_ypg": s_["off_rush_yds"] / k,
+                "plays_pg": s_["off_plays"] / k, "ypp": s_["off_yards"] / max(s_["off_plays"], 1),
+                "fd_pg": s_["off_first_downs"] / k,
+                "third_pct": s_["off_third_conv"] / max(s_["off_third_conv"] + s_["off_third_fail"], 1),
+                "to_pg": s_["off_turnovers"] / k, "expl_pg": s_["off_explosive"] / k,
+                "ypg_allowed": s_["def_yards"] / k, "pass_allowed": s_["def_pass_yds"] / k,
+                "rush_allowed": s_["def_rush_yds"] / k, "ypp_allowed": s_["def_yards"] / max(s_["def_plays"], 1),
+                "third_pct_allowed": s_["def_third_conv"] / max(s_["def_third_conv"] + s_["def_third_fail"], 1),
+                "takeaways_pg": s_["def_turnovers"] / k, "expl_allowed": s_["def_explosive"] / k,
+                "to_margin": (s_["def_turnovers"] - s_["off_turnovers"]) / k,
+            })
+        out[t] = d
+    return out
+
+
+# (label, key, which is better, format, glossary category)
+GAME_SECTIONS = [
+    ("Overall performance", [
+        ("Record", "record", None, "{}"), ("Power ranking", "rank", "lo", "#{:.0f}"),
+        ("Rating (points vs avg)", "rating_pts", "hi", "{:+.1f}"), ("Playoff odds", "playoffs", "hi", "{:.0%}"),
+        ("Points per game", "ppg", "hi", "{:.1f}"), ("Points allowed per game", "papg", "lo", "{:.1f}"),
+        ("Total yards per game", "ypg", "hi", "{:.1f}"), ("Pass yards per game", "pass_ypg", "hi", "{:.1f}"),
+        ("Rush yards per game", "rush_ypg", "hi", "{:.1f}"), ("Plays per game", "plays_pg", None, "{:.1f}"),
+        ("Yards per play", "ypp", "hi", "{:.2f}"), ("First downs per game", "fd_pg", "hi", "{:.1f}")]),
+    ("Defense", [
+        ("Yards allowed per game", "ypg_allowed", "lo", "{:.1f}"), ("Pass yards allowed", "pass_allowed", "lo", "{:.1f}"),
+        ("Rush yards allowed", "rush_allowed", "lo", "{:.1f}"), ("Yards per play allowed", "ypp_allowed", "lo", "{:.2f}"),
+        ("Opponent 3rd down %", "third_pct_allowed", "lo", "{:.0%}"), ("Big plays allowed per game", "expl_allowed", "lo", "{:.1f}"),
+        ("Takeaways per game", "takeaways_pg", "hi", "{:.1f}")]),
+    ("Advanced analytics", [
+        ("SRS rating", "srs", "hi", "{:+.1f}"), ("Elo rating", "elo", "hi", "{:.0f}"),
+        ("Offense EPA per play", "off_epa", "hi", "{:+.3f}"), ("Defense EPA per play allowed", "def_epa", "lo", "{:+.3f}"),
+        ("Offense success rate", "off_sr", "hi", "{:.1%}"), ("Defense success rate allowed", "def_sr", "lo", "{:.1%}"),
+        ("3rd down conversion %", "third_pct", "hi", "{:.0%}"), ("Big plays per game", "expl_pg", "hi", "{:.1f}"),
+        ("Turnovers per game", "to_pg", "lo", "{:.1f}"), ("Turnover margin per game", "to_margin", "hi", "{:+.1f}"),
+        ("Pass offense rank", "pass_off_rank", "lo", "#{:.0f}"), ("Run offense rank", "run_off_rank", "lo", "#{:.0f}"),
+        ("Pass defense rank", "pass_def_rank", "lo", "#{:.0f}"), ("Run defense rank", "run_def_rank", "lo", "#{:.0f}"),
+        ("QB EPA per dropback", "qb", "hi", "{:+.3f}"), ("Luck (wins vs expected)", "luck", None, "{:+.1f}"),
+        ("Starters' snaps lost to injury", "inj", "lo", "{:.1f}")]),
+    ("Betting", [
+        ("Against the spread", "ats", None, "{}"), ("Cover %", "ats_pct", "hi", "{:.0%}"),
+        ("Avg margin vs the spread", "ats_margin", "hi", "{:+.1f}"), ("Over / under", "ou", None, "{}"),
+        ("Over %", "over_pct", None, "{:.0%}"), ("Home margin", "home_margin", "hi", "{:+.1f}"),
+        ("Away margin", "away_margin", "hi", "{:+.1f}")]),
+]
+
+GLOSSARY = [
+    ("Predicted final score", "Model", "From two models: one predicts the margin, one the total points. Home = (total + margin) / 2."),
+    ("Win probability", "Model", "The model's chance each team wins, from team strength, QBs, efficiency, injuries and late-season stakes."),
+    ("Best estimate (Model + Vegas)", "Model", "The model blended with the betting line. In testing it matched Vegas's accuracy, far better than the model alone."),
+    ("Fair moneyline odds", "Betting", "The win probability written as betting odds with no sportsbook cut. 64% = −178, 36% = +178."),
+    ("Likely range", "Model", "Where 8 in 10 games like this one end up (the prediction ± 1.28 typical misses)."),
+    ("Spread / total flag", "Betting", "Shown when the predicted score is 4+ points from the Vegas spread or total. Those have been right about 54% (2012–2025)."),
+    ("Model & Vegas agree / split", "Model", "Whether both pick the same winner. Agreed picks have won about 68%; in splits, Vegas's side has won about 56%."),
+    ("Record", "Overall", "Wins and losses this regular season."),
+    ("Power ranking / rating", "Overall", "Teams ranked by the model's chance to beat an average team on a neutral field."),
+    ("Rating (points vs avg)", "Overall", "The power rating in points: +5 means about 5 points better than an average team."),
+    ("Playoff odds", "Overall", "Share of 10,000 simulated seasons in which the team makes the playoffs."),
+    ("Points per game / allowed", "Offense", "Average points scored and given up per game."),
+    ("Total / pass / rush yards per game", "Offense", "Average offensive yards per game (net of sacks for total yards)."),
+    ("Plays per game", "Offense", "Average runs and passes per game."),
+    ("Yards per play", "Efficiency", "Total yards ÷ plays. A simple efficiency measure."),
+    ("First downs per game", "Offense", "Average first downs gained per game."),
+    ("Yards allowed (total / pass / rush)", "Defense", "Average yards given up per game."),
+    ("Opponent 3rd down %", "Defense", "How often opponents convert third downs. Lower is better."),
+    ("Big plays", "Efficiency", "Explosive plays: runs of 10+ yards and passes of 20+ yards, per game (and allowed)."),
+    ("Takeaways / turnovers / margin", "Efficiency", "Interceptions + lost fumbles forced, committed, and the difference per game."),
+    ("3rd down conversion %", "Efficiency", "Third downs converted into a first down or touchdown ÷ third-down attempts."),
+    ("SRS rating", "Advanced", "Simple Rating System: average margin of victory adjusted for strength of schedule, in points."),
+    ("Elo rating", "Advanced", "A running team rating (start 1500) that moves after every game based on result and margin."),
+    ("EPA per play", "Advanced", "Expected Points Added: how much each play changes the expected points of the drive. Higher is better for offense, lower for defense."),
+    ("Success rate", "Advanced", "Share of plays that gain at least 40% of needed yards on 1st down, 60% on 2nd, or 100% on 3rd/4th."),
+    ("Pass / run offense and defense rank", "Advanced", "Rank (1–32) in EPA per pass play and per run play, recent games weighted most."),
+    ("QB EPA per dropback", "Advanced", "The starting quarterback's EPA per pass attempt or sack over his last 16 games."),
+    ("Luck (wins vs expected)", "Advanced", "Actual wins minus the wins a team's points scored and allowed would normally produce (Pythagorean expectation)."),
+    ("Starters' snaps lost to injury", "Advanced", "Injured players listed Out/Doubtful/Questionable, weighted by how much they've been playing."),
+    ("Against the spread / cover %", "Betting", "Record and win rate versus the point spread (pushes excluded)."),
+    ("Avg margin vs the spread", "Betting", "How many points per game a team has beaten (or missed) the spread by."),
+    ("Over / under, over %", "Betting", "Record of games going over or under the total, and the share that went over."),
+    ("Home / away margin", "Betting", "Average point differential in home games and in away games."),
+]
+
+
+def donut(p_away, away, home):
+    """Win probability donut chart (inline SVG)."""
+    import math
+    ca, ch = TEAM_COLORS.get(away, "#888"), TEAM_COLORS.get(home, "#2a78d6")
+    if _too_close(ca, ch):
+        ca = TEAM_ALT_COLORS.get(away, "#888")
+    r, cx, cy, sw = 70, 90, 90, 30
+    circ = 2 * math.pi * r
+    a_len = circ * p_away
+    return f"""<svg viewBox="0 0 180 180" width="180" height="180" role="img" aria-label="{e(away)} {p_away:.0%}, {e(home)} {1 - p_away:.0%}">
+<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{ch}" stroke-width="{sw}"/>
+<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{ca}" stroke-width="{sw}" stroke-dasharray="{a_len:.1f} {circ:.1f}"
+ transform="rotate(-90 {cx} {cy})"/>
+<text x="{cx}" y="{cy - 4}" text-anchor="middle" font-size="15" font-weight="800" fill="#14171c">Win</text>
+<text x="{cx}" y="{cy + 16}" text-anchor="middle" font-size="15" font-weight="800" fill="#14171c">chance</text></svg>
+<div class="dlegend"><span><i style="background:{ca}"></i>{e(away)} {p_away:.1%}</span><span><i style="background:{ch}"></i>{e(home)} {1 - p_away:.1%}</span></div>"""
+
+
+def bars(label, a_val, h_val, away, home, fmt="{:.0f}"):
+    if a_val is None or h_val is None:
+        return ""
+    top = max(a_val, h_val, 1)
+    ca, ch = TEAM_COLORS.get(away, "#888"), TEAM_COLORS.get(home, "#2a78d6")
+    if _too_close(ca, ch):
+        ca = TEAM_ALT_COLORS.get(away, "#888")
+    row = lambda t, v, c: (f'<div class="pbar"><div class="prow"><b>{e(t)}</b><b>{fmt.format(v)}</b></div>'
+                          f'<div class="ptrack"><i style="width:{100 * v / top:.0f}%;background:{c}"></i></div></div>')
+    return f'<div class="pstat"><h5>{e(label)}</h5>{row(away, a_val, ca)}{row(home, h_val, ch)}</div>'
+
+
+def compare_tables(r, stats, box):
+    a = {**stats[r.away_team], **box.get(r.away_team, {}), "inj": r.away_inj_off + r.away_inj_def}
+    h = {**stats[r.home_team], **box.get(r.home_team, {}), "inj": r.home_inj_off + r.home_inj_def}
+    for d in (a, h):
+        d["rating_pts"] = points_rating(d["rating"])
+    out = []
+    for title, rows in GAME_SECTIONS:
+        trs = []
+        for label, key, better, fmt in rows:
+            va, vh = a.get(key), h.get(key)
+            show = lambda v: "—" if v is None or (isinstance(v, float) and v != v) else fmt.format(v)
+            ca = chh = ""
+            if better and show(va) != "—" and show(vh) != "—" and show(va) != show(vh):
+                a_better = (va > vh) if better == "hi" else (va < vh)
+                ca, chh = ("good", "bad") if a_better else ("bad", "good")
+            trs.append(f"<tr><th>{e(label)}</th><td class='{ca}'>{show(va)}</td><td class='vs'>vs</td><td class='{chh}'>{show(vh)}</td></tr>")
+        out.append(f"""<details class="sect" open><summary>{e(title)}</summary><div class="wrap"><table class="cmpt">
+<tr><td></td><td class='ct'>{tl(r.away_team, '../')}</td><td></td><td class='ct'>{tl(r.home_team, '../')}</td></tr>{''.join(trs)}
+</table></div></details>""")
+    return "".join(out)
+
+
+def game_page(r, stats, box, saved, proj, gaps, all_preds, picks_url):
+    """One page per game: Simulation tab + Team Comparison tab (like the big pick sites, but free and honest)."""
+    away, home = r.away_team, r.home_team
+    hpts, apts = (r.pred_total + r.pred_margin) / 2, (r.pred_total - r.pred_margin) / 2
+    hw = hpts >= apts
+    kick = kick_text(r)
+    venue = e(str(r.stadium)) if hasattr(r, "stadium") and isinstance(r.stadium, str) else ""
+    sim_proj = ""
+    if proj is not None and not proj.empty:
+        g = proj[proj["game_id"] == r.game_id]
+        if len(g):
+            pa = g[(g["team"] == away) & (g["stat"] == "pass")]["proj"].sum()
+            ph = g[(g["team"] == home) & (g["stat"] == "pass")]["proj"].sum()
+            ra = g[(g["team"] == away) & (g["stat"] == "rush")]["proj"].sum()
+            rh = g[(g["team"] == home) & (g["stat"] == "rush")]["proj"].sum()
+            sim_proj = (bars("Passing yards (starting QB)", pa, ph, away, home)
+                        + bars("Rushing yards (top 2 running backs)", ra, rh, away, home))
+    ba, bh = box.get(away, {}), box.get(home, {})
+    season_bars = (bars("Points per game (season)", stats[away].get("ppg"), stats[home].get("ppg"), away, home, "{:.1f}")
+                   + bars("Turnovers per game (season)", ba.get("to_pg"), bh.get("to_pg"), away, home, "{:.1f}"))
+    fair_a, fair_h = american(1 - r.blend_prob), american(r.blend_prob)
+    book = (f"<p class='meta'>Sportsbook: {e(away)} {book_odds(r.away_moneyline)} · {e(home)} {book_odds(r.home_moneyline)}</p>"
+            if pd.notna(r.home_moneyline) else "")
+    fav = home if r.blend_prob >= 0.5 else away
+    hero = f"""<a class="back" href="../index.html">← All games</a>
+<div class="ghead"><div>{logo(away, 128, "glg")}<b>{e(away)}</b></div><span>@</span><div>{logo(home, 128, "glg")}<b>{e(home)}</b></div></div>
+<p class="sub" style="text-align:center">{e(kick)}{' · ' + venue if venue else ''} · Week {r.week}, {r.season}</p>
+<div class="gtabs" role="tablist"><button class="on" data-tab="sim" role="tab">Simulation</button>
+<button data-tab="cmp" role="tab">Team comparison</button><a href="../glossary.html">Stats glossary</a></div>"""
+    sim = f"""<section id="sim" class="gtab">
+<div class="game card simcard"><h3 class="ch">Final score prediction</h3>
+<div class="sb"><div class="sbt">{logo(away, 128, "sblg")}<span>{e(away)}</span><b class="{'w' if not hw else ''}">{apts:.1f}</b>
+<i{'' if not hw else ' class="hid"'}>{'Away win' if not hw else ''}</i></div>
+<div class="sbm">Predicted<br>final score</div>
+<div class="sbt">{logo(home, 128, "sblg")}<span>{e(home)}</span><b class="{'w' if hw else ''}">{hpts:.1f}</b>
+<i{'' if hw else ' class="hid"'}>{'Home win' if hw else ''}</i></div></div>
+{'<div class="sbf">Final: ' + e(away) + ' ' + str(int(r.away_score)) + ', ' + e(home) + ' ' + str(int(r.home_score)) + '</div>' if r.played else ''}
+<div class="score">Spread {e(spread_text(home, away, r.pred_margin))} <span class="meta">(Vegas {e(spread_text(home, away, r.spread_line))})</span>
+· Total {r.pred_total:.1f} <span class="meta">(Vegas {r.total_line if pd.notna(r.total_line) else '-'})</span></div>
+{range_line(r, saved.get("scores"))}
+{line_flags(r, gaps)}
+{pick_buttons(r)}
+</div>
+<h2>Betting analysis</h2>
+<div class="grid2">
+<div class="chart dcard"><h3 class="ch2">Win probability</h3>{donut(1 - r.home_prob, away, home)}
+<p class="meta">Model alone. <b>Best estimate</b> (Model + Vegas): {e(r.blend_pick)} {r.blend_conf:.0%}</p></div>
+<div class="fair"><h3 class="ch2">Fair moneyline odds</h3><div class="fodds"><div><span>{e(away)}</span><b>{fair_a}</b></div>
+<div><span>{e(home)}</span><b>{fair_h}</b></div></div>{book}
+<p class="meta">From the best estimate, with no sportsbook cut. {e(fav)} is the favorite.</p></div></div>
+{agreement_line(r, saved.get("calibration"))}
+<div class="why"><b>Why the model leans this way:</b> {' · '.join(f"{e(l)} → {e(t)}" for l, t in r.reasons)}</div>
+<h2>Projected team stats</h2>
+<div class="chart">{sim_proj}{season_bars or ''}</div>
+</section>"""
+    cmp = f"""<section id="cmp" class="gtab" hidden>
+<p class="note">Season averages so far. Green = better, red = worse. <a href="../glossary.html">What do these mean?</a></p>
+{compare_tables(r, stats, box)}</section>"""
+    script = """<script>document.querySelectorAll('.gtabs button').forEach(b=>b.addEventListener('click',()=>{
+document.querySelectorAll('.gtabs button').forEach(x=>x.classList.toggle('on',x===b));
+document.querySelectorAll('.gtab').forEach(s=>s.hidden=s.id!==b.dataset.tab);}));</script>"""
+    return page(f"{away} @ {home} · Week {r.week}", hero, sim + cmp, "../", active="picks",
+                extra=script + my_picks_script(all_preds, picks_url))
+
+
+def glossary_page():
+    cats = {"Model": "mdl", "Overall": "ovr", "Offense": "off", "Defense": "def", "Efficiency": "eff",
+            "Advanced": "adv", "Betting": "bet"}
+    items = "".join(f'<div class="gl card"><div class="row"><b>{e(n)}</b><span class="chip {cats[c]}">{c}</span></div>'
+                    f'<p>{e(d)}</p></div>' for n, c, d in GLOSSARY)
+    hero = "<div class='kicker'>Reference</div><h1>Stats glossary</h1><p class='sub'>What every number on this site means.</p>"
+    return page("Stats glossary", hero, f'<div class="glist">{items}</div>', active=None)
+
+
+def game_row(r):
+    """Compact game card on the Picks page that opens the game's own page."""
+    hpts, apts = (r.pred_total + r.pred_margin) / 2, (r.pred_total - r.pred_margin) / 2
+    hw = hpts >= apts
+    venue = e(str(r.stadium)) if isinstance(getattr(r, "stadium", None), str) else ""
+    return f"""<a class="glink game" href="games/{e(r.game_id)}.html">
+<div class="gteams"><div class="gt">{logo(r.away_team, 64, "clg")}<span>{e(r.away_team)}</span><b class="{'cw' if not hw else ''}">{apts:.0f}</b></div>
+<div class="gt">{logo(r.home_team, 64, "clg")}<span>{e(r.home_team)}</span><b class="{'cw' if hw else ''}">{hpts:.0f}</b></div></div>
+<div class="gmeta"><span class="pick">{e(r.blend_pick)} {r.blend_conf:.0%}</span><span>{e(kick_text(r))}</span>
+{'<span class="venue">' + venue + '</span>' if venue else ''}</div><div class="cchev">›</div></a>"""
+
+
 # ---------- click-to-compare team stats ----------
 
 # (label, key, which is better: "hi" / "lo" / None, format)
 COMPARE_STATS = [
     ("Record", "record", None, "{}"),
+    ("Against the spread", "ats", None, "{}"),
+    ("Over / under", "ou", None, "{}"),
+    ("Luck (wins vs expected)", "luck", None, "{:+.1f}"),
     ("Power ranking", "rank", "lo", "#{:.0f}"),
     ("Power rating", "rating", "hi", "{:.0%}"),
     ("Points per game", "ppg", "hi", "{:.1f}"),
@@ -723,10 +1132,18 @@ def line_flags(r, gaps):
     return "".join(out)
 
 
-def game_card(r, is_best=False, stats=None, gaps=None, proj=None):
+def kick_text(r):
+    """'Sun 1:00 PM' style kickoff (Eastern), or the final score once played."""
+    if r.played:
+        return f"Final {int(r.away_score)}-{int(r.home_score)}"
+    t = r.gametime if isinstance(r.gametime, str) and ":" in r.gametime else "13:00"
+    h, m = int(t[:2]), t[3:5]
+    return f"{r.gameday:%a} {h % 12 or 12}:{m} {'PM' if h >= 12 else 'AM'} ET"
+
+
+def game_card(r, is_best=False, stats=None, gaps=None, proj=None, saved=None):
     away_pct = round((1 - r.home_prob) * 100)
     ca, ch = bar_colors(r.away_team, r.home_team)
-    disagree = isinstance(r.vegas_pick, str) and r.vegas_pick != r.pick
     vegas = f"Vegas: {e(r.vegas_pick)} {r.vegas_conf:.0%}" if isinstance(r.vegas_pick, str) else "Vegas: no line yet"
     qbs = f"{e(str(r.away_qb))} vs {e(str(r.home_qb))} · " if isinstance(r.home_qb, str) else ""
     why = " · ".join(f"{e(lbl)} → {e(team)}" for lbl, team in r.reasons)
@@ -751,25 +1168,51 @@ def game_card(r, is_best=False, stats=None, gaps=None, proj=None):
  · Total {r.pred_total:.1f} <span class="meta">(Vegas {v_total})</span></div>"""
     blend = ""
     if isinstance(r.vegas_pick, str):
-        blend = f'<div class="blend"><b>Model + Vegas blend: {e(r.blend_pick)} {r.blend_conf:.0%}</b></div>'
-    badges = ('<span class="star">★ Top pick of slot</span> ' if is_best and r.games_in_slot > 1 else '') + \
-             ('<span class="tag">Disagrees with Vegas</span> ' if disagree else '')
+        blend = f'<div class="blend"><b>Best estimate: {e(r.blend_pick)} {r.blend_conf:.0%}</b> <span>(Model + Vegas)</span></div>'
+    badges = '<span class="star">★ Top pick of slot</span> ' if is_best and r.games_in_slot > 1 else ''
+    saved = saved or {}
+    if "pred_margin" in r:
+        hpts, apts = (r.pred_total + r.pred_margin) / 2, (r.pred_total - r.pred_margin) / 2
+    else:
+        hpts = apts = None
+    hw = r.home_prob >= 0.5 if hpts is None else hpts >= apts
+    home_txt = f"{hpts:.0f}" if hpts is not None else f"{r.home_prob:.0%}"
+    away_txt = f"{apts:.0f}" if apts is not None else f"{1 - r.home_prob:.0%}"
+    icons = []
+    if is_best and r.games_in_slot > 1:
+        icons.append('<i class="ic star">★ Top</i>')
+    if line_flags(r, gaps):
+        icons.append('<i class="ic">Flag</i>')
+    if isinstance(r.vegas_pick, str) and r.vegas_pick != r.pick:
+        icons.append('<i class="ic split">Split</i>')
+    mini = f'<span class="cicons">{"".join(icons)}</span>' if icons else ""
     return f"""
-<details class="game{' best' if is_best else ''}"><summary>
-  <div class="row"><div class="teams">{tl(r.away_team)} <small>@</small> {tl(r.home_team)}</div>
-  <div>{badges}<span class="pick">{e(r.pick)} {r.confidence:.0%}</span></div></div>
+<details class="game{' best' if is_best else ''}"><summary class="crow">
+  <div class="cteam">{logo(r.away_team, 64, "clg")}<span class="cab">{e(r.away_team)}</span>
+    <b class="{'cw' if not hw else ''}">{away_txt}</b></div>
+  <div class="cat">@</div>
+  <div class="cteam">{logo(r.home_team, 64, "clg")}<span class="cab">{e(r.home_team)}</span>
+    <b class="{'cw' if hw else ''}">{home_txt}</b></div>
+  <div class="cside"><span class="pick">{e(r.blend_pick)} {r.blend_conf:.0%}</span>
+    <span class="ckick">{e(kick_text(r))}</span>{mini}</div>
+  <div class="cchev" aria-hidden="true">▾</div>
+</summary>
+<div class="details">
   {score}
+  <div class="row picks"><div>{badges}<span class="pick">Model: {e(r.pick)} {r.confidence:.0%}</span></div>{blend}</div>
+  {line_flags(r, gaps)}
+  {pick_buttons(r)}
   <div class="bar" role="img" aria-label="{e(r.away_team)} {away_pct}%, {e(r.home_team)} {100 - away_pct}%">
     <i style="width:{away_pct}%;background:{ca}"></i><i style="width:{100 - away_pct}%;background:{ch}"></i></div>
   <div class="row meta"><span>{e(r.away_team)} {away_pct}% · {e(r.home_team)} {100 - away_pct}%</span><span>{vegas}</span></div>
   <div class="meta">{qbs}{r.gameday:%a %b %-d}</div>
-  {pick_buttons(r)}
   {score_line}
-  {line_flags(r, gaps)}
-  {blend}
+  {range_line(r, saved.get("scores"))}
+  {odds_line(r)}
+  {agreement_line(r, saved.get("calibration"))}
   <div class="why"><b>Why:</b> {why}</div>
-  <div class="more">Compare team stats</div>
-</summary>{compare_panel(r, stats) if stats else ''}
+  {compare_panel(r, stats) if stats else ''}
+</div>
 </details>"""
 
 
@@ -861,7 +1304,8 @@ def pct(x):
     return "-" if x == 0 else ("<1%" if x < 0.01 else (">99%" if x > 0.99 else f"{x:.0%}"))
 
 
-def rankings_table(pr):
+def rankings_table(pr, extras=None):
+    extras = extras or {}
     rows = []
     for r in pr.itertuples():
         if r.change > 0:
@@ -870,11 +1314,15 @@ def rankings_table(pr):
             mv = f'<span class="down">▼ {-int(r.change)}</span>'
         else:
             mv = '<span class="same">–</span>'
+        pts = points_rating(r.rating)
+        luck = extras.get(r.team, {}).get("luck", 0.0)
+        luck_txt = f"{luck:+.1f}" if abs(luck) >= 0.05 else "0.0"
         rows.append(f"<tr><td class='n'>{r.rank}</td><td>{mv}</td><td><b>{tl(r.team)}</b></td><td class='n'>{r.record}</td>"
-                    f"<td class='n'>{r.rating:.0%}<span class='meter'><i style='width:{r.rating * 100:.0f}%'></i></span></td>"
-                    f"<td class='n'>{r.off_rank}</td><td class='n'>{r.def_rank}</td></tr>")
+                    f"<td class='n'><b>{pts:+.1f}</b></td><td class='n'>{r.rating:.0%}</td>"
+                    f"<td class='n'>{r.off_rank}</td><td class='n'>{r.def_rank}</td><td class='n'>{luck_txt}</td></tr>")
     return ('<div class="wrap"><table><tr><th class="n">#</th><th>Move</th><th>Team</th><th class="n">Record</th>'
-            '<th class="n">Rating</th><th class="n">Offense</th><th class="n">Defense</th></tr>' + "".join(rows) + "</table></div>")
+            '<th class="n">Rating (pts)</th><th class="n">Win vs avg</th><th class="n">Offense</th><th class="n">Defense</th>'
+            '<th class="n">Luck</th></tr>' + "".join(rows) + "</table></div>")
 
 
 def playoff_tables(odds, records):
@@ -966,14 +1414,15 @@ def tracker_section(p, prefix=""):
 
 def tabs(active, prefix=""):
     """Top tab bar shared by every page."""
-    items = (("picks", "index.html", "Game Picks"), ("players", "players.html", "Player Projections"),
-             ("history", "history.html", "Every Pick"))
+    items = (("picks", "index.html", "Picks"), ("rankings", "rankings.html", "Rankings"),
+             ("players", "players.html", "Players"), ("results", "results.html", "Results"),
+             ("leaderboard", "leaderboard.html", "Leaderboard"))
     return '<div class="tabs">' + "".join(
         f'<a href="{prefix}{href}"{" class=on aria-current=page" if key == active else ""}>{label}</a>'
         for key, href, label in items) + "</div>"
 
 
-def page(title, hero, body, prefix="", color=None, active=None):
+def page(title, hero, body, prefix="", color=None, active=None, extra=""):
     """Sub-page shell: colored header + content + team links."""
     style = f' style="--tc:{color}"' if color else ""
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
@@ -982,7 +1431,28 @@ def page(title, hero, body, prefix="", color=None, active=None):
 <header class="hero{' thero' if color else ''}"{style}><div class="in">{tabs(active, prefix)}{hero}</div></header>
 <main>{body}
 <footer><b>Teams</b><div class="teamnav">{''.join(tl(t, prefix) for t in TEAMS)}</div><br><b>Not betting advice.</b>
-Data from <a href="https://github.com/nflverse">nflverse</a>.</footer></main></body></html>"""
+Data from <a href="https://github.com/nflverse">nflverse</a>.<br><br>© 2026 Zachary Ivezi. All rights reserved.</footer></main>{extra}</body></html>"""
+
+
+def all_picks_table(p):
+    if p.empty:
+        body = "<p>No saved picks yet.</p>"
+    else:
+        rows = []
+        for r in p.sort_values(["week", "date", "game_id"], ascending=[False, True, True]).itertuples():
+            fin = f"{r.final[0]}-{r.final[1]}" if isinstance(r.final, list) else "-"
+            conf = r.home_prob if r.pick == r.home else 1 - r.home_prob
+            bconf = r.blend_prob if r.blend_pick == r.home else 1 - r.blend_prob
+            vg = "-" if r.vegas_pick is None or r.vegas_pick != r.vegas_pick else e(r.vegas_pick)
+            src = "" if r.source == "live" else " <span class='meta'>*</span>"
+            rows.append(f"<tr><td>Wk {r.week}</td><td>{tl(r.away, '')} @ {tl(r.home, '')}</td><td class='n'>{fin}</td>"
+                        f"<td>{e(r.pick)} {conf:.0%} {mark(getattr(r, 'correct', None))}{src}</td>"
+                        f"<td>{vg} {mark(getattr(r, 'vegas_correct', None))}</td>"
+                        f"<td>{e(r.blend_pick)} {bconf:.0%} {mark(getattr(r, 'blend_correct', None))}</td></tr>")
+        body = ('<div class="wrap"><table><tr><th>Week</th><th>Game</th><th class="n">Final</th><th>Model</th>'
+                '<th>Vegas</th><th>Model + Vegas</th></tr>' + "".join(rows) + "</table></div>")
+    return body + ('<p class="note">* = from before the tracker started: what the model would have said (it was trained only '
+                   'on earlier seasons).</p>' if not p.empty else '')
 
 
 def history_page(p, season):
@@ -1010,7 +1480,7 @@ the fact.</p>"""
 only on earlier seasons).</p>{body}""")
 
 
-def team_page(team, season, all_preds, ranks, odds, odds_hist, rating_hist, records):
+def team_page(team, season, all_preds, ranks, odds, odds_hist, rating_hist, records, extras=None):
     rk = ranks.set_index("team").loc[team]
     od = odds.set_index("team").loc[team]
     g = all_preds[(all_preds["home_team"] == team) | (all_preds["away_team"] == team)].sort_values(["week", "gameday"])
@@ -1049,7 +1519,14 @@ def team_page(team, season, all_preds, ranks, odds, odds_hist, rating_hist, reco
 <div class="stat"><b>{rk['rating']:.0%}</b><span>Chance to beat an average team (neutral field)</span></div>
 <div class="stat"><b>{pct(od['playoffs'])}</b><span>Playoff odds · {od['proj_wins']:.1f} projected wins</span></div>
 <div class="stat"><b>{pct(od['super_bowl'])}</b><span>Super Bowl odds</span></div></div>"""
-    body = f"""<p class="note" style="margin-top:16px">Offense rank {int(rk['off_rank'])} · Defense rank {int(rk['def_rank'])} (EPA per play)</p>
+    x = (extras or {}).get(team, {})
+    luck = x.get("luck", 0.0)
+    body = f"""<div class="stats" style="margin-top:16px">
+<div class="stat"><b>{points_rating(rk['rating']):+.1f}</b><span>Rating: points vs an average team</span></div>
+<div class="stat"><b>{x.get('ats', '-')}</b><span>Against the spread</span></div>
+<div class="stat"><b>{x.get('ou', '-')}</b><span>Over / under (overs first)</span></div>
+<div class="stat"><b>{luck:+.1f}</b><span>Luck: wins vs expected ({x.get('exp_wins', 0):.1f} expected)</span></div></div>
+<p class="note" style="margin-top:12px">Offense rank {int(rk['off_rank'])} · Defense rank {int(rk['def_rank'])} (EPA per play)</p>
 <h2>Schedule and picks</h2>{sched}
 <h2>Power rating by week</h2><p class="note">Chance to beat an average NFL team on a neutral field, going into each week.</p>
 {rating_chart}
@@ -1076,6 +1553,11 @@ def main():
     df = load_all(args.refresh)
     season = int(df["season"].max())
     all_preds = predict_games(saved, df[df["season"] == season])
+    try:
+        from data import load_games as _lg
+        all_preds["stadium"] = all_preds["game_id"].map(_lg().set_index("game_id")["stadium"])
+    except Exception:  # noqa: BLE001
+        all_preds["stadium"] = None
     right, total, v_right, v_total = season_record(all_preds)
 
     upcoming = pick_week(df, season)
@@ -1084,7 +1566,6 @@ def main():
     this_week["slot"] = [time_slot(w, t) for w, t in zip(this_week["weekday"], this_week["gametime"])]
     this_week["games_in_slot"] = this_week.groupby("slot")["game_id"].transform("count")
     best = best_picks(this_week)
-    best_ids = set(best["game_id"])
     last_week = all_preds[all_preds["week"] == week - 1]
     lw_right = int(last_week["correct"].isin([True]).sum())
     lw_total = int(last_week["correct"].isin([True, False]).sum())
@@ -1094,6 +1575,12 @@ def main():
     records = team_records(df, season)
     ranks = power_rankings(saved, df, SNAPSHOTS, season)
     stats = team_stats(df, season, ranks, odds)
+    extras = season_extras(df, season)
+    box = team_box(df, season)
+    for t in TEAMS:
+        stats[t]["ats"] = extras[t]["ats"]
+        stats[t]["ou"] = extras[t]["ou"]
+        stats[t]["luck"] = extras[t]["luck"]
     try:  # player projections are extra: never let them break the site
         from players import evaluate as eval_players, player_features, weekly_projections
         proj = weekly_projections(season, week)
@@ -1103,7 +1590,7 @@ def main():
     cards = []
     for slot in best["slot"]:
         cards.append(f"<h3>{e(slot)}</h3>")
-        cards += [game_card(r, r.game_id in best_ids, stats, saved.get('line_gaps'), proj) for _, r in this_week[this_week["slot"] == slot].iterrows()]
+        cards += [game_row(r) for r in this_week[this_week["slot"] == slot].itertuples()]
 
     # Pick tracker + odds history (saved in docs/data/ so they build up over the season)
     picks = picks_frame(update_picks(all_preds), season)
@@ -1111,7 +1598,7 @@ def main():
     b_right = int((picks["blend_correct"] == True).sum()) if "blend_correct" in picks else 0  # noqa: E712
     b_total = int(picks["blend_correct"].isin([True, False]).sum()) if "blend_correct" in picks else 0
 
-    stats = f"""<div class="stats">
+    hero_stats = f"""<div class="stats">
 <div class="stat"><b>{right}-{total - right}</b><span>Model record in {season} ({right / max(total, 1):.0%})</span></div>
 <div class="stat"><b>{v_right}-{v_total - v_right}</b><span>Vegas favorites in {season} ({v_right / max(v_total, 1):.0%})</span></div>
 <div class="stat"><b>{lw_right}-{lw_total - lw_right}</b><span>Model in week {week - 1}</span></div>
@@ -1126,69 +1613,90 @@ def main():
 
     picks_url = load_site_config().get("picks_url", "")
     write_schedule(all_preds)
+    footer = f"""<footer><b>Teams</b><div class="teamnav">{''.join(tl(t) for t in TEAMS)}</div><br>
+Model: {saved['name']} using {used}. Data from <a href="https://github.com/nflverse">nflverse</a>.
+Code: <a href="https://github.com/zacharyivezi08/nfl-game-predictor">github.com/zacharyivezi08/nfl-game-predictor</a>.
+<br><br><b>Not betting advice.</b> In a 10-season backtest against real odds, betting the model's picks lost about 2–6% of the
+money wagered. Vegas is more accurate than this model.<br><br>© 2026 Zachary Ivezi. All rights reserved.</footer>"""
+
+    # ---------- Picks (home page): just this week ----------
     html_page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>NFL Game Predictor</title>
 <meta name="description" content="Machine learning picks, predicted scores, power rankings and playoff odds for every NFL game.">
 <meta name="theme-color" content="#C85000"><style>{CSS}</style></head><body>
 <header class="hero"><div class="in">{tabs("picks")}
 <div class="kicker">Week {week} · {season} season · updated {datetime.now():%b %-d, %Y}</div>
-<h1>NFL Game Predictor</h1>
-<p class="sub">Machine learning picks, predicted scores, power rankings and playoff odds for every game.</p>
-{stats}</div></header>
+<h1>Week {week} picks</h1>
+<p class="sub">Predicted scores and picks for every game. Tap a game for more details.</p>
+{hero_stats}</div></header>
 <main>
-<nav><a href="#glance">At a glance</a><a href="#mine">Your picks</a>{'<a href="#leaderboard">Leaderboard</a>' if picks_url else ''}<a href="#slots">Top picks</a><a href="#upsets">Upset watch</a><a href="#picks">All picks</a><a href="#accuracy">Accuracy</a><a href="#tracker">Pick tracker</a>
-<a href="#rankings">Power rankings</a><a href="#playoffs">Playoff odds</a>{'<a href="#results">Last week</a>' if lw_total else ''}
-<a href="history.html">Every pick</a></nav>
-<h2 id="glance">Week {week} at a glance</h2>
+<nav><a href="#glance">At a glance</a><a href="#slots">Top picks</a><a href="#upsets">Upset watch</a><a href="#games">All games</a></nav>
+<div class="namehint card" id="namehint"></div>
+<h2 id="glance">At a glance</h2>
 {glance_card(this_week)}
-<h2 id="mine">Your picks</h2>
-{my_picks_section(picks_url)}
 <h2 id="slots">Most confident pick of each time slot</h2>
 <div class="slots">{''.join(slot_card(r) for _, r in best.iterrows())}</div>
 <h2 id="upsets">Upset watch</h2>
-<p class="note">Underdogs with at least a 35% chance, from the Model + Vegas blend. The bar fills up at 50% (a coin flip).
-Upsets are mostly luck, but these percentages are honest: in past seasons, underdogs won about as often as predicted.</p>
+<p class="note">Underdogs with at least a 35% chance. The bar is full at 50% (a coin flip).</p>
 {upset_watch(this_week, saved.get("calibration"))}
-<h2 id="picks">Week {week} picks</h2>
-<p class="note">Bars are in team colors: away team on the left, home team on the right. Predicted scores come from separate spread and total models.
-"Model + Vegas blend" combines the model with the betting line. It's the most accurate forecast on this page (in 2022–2025
-testing it matched Vegas, 67.7% vs 67.6%). When there's no line yet, it's just the model.
-Yellow boxes = the predicted score is {saved.get("line_gaps", {}).get("points", 4)}+ points away from the Vegas spread or total.
-Break-even for betting is 52.4%, so these are interesting, not proven: see the hit rates.</p>
+<h2 id="games">All games</h2>
+<p class="note">Tap a game for the full simulation and team comparison. The % is the <b>best estimate</b>
+(the model blended with the Vegas line, the most accurate forecast here).</p>
 {''.join(cards)}
-<section><h2 id="accuracy">{season} accuracy: model vs Vegas</h2>
-<p class="note">Share of games picked correctly so far this season. (The model was trained only on earlier seasons,
-so these are real predictions.)</p>
-{accuracy_chart(all_preds, season)}
-<h3>Are the percentages honest?</h3>
-<p class="note">Every game from {saved.get("calibration", {}).get("seasons", "past seasons")}, each predicted using only earlier
-seasons. Dots on the dashed line = when it says 70%, the favorite really wins about 70% of the time. Bigger dots = more games.</p>
-{calibration_chart(saved.get("calibration"))}</section>
-<section><h2 id="tracker">Pick tracker</h2>
-<p class="note">Every pick is saved before kickoff and frozen once the game starts, so the record can't be rewritten.</p>
-{tracker_section(picks)}</section>
-<section><h2 id="rankings">Power rankings</h2>
-<p class="note">Rating = chance to beat an average NFL team on a neutral field. Offense/defense = efficiency rank (EPA per play).
-Arrows = movement since last week. Tap a team for its page.</p>
-{rankings_table(ranks)}</section>
-<section><h2 id="playoffs">Playoff odds</h2>
-<p class="note">From 10,000 simulations of the rest of the season and the playoffs. Simplified tiebreakers:
-teams tied on wins are ordered randomly.</p>
-{playoff_tables(odds, records)}</section>
-{f'<section><h2 id="results">Week {week - 1} results</h2>' + results_table(last_week) + '</section>' if lw_total else ''}
-<footer><b>Teams</b><div class="teamnav">{''.join(tl(t) for t in TEAMS)}</div><br>
-Model: {saved['name']} using {used}. It picked these by testing each group of stats and keeping only the
-ones that improved predictions. Data from <a href="https://github.com/nflverse">nflverse</a>.
-Code: <a href="https://github.com/zacharyivezi08/nfl-game-predictor">github.com/zacharyivezi08/nfl-game-predictor</a>.
-<br><br><b>Not betting advice.</b> "Most confident" means most likely to win, not a good bet. In a 10-season backtest
-against real odds, betting the model's picks lost about 2–6% of the money wagered, and its spread and over/under
-picks hit about 49–50%, below the 52.4% needed to break even. Vegas is more accurate than this model.
-<br><br>© 2026 Zachary Ivezi. All rights reserved.</footer>
+{footer}
 </main>{my_picks_script(all_preds, picks_url)}</body></html>"""
 
     DOCS.mkdir(exist_ok=True)
     (DOCS / "index.html").write_text(html_page)
-    (DOCS / "history.html").write_text(history_page(picks, season))
+    (DOCS / "games").mkdir(exist_ok=True)
+    for r in this_week.itertuples():
+        (DOCS / "games" / f"{r.game_id}.html").write_text(
+            game_page(r, stats, box, saved, proj, saved.get("line_gaps"), all_preds, picks_url))
+    (DOCS / "glossary.html").write_text(glossary_page())
+
+    # ---------- Rankings: power rankings + playoff odds ----------
+    rank_body = f"""<nav><a href="#rankings">Power rankings</a><a href="#playoffs">Playoff odds</a></nav>
+<h2 id="rankings">Power rankings</h2>
+<p class="note"><b>Rating (pts)</b> = points better or worse than an average team on a neutral field. <b>Win vs avg</b> = chance
+to beat an average team. Offense/defense = efficiency rank (EPA per play). <b>Luck</b> = actual wins minus the wins a team's
+points scored and allowed would normally produce (+ = winning more than its play suggests). Tap a team for its page.</p>
+{rankings_table(ranks, extras)}
+<h2 id="playoffs">Playoff odds</h2>
+<p class="note">From 10,000 simulations of the rest of the season and the playoffs (teams tied on wins are ordered randomly).</p>
+{playoff_tables(odds, records)}"""
+    rank_hero = (f"<div class='kicker'>Week {week} · {season}</div><h1>Rankings &amp; playoff odds</h1>"
+                 "<p class='sub'>Every team ranked by the model, plus each team's chances to make the playoffs and win it all.</p>")
+    (DOCS / "rankings.html").write_text(page(f"Rankings · Week {week}", rank_hero, rank_body, active="rankings"))
+
+    # ---------- Results: accuracy, honesty check, tracker, last week, every pick ----------
+    res_body = f"""<nav><a href="#accuracy">Accuracy</a><a href="#honest">Honest %</a><a href="#tracker">Tracker</a>
+{'<a href="#lastweek">Last week</a>' if lw_total else ''}<a href="#all">Every pick</a></nav>
+<h2 id="accuracy">{season} accuracy: model vs Vegas</h2>
+<p class="note">Share of games picked correctly so far this season. The model was trained only on earlier seasons, so these are
+real predictions.</p>
+{accuracy_chart(all_preds, season)}
+<h2 id="honest">Are the percentages honest?</h2>
+<p class="note">Every game from {saved.get("calibration", {}).get("seasons", "past seasons")}, each predicted using only earlier
+seasons. Dots on the dashed line = when it says 70%, the favorite really wins about 70% of the time.</p>
+{calibration_chart(saved.get("calibration"))}
+<h2 id="tracker">Pick tracker</h2>
+<p class="note">Every pick is saved before kickoff and frozen once the game starts, so the record can't be rewritten.</p>
+{tracker_section(picks)}
+{f'<h2 id="lastweek">Week {week - 1} results</h2>' + results_table(last_week) if lw_total else ''}
+<h2 id="all">Every pick</h2>
+{all_picks_table(picks)}"""
+    res_hero = (f"<div class='kicker'>{season} season</div><h1>Results</h1>"
+                "<p class='sub'>How the picks have done, week by week, compared with Vegas.</p>")
+    res_html = page(f"Results · {season}", res_hero, res_body, active="results")
+    (DOCS / "results.html").write_text(res_html)
+    (DOCS / "history.html").write_text(res_html)  # old link still works
+
+    # ---------- Leaderboard: your name, your record, everyone's record ----------
+    lb_hero = ("<div class='kicker'>Pick'em</div><h1>Leaderboard</h1>"
+               "<p class='sub'>Make picks on the Picks page. See how you stack up against friends, the model and Vegas.</p>")
+    (DOCS / "leaderboard.html").write_text(page("Leaderboard", lb_hero, my_picks_section(picks_url, standalone=True),
+                                                active="leaderboard", extra=my_picks_script(all_preds, picks_url)))
+
     ev = None
     try:
         from data import load_games, load_player_stats
@@ -1204,7 +1712,7 @@ picks hit about 49–50%, below the 52.4% needed to break even. Vegas is more ac
     rating_hist = rating_history(saved, season, week)
     for t in TEAMS:
         (DOCS / "teams" / f"{t}.html").write_text(
-            team_page(t, season, all_preds, ranks, odds, odds_hist, rating_hist, records))
+            team_page(t, season, all_preds, ranks, odds, odds_hist, rating_hist, records, extras))
     print(f"Built docs/index.html, history.html and {len(TEAMS)} team pages for {season} week {week}")
 
 
