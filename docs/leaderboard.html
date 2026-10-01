@@ -1,0 +1,315 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Leaderboard</title>
+<meta name="theme-color" content="#C85000"><style>
+:root{--bg:#f3f5f9;--card:#fff;--card2:#f7f8fb;--ink:#0f141c;--muted:#5b6472;--line:#e2e6ec;--grid:#e9ecf1;
+--s1:#2a78d6;--s2:#eb6834;--good:#1a7f37;--bad:#c2255c;--warn:#9a6700;--warnbg:#fff4d6;
+--hero1:#0b1a33;--hero2:#123a73;--glow:rgba(42,120,214,.18);--shadow:0 1px 2px rgba(15,20,28,.06),0 4px 16px rgba(15,20,28,.05)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#070b12;--card:#0f1520;--card2:#131b28;--ink:#e8eef6;
+--muted:#8a96a8;--line:#1f2937;--grid:#1a2230;--s1:#3d8bf0;--s2:#f07033;--good:#3fb950;--bad:#f778ba;
+--warn:#e3b341;--warnbg:#2d2410;--hero1:#060d1a;--hero2:#0f2c5c;--glow:rgba(61,139,240,.22);--shadow:0 1px 2px rgba(0,0,0,.4)}}
+*{box-sizing:border-box}html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+font-variant-numeric:tabular-nums}
+main{max-width:960px;margin:0 auto;padding:0 16px 60px}
+.hero{background:radial-gradient(1200px 400px at 85% -20%,rgba(61,139,240,.45),transparent 60%),
+linear-gradient(135deg,var(--hero1),var(--hero2));color:#fff;padding:30px 0 26px;margin-bottom:0}
+.hero .in{max-width:960px;margin:0 auto;padding:0 16px}
+.kicker{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#9cc3ff}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.1;margin:6px 0 6px;letter-spacing:-.02em;font-weight:800}
+.hero .sub{color:#c4d3ea;margin:0 0 20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 14px;
+backdrop-filter:blur(6px)}
+.stat b{display:block;font-size:26px;font-weight:800;letter-spacing:-.01em}.stat span{color:#b5c5de;font-size:12.5px}
+@media (max-width:520px){.stats .stat:last-child:nth-child(odd){grid-column:1/-1}}
+main .stat{background:var(--card);border-color:var(--line);box-shadow:var(--shadow)}main .stat span{color:var(--muted)}
+nav{position:sticky;top:0;z-index:5;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:10px 16px;
+margin:0 -16px 8px;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:saturate(1.6) blur(10px);
+border-bottom:1px solid var(--line)}nav::-webkit-scrollbar{display:none}
+nav a{flex:none;font-size:13px;font-weight:650;color:var(--ink);text-decoration:none;padding:6px 12px;border:1px solid var(--line);
+border-radius:999px;background:var(--card);transition:border-color .15s,color .15s}nav a:hover{border-color:var(--s1);color:var(--s1)}
+h2{font-size:21px;font-weight:800;letter-spacing:-.01em;margin:40px 0 6px;scroll-margin-top:64px;display:flex;align-items:center;gap:10px}
+h2::before{content:"";width:4px;height:20px;border-radius:2px;background:linear-gradient(var(--s1),var(--s2))}
+h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin:24px 0 6px}
+.sub{color:var(--muted);margin:0 0 14px}.note{color:var(--muted);font-size:13px;margin:0 0 12px;max-width:760px}
+.card,.game,.slot,.chart,.wrap{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.game{padding:14px 16px;margin:10px 0;transition:transform .15s,box-shadow .15s,border-color .15s}
+.game:hover,.slot:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--s1) 45%,var(--line));box-shadow:0 8px 28px var(--glow)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.teams{font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px}.teams small{color:var(--muted);font-weight:500}
+.pick{font-weight:800;font-size:17px}.bar{display:flex;gap:3px;height:10px;margin:12px 0 8px}
+.bar i{display:block;border-radius:5px;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55)}
+.meta{color:var(--muted);font-size:13px}.why{font-size:13px;margin-top:8px;color:var(--muted)}.why b{color:var(--ink)}
+.score{font-size:13px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.blend{font-size:13px;margin-top:6px;display:inline-block;padding:3px 10px;border-radius:8px;
+background:color-mix(in srgb,var(--s1) 12%,transparent)}.blend b{color:var(--s1)}
+.tag{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--warnbg);color:var(--warn)}
+.best{border:1.5px solid var(--s1);box-shadow:0 0 0 3px var(--glow)}
+.star{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--s1);color:#fff}
+.slots{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(160px,1fr);gap:10px;overflow-x:auto;
+scroll-snap-type:x mandatory;padding:2px 2px 8px;scrollbar-width:thin}
+.slot{padding:12px 14px;scroll-snap-align:start;transition:transform .15s,border-color .15s,box-shadow .15s}
+.slot span{display:block;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.slot b{display:block;font-size:24px;font-weight:800;margin:4px 0 2px}.slot small{color:var(--muted)}
+.ok{color:var(--good);font-weight:800}.no{color:var(--bad);font-weight:800}
+.wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+td,th{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;white-space:nowrap}
+tr:last-child td{border-bottom:0}tbody tr:hover td,table tr:hover td{background:var(--card2)}
+th{color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;background:var(--card2)}
+td.n,th.n{text-align:right}
+.meter{display:inline-block;width:64px;height:6px;border-radius:3px;background:var(--grid);vertical-align:middle;margin-left:8px}
+.meter i{display:block;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--s1),#6fb0ff)}
+.up{color:var(--good);font-weight:700}.down{color:var(--bad);font-weight:700}.same{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.grid2>div{min-width:0}
+@media (max-width:700px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.chart{padding:12px 12px 6px;position:relative}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--muted);margin:0 0 4px 4px}
+.legend span::before{content:"";display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle;background:var(--c)}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 8px;border-radius:6px;
+display:none;white-space:nowrap;transform:translate(-50%,-110%)}
+details{margin-top:8px;font-size:13px}summary{cursor:pointer;color:var(--muted)}
+footer{color:var(--muted);font-size:13px;margin-top:48px;padding-top:20px;border-top:1px solid var(--line)}footer a{color:var(--s1)}
+.tb{display:inline-flex;align-items:center;gap:6px;font-weight:800;color:var(--ink);text-decoration:none}
+.tb::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--tc);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--tc) 45%,var(--muted))}
+a.tb:hover{color:var(--s1)}
+.tb{vertical-align:middle}.tb:has(img)::before{display:none}td .tb .lg{width:20px;height:20px}
+.slot b{display:flex;align-items:center;gap:6px;white-space:nowrap}.slot b .tb{gap:5px}.tb .lg{width:22px;height:22px;object-fit:contain;flex:none}
+.teams .tb .lg{width:28px;height:28px}.slot .tb .lg{width:24px;height:24px}.cmp .ct .tb .lg{width:40px;height:40px}
+.cmp .ct .tb{flex-direction:column;gap:2px}
+.hlogo{width:88px;height:88px;object-fit:contain;float:right;margin:0 0 8px 12px;filter:drop-shadow(0 4px 14px rgba(0,0,0,.35))}
+.back{display:inline-block;font-size:13px;color:#9cc3ff;text-decoration:none;margin-bottom:6px}
+.teamnav{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.teamnav a{font-size:12px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.teamnav a:hover{border-color:var(--s1)}
+.thero{background:radial-gradient(900px 300px at 90% -30%,color-mix(in srgb,var(--tc) 70%,transparent),transparent 65%),
+linear-gradient(135deg,var(--hero1),var(--hero2))}
+details.game>summary{list-style:none;cursor:pointer}details.game>summary::-webkit-details-marker{display:none}
+.more{margin-top:10px;font-size:12.5px;font-weight:700;color:var(--s1);display:flex;align-items:center;gap:6px}
+.more::after{content:"▾";transition:transform .2s}details[open] .more::after{transform:rotate(180deg)}
+details[open] .more{color:var(--muted)}details[open]{transform:none!important}
+.cmp{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);animation:fade .2s ease-out}
+.cmp table{table-layout:fixed}.cmp td,.cmp th{white-space:normal;padding:7px 6px;text-align:center;border-bottom:1px solid var(--grid)}
+.cmp th{background:none;font-size:11.5px;letter-spacing:.03em;width:46%}.cmp td{font-weight:600;font-size:14.5px}
+.cmp td.ct{font-size:16px;border-bottom:1px solid var(--line)}.cmp tr:hover td{background:none}
+.cmp td.win{font-weight:800;background:color-mix(in srgb,var(--tc) 18%,transparent)!important;border-radius:8px}
+.cmp .note{margin:10px 0 0;font-size:12px}
+.flag{font-size:13px;margin-top:8px;padding:8px 10px;border-radius:10px;background:var(--warnbg);border-left:3px solid var(--warn)}
+.flag b{color:var(--warn)}.flag .meta{display:block;margin-top:2px}
+.glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.glance>div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 16px;box-shadow:var(--shadow)}
+.glance h4,.cmp h4{margin:0 0 8px;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.glance ul,.edges{list-style:none;margin:0;padding:0}.glance li{padding:6px 0;border-bottom:1px solid var(--grid);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.glance li:last-child{border-bottom:0}
+.edges li{padding:7px 10px;margin:0 0 6px;border-radius:10px;font-size:13.5px;background:var(--card2)}
+.edges li.big{background:color-mix(in srgb,var(--good) 14%,transparent)}.cmp h4{margin-top:4px}
+.mypick{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.mypick button{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13px;font-weight:700;color:var(--ink);
+background:var(--card2);border:1.5px solid var(--line);border-radius:999px;padding:4px 12px 4px 6px;cursor:pointer}
+.mypick button .lg{width:20px;height:20px}.mypick button:hover:not(:disabled){border-color:var(--s1)}
+.mypick button.on{border-color:var(--s1);background:color-mix(in srgb,var(--s1) 16%,transparent)}
+.mypick button:disabled{opacity:.5;cursor:default}.mypick button.on:disabled{opacity:1}
+#myrec:empty{display:none}
+.namebox{padding:12px 16px;border-radius:16px;margin-bottom:10px}.namerow{display:flex;gap:8px;margin:8px 0 4px}
+.namerow input{flex:1;min-width:0;font:inherit;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.4);
+background:#fff;color:#14171c}.namerow button{font:inherit;font-weight:800;padding:8px 16px;border-radius:10px;border:0;
+background:#fff;color:#F26A00;cursor:pointer}
+tr.me td{background:rgba(255,255,255,.2)}tr.bench td{font-style:italic;opacity:.85}
+.sb{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:12px 0 4px;padding:14px 8px;
+border-radius:14px;background:var(--card2);border:1px solid var(--grid)}
+.sbt{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.sbt .sblg{width:52px;height:52px;object-fit:contain}.sbt span{font-size:13px;font-weight:700;color:var(--muted)}
+.sbt b{font-size:clamp(34px,8vw,46px);line-height:1;font-weight:900;letter-spacing:-.02em;color:var(--muted);
+font-family:"Arial Narrow","Roboto Condensed","Helvetica Neue",sans-serif;font-stretch:condensed}
+.sbt b.w{color:var(--good)}.sbt i.hid{visibility:hidden}.sbt i{font-style:normal;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--good)}
+.sbm{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:center;line-height:1.3}
+.sbf{text-align:center;font-size:13px;font-weight:700;margin:2px 0}
+.ppgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media (max-width:520px){.ppgrid{grid-template-columns:1fr}}
+.ppgrid h5{margin:0 0 6px;font-size:15px}td.wrapcell{white-space:normal}table.acc td,table.acc th{padding:8px 8px;white-space:normal}td.wrapcell .meta{display:block}.pgame h4{margin:12px 0 6px}.pgame .teams{margin-bottom:4px}.pp{list-style:none;margin:0;padding:0}
+.pp li{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--line)}
+.pp li:last-child{border-bottom:0}.pp b{font-size:18px}.pp small{font-size:13.5px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 18px}
+.tabs a{color:#fff;text-decoration:none;font-weight:800;font-size:15px;padding:8px 16px;border-radius:999px;
+border:2px solid rgba(255,255,255,.55)}.tabs a:hover{background:rgba(255,255,255,.15)}
+.tabs a.on{background:#fff;color:#a84400;border-color:#fff}
+.upsets{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.upset{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--tc);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
+.uprow{display:flex;align-items:center;gap:10px;margin:6px 0 4px}.uprow b{font-size:26px;font-weight:800;min-width:58px}
+.umeter{flex:1;height:8px;border-radius:4px;background:var(--grid);overflow:hidden}.umeter i{display:block;height:8px;max-width:100%;background:var(--tc)}
+@keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+/* White page, orange header + cards. Card orange (#C85000) is the brightest orange where white text meets the
+   4.5:1 readability standard; charts and tables sit on white cards so every line, label and number is easy to read. */
+:root,:root:not([data-theme="light"]){--bg:#ffffff;--ink:#14171c;--muted:#5b6472;--line:#e7e9ee;--grid:#eef0f3;--card2:#f6f7f9;
+--s1:#1f6fd1;--s2:#e0561b;--good:#1a7f37;--bad:#c2255c;--card:#fff;--orange:#C85000}
+body{background:#fff;color:var(--ink)}
+.hero{background:radial-gradient(1200px 400px at 85% -20%,rgba(255,190,120,.35),transparent 60%),
+linear-gradient(135deg,#b84a00,#ec6a0c)}
+.hero .sub,.hero .stat span{color:#fff}.kicker,.back{color:#fff}
+nav{background:rgba(255,255,255,.94);border-bottom-color:var(--line)}
+nav a{background:#fff;color:#a84400;border-color:#f3c9a3}nav a:hover{border-color:var(--orange);color:#a84400}
+h2::before{background:var(--orange)}
+.game,.slot,.glance>div,.upset,main .stat,.teamnav a,.card{
+--card:#C85000;--card2:rgba(0,0,0,.14);--ink:#fff;--muted:#fff;--line:rgba(255,255,255,.35);--grid:rgba(255,255,255,.25);
+--s1:#fff;--good:#fff;--bad:#fff;--warn:#fff;--warnbg:rgba(0,0,0,.22);
+background:#C85000;color:#fff;border-color:#a84400;box-shadow:0 2px 10px rgba(200,80,0,.25)}
+.game:hover,.slot:hover{box-shadow:0 10px 28px rgba(200,80,0,.35)}.best{box-shadow:0 0 0 3px rgba(200,80,0,.35)}
+th{background:rgba(0,0,0,.14)}
+/* tables: white card, orange header row */
+.wrap{background:#fff;color:#14171c;border-color:#ecd9c9;--ink:#14171c;--muted:#4b5563;--line:#eceef1;--grid:#eef0f3;
+--card2:#fbf4ee;--good:#1a7f37;--bad:#c2255c;--s1:#a84400}
+.wrap th{background:#C85000;color:#fff}.wrap tr:hover td{background:#fbf4ee}.wrap .meter{background:#f1e2d6}.wrap .meter i{background:#C85000}
+.wrap .ok,.wrap .no{text-decoration:none}.wrap tr.me td{background:#fbe6d6}
+.cmp .wrap,.game .wrap{--ink:#14171c}
+.blend{background:rgba(0,0,0,.18)}.star{background:#fff;color:#a84400}.tag{background:rgba(0,0,0,.25);color:#fff}
+.ok{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+.no{text-decoration:line-through;text-decoration-thickness:2px}
+.chart .ok,.chart .no{text-decoration:none}
+.mypick button{color:#fff}.mypick button.on{background:#fff;color:#a84400;border-color:#fff}
+.mypick button:disabled{opacity:1;border-style:dashed;cursor:default}
+.cmp td.win{background:rgba(0,0,0,.2)!important}
+.meter{background:rgba(255,255,255,.3)}.meter i{background:#fff}
+.sb{background:rgba(0,0,0,.16);border-color:rgba(0,0,0,.1)}.sbt b{color:rgba(255,255,255,.85)}.sbt b.w{color:#fff}
+.sbt i{background:#fff;color:#a84400;padding:2px 8px;border-radius:999px}
+.flag{background:rgba(0,0,0,.2);border-left-color:#fff}.flag b{color:#fff}
+.edges li.big{background:rgba(0,0,0,.22)}
+tr.me td{background:rgba(0,0,0,.18)}
+/* charts: white card, normal colors */
+.chart{background:#fff;color:#14171c;border-color:var(--line);box-shadow:0 2px 10px rgba(20,23,28,.08)}
+.tip{background:#14171c!important;color:#fff!important}
+footer{color:var(--muted)}footer a{color:#a84400;font-weight:700}
+.teamnav a{color:#fff}
+.namerow button{color:#a84400}
+/* Important info = light-green highlight with dark green text (readable on the orange cards) */
+:root{--hl:#d6f5cd;--hlink:#0b3d17;--hlmid:#1d5c2b}
+.flag{background:var(--hl);color:var(--hlink);border-left:4px solid #1f8a3b}.flag b{color:var(--hlink)}.flag .meta{color:var(--hlmid)}
+.blend{background:var(--hl);color:var(--hlink)}.blend b{color:var(--hlink)}
+.pick{background:var(--hl);color:var(--hlink);padding:2px 10px;border-radius:999px}
+.tag{background:var(--hl);color:var(--hlink)}
+.sbt i{background:var(--hl);color:var(--hlink)}
+.edges li.big{background:var(--hl);color:var(--hlink)}.edges li.big .tb,.edges li.big b{color:var(--hlink)}
+.game .ok,.upset .ok,.cmp .ok{background:var(--hl);color:var(--hlink);padding:1px 8px;border-radius:999px;text-decoration:none}
+.game .no,.upset .no{text-decoration:none;background:rgba(0,0,0,.25);color:#fff;padding:1px 8px;border-radius:999px}
+.uprow b{background:var(--hl);color:var(--hlink);padding:0 10px;border-radius:10px}
+/* Easier reading: bigger base text, no tiny labels, a bit more line spacing */
+body{font-size:16px;line-height:1.55}
+.note,.meta,.why,.score,.blend,.flag,.glance li,.upset .meta,.slot small,footer{font-size:14.5px}
+h3,.slot span,.sbm,th,.glance h4,.cmp h4,.kicker,.star,.tag,.sbt i,.more,.legend{font-size:12.5px;letter-spacing:.04em}
+.stat span{font-size:14px}td,th{font-size:15px}.cmp th{font-size:12.5px}.cmp td{font-size:15.5px}
+.mypick button{font-size:14.5px}.edges li{font-size:14.5px}.sbt span{font-size:14.5px}
+/* chart text: sized in chart units, so it's bigger on phones where the chart shrinks */
+.chart svg text{font-size:14px}
+@media (max-width:600px){.chart svg text{font-size:22px}}
+.odds,.range{font-size:14.5px;margin-top:6px}.agree{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag.split{background:rgba(0,0,0,.25);color:#fff}
+/* compact game rows: tap to open everything */
+details.game{padding:0;margin:8px 0;overflow:hidden}
+summary.crow{display:grid;grid-template-columns:1fr auto 1fr auto 18px;align-items:center;gap:8px;padding:12px 14px;cursor:pointer;list-style:none}
+summary.crow::-webkit-details-marker{display:none}
+.cteam{display:flex;align-items:center;gap:6px;min-width:0}.cteam .clg{width:28px;height:28px;object-fit:contain;flex:none}
+.cab{font-weight:800;font-size:16px}.cteam b{font-size:22px;font-weight:900;margin-left:auto;opacity:.8}.cteam b.cw{opacity:1}
+.cat{opacity:.85;font-size:13px}
+.cside{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:92px}.cside .pick{font-size:15px}
+.ckick{font-size:12.5px;white-space:nowrap}.cicons{display:flex;gap:4px}
+.ic{font-style:normal;font-size:11.5px;font-weight:800;padding:1px 7px;border-radius:999px;background:var(--hl);color:var(--hlink)}
+.ic.split{background:rgba(0,0,0,.28);color:#fff}.ic.star{background:#fff;color:#a84400}
+.cchev{font-size:14px;transition:transform .2s;text-align:center}details[open] .cchev{transform:rotate(180deg)}
+details.game .details{padding:0 14px 14px;border-top:1px solid rgba(255,255,255,.3);animation:fade .2s ease-out}
+details.game .details .sb{margin-top:12px}
+@media (max-width:430px){summary.crow{grid-template-columns:1fr 1fr auto 14px;row-gap:4px}.cat{display:none}
+ .cteam b{font-size:20px}.cside{grid-column:3;grid-row:1/3}.cchev{grid-column:4;grid-row:1/3}
+ .cteam:nth-child(3){grid-column:2;grid-row:1}}
+/* game list rows (link to game page) */
+a.glink{display:grid;grid-template-columns:1fr auto 16px;gap:10px;align-items:center;text-decoration:none;color:#fff;padding:12px 14px;margin:8px 0}
+.gteams{display:flex;flex-direction:column;gap:6px}.gt{display:flex;align-items:center;gap:8px}
+.gt .clg{width:30px;height:30px;object-fit:contain}.gt span{font-weight:800;font-size:17px}.gt b{margin-left:auto;font-size:22px;font-weight:900;opacity:.75}
+.gt b.cw{opacity:1}.gmeta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:13px;text-align:right}
+.gmeta .venue{max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+a.glink .cchev{font-size:26px;font-weight:800}
+/* game page */
+.ghead{display:flex;align-items:center;justify-content:center;gap:18px;margin:6px 0}.ghead div{display:flex;flex-direction:column;align-items:center;gap:4px}
+.ghead .glg{width:72px;height:72px;object-fit:contain}.ghead b{font-size:22px}.ghead span{font-size:20px;opacity:.85}
+.gtabs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.gtabs button,.gtabs a{font:inherit;font-weight:800;font-size:15px;padding:8px 16px;border-radius:999px;border:2px solid rgba(255,255,255,.6);
+background:transparent;color:#fff;cursor:pointer;text-decoration:none}.gtabs button.on{background:#fff;color:#a84400;border-color:#fff}
+.ch{margin:0 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#fff}.ch2{margin:0 0 8px;font-size:14px;letter-spacing:.04em;text-transform:uppercase}
+.simcard{padding:16px}.dcard{text-align:center}.dlegend{display:flex;justify-content:center;gap:16px;font-weight:700;font-size:15px;margin:6px 0}
+.dlegend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.fair{background:var(--hl);color:var(--hlink);border-radius:16px;padding:14px 16px;border:1px solid #b9e6ad}.fair .meta{color:var(--hlmid)}
+.fodds{display:flex;justify-content:space-around;margin:6px 0}.fodds div{display:flex;flex-direction:column;align-items:center}
+.fodds span{font-weight:700}.fodds b{font-size:34px;font-weight:900}
+.pstat{margin:4px 4px 14px}.pstat h5{margin:0 0 6px;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:#4b5563}
+.pbar{margin:4px 0}.prow{display:flex;justify-content:space-between;font-size:15px}.ptrack{height:14px;border-radius:7px;background:#eef0f3;overflow:hidden}
+.ptrack i{display:block;height:14px;border-radius:7px}
+details.sect{margin:10px 0}details.sect>summary{cursor:pointer;font-weight:800;font-size:18px;padding:8px 2px;list-style:none;color:var(--ink)}
+details.sect>summary::after{content:" ▾"}details.sect:not([open])>summary::after{content:" ▸"}
+table.cmpt th{text-transform:none;letter-spacing:0;font-size:15px;font-weight:600;background:none;color:#14171c;white-space:normal}
+table.cmpt td{text-align:center;font-weight:700;font-size:15.5px}table.cmpt td.vs{color:#6b7280;font-weight:500;width:28px}
+table.cmpt td.good{background:#d6f5cd!important;color:#0b3d17;border-radius:8px}table.cmpt td.bad{background:#fde2e2!important;color:#7f1d1d;border-radius:8px}
+table.cmpt td.ct .tb{color:#14171c}
+.glist{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}.gl{padding:12px 14px;border-radius:14px}
+.gl p{margin:6px 0 0;font-size:14.5px}.chip{font-size:12px;font-weight:800;padding:2px 10px;border-radius:999px;background:#fff;color:#a84400}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style></head><body>
+<header class="hero"><div class="in"><div class="tabs"><a href="index.html">Picks</a><a href="rankings.html">Rankings</a><a href="players.html">Players</a><a href="results.html">Results</a><a href="leaderboard.html" class=on aria-current=page>Leaderboard</a></div><div class='kicker'>Pick'em</div><h1>Leaderboard</h1><p class='sub'>Make picks on the Picks page. See how you stack up against friends, the model and Vegas.</p></div></header>
+<main><div class="namebox card"><label for="myname"><b>Your name for the leaderboard</b></label>
+<div class="namerow"><input id="myname" maxlength="24" placeholder="Name or nickname" autocomplete="nickname">
+<button type="button" id="savename">Save</button></div><span class="meta" id="namestatus"></span></div>
+<div class="stats" id="myrec"></div>
+<p class="note">Picks lock at kickoff. <b>Your name and picks are saved to the site owner's Google Sheet and shown on the
+leaderboard</b> once each game kicks off. Leave the name blank to keep your picks private in this browser only.</p>
+<h2 id="leaderboard">Standings</h2>
+<div id="lb"><p class="note">Loading…</p></div>
+<footer><b>Teams</b><div class="teamnav"><a class="tb" style="--tc:#97233F" href="teams/ARI.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ari.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/ari.png'">ARI</a><a class="tb" style="--tc:#A71930" href="teams/ATL.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/atl.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/atl.png'">ATL</a><a class="tb" style="--tc:#241773" href="teams/BAL.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/bal.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/bal.png'">BAL</a><a class="tb" style="--tc:#00338D" href="teams/BUF.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/buf.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/buf.png'">BUF</a><a class="tb" style="--tc:#0085CA" href="teams/CAR.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/car.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/car.png'">CAR</a><a class="tb" style="--tc:#C83803" href="teams/CHI.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/chi.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/chi.png'">CHI</a><a class="tb" style="--tc:#FB4F14" href="teams/CIN.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/cin.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/cin.png'">CIN</a><a class="tb" style="--tc:#FF3C00" href="teams/CLE.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/cle.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/cle.png'">CLE</a><a class="tb" style="--tc:#003594" href="teams/DAL.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/dal.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/dal.png'">DAL</a><a class="tb" style="--tc:#FB4F14" href="teams/DEN.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/den.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/den.png'">DEN</a><a class="tb" style="--tc:#0076B6" href="teams/DET.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/det.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/det.png'">DET</a><a class="tb" style="--tc:#203731" href="teams/GB.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/gb.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/gb.png'">GB</a><a class="tb" style="--tc:#A71930" href="teams/HOU.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/hou.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/hou.png'">HOU</a><a class="tb" style="--tc:#002C5F" href="teams/IND.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ind.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/ind.png'">IND</a><a class="tb" style="--tc:#006778" href="teams/JAX.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/jax.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/jax.png'">JAX</a><a class="tb" style="--tc:#E31837" href="teams/KC.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/kc.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/kc.png'">KC</a><a class="tb" style="--tc:#003594" href="teams/LA.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/lar.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/lar.png'">LA</a><a class="tb" style="--tc:#0080C6" href="teams/LAC.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/lac.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/lac.png'">LAC</a><a class="tb" style="--tc:#A5ACAF" href="teams/LV.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/lv.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/lv.png'">LV</a><a class="tb" style="--tc:#008E97" href="teams/MIA.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/mia.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/mia.png'">MIA</a><a class="tb" style="--tc:#4F2683" href="teams/MIN.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/min.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/min.png'">MIN</a><a class="tb" style="--tc:#C60C30" href="teams/NE.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ne.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/ne.png'">NE</a><a class="tb" style="--tc:#D3BC8D" href="teams/NO.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/no.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/no.png'">NO</a><a class="tb" style="--tc:#0B2265" href="teams/NYG.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/nyg.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png'">NYG</a><a class="tb" style="--tc:#125740" href="teams/NYJ.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/nyj.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png'">NYJ</a><a class="tb" style="--tc:#004C54" href="teams/PHI.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/phi.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/phi.png'">PHI</a><a class="tb" style="--tc:#FFB612" href="teams/PIT.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/pit.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/pit.png'">PIT</a><a class="tb" style="--tc:#69BE28" href="teams/SEA.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/sea.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/sea.png'">SEA</a><a class="tb" style="--tc:#AA0000" href="teams/SF.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/sf.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/sf.png'">SF</a><a class="tb" style="--tc:#D50A0A" href="teams/TB.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/tb.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/tb.png'">TB</a><a class="tb" style="--tc:#4B92DB" href="teams/TEN.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ten.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/ten.png'">TEN</a><a class="tb" style="--tc:#5A1414" href="teams/WAS.html"><img class="lg" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/wsh.png&h=64&w=64" alt="" width="32" height="32" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png'">WAS</a></div><br><b>Not betting advice.</b>
+Data from <a href="https://github.com/nflverse">nflverse</a>.<br><br>© 2026 Zachary Ivezi. All rights reserved.</footer></main><script>
+(function(){const R={"2026_01_NE_SEA": {"w": "SEA", "m": "SEA", "v": "SEA"}, "2026_01_SF_LA": {"w": "SF", "m": "LA", "v": "LA"}, "2026_01_ARI_LAC": {"w": "ARI", "m": "LAC", "v": "LAC"}, "2026_01_ATL_PIT": {"w": "PIT", "m": "PIT", "v": "PIT"}, "2026_01_BAL_IND": {"w": "BAL", "m": "BAL", "v": "BAL"}, "2026_01_BUF_HOU": {"w": "BUF", "m": "HOU", "v": "BUF"}, "2026_01_CHI_CAR": {"w": "CHI", "m": "CHI", "v": "CHI"}, "2026_01_CLE_JAX": {"w": "JAX", "m": "JAX", "v": "JAX"}, "2026_01_DAL_NYG": {"w": "NYG", "m": "DAL", "v": "DAL"}, "2026_01_GB_MIN": {"w": "MIN", "m": "MIN", "v": "MIN"}, "2026_01_MIA_LV": {"w": "LV", "m": "MIA", "v": "LV"}, "2026_01_NO_DET": {"w": "DET", "m": "DET", "v": "DET"}, "2026_01_NYJ_TEN": {"w": "NYJ", "m": "TEN", "v": "TEN"}, "2026_01_TB_CIN": {"w": "CIN", "m": "CIN", "v": "CIN"}, "2026_01_WAS_PHI": {"w": "PHI", "m": "PHI", "v": "PHI"}, "2026_01_DEN_KC": {"w": "KC", "m": "DEN", "v": "KC"}, "2026_02_DET_BUF": {"w": "BUF", "m": "BUF", "v": "BUF"}, "2026_02_CAR_ATL": {"w": "CAR", "m": "ATL", "v": "CAR"}, "2026_02_CIN_HOU": {"w": "CIN", "m": "HOU", "v": "HOU"}, "2026_02_CLE_TB": {"w": "CLE", "m": "TB", "v": "TB"}, "2026_02_GB_NYJ": {"w": "GB", "m": "GB", "v": "GB"}, "2026_02_IND_KC": {"w": "KC", "m": "KC", "v": "KC"}, "2026_02_JAX_DEN": {"w": "DEN", "m": "JAX", "v": "DEN"}, "2026_02_LV_LAC": {"w": "LV", "m": "LAC", "v": "LAC"}, "2026_02_MIA_SF": {"w": "SF", "m": "SF", "v": "SF"}, "2026_02_MIN_CHI": {"w": "MIN", "m": "CHI", "v": "CHI"}, "2026_02_NO_BAL": {"w": "NO", "m": "BAL", "v": "BAL"}, "2026_02_PHI_TEN": {"w": "PHI", "m": "PHI", "v": "PHI"}, "2026_02_PIT_NE": {"w": "NE", "m": "NE", "v": "NE"}, "2026_02_SEA_ARI": {"w": "SEA", "m": "SEA", "v": "SEA"}, "2026_02_WAS_DAL": {"w": "DAL", "m": "DAL", "v": "DAL"}, "2026_02_NYG_LA": {"w": "LA", "m": "LA", "v": "LA"}, "2026_03_ATL_GB": {"w": "ATL", "m": "GB", "v": "GB"}, "2026_03_ARI_SF": {"w": "SF", "m": "SF", "v": "SF"}, "2026_03_BAL_DAL": {"w": "BAL", "m": "BAL", "v": "BAL"}, "2026_03_CAR_CLE": {"w": "CLE", "m": "CLE", "v": "CAR"}, "2026_03_CIN_PIT": {"w": "PIT", "m": "CIN", "v": "CIN"}, "2026_03_HOU_IND": {"w": "IND", "m": "HOU", "v": "HOU"}, "2026_03_KC_MIA": {"w": "KC", "m": "KC", "v": "KC"}, "2026_03_LAC_BUF": {"w": "BUF", "m": "BUF", "v": "BUF"}, "2026_03_LA_DEN": {"w": "DEN", "m": "DEN", "v": "DEN"}, "2026_03_LV_NO": {"w": "LV", "m": "NO", "v": "NO"}, "2026_03_MIN_TB": {"w": "MIN", "m": "MIN", "v": "MIN"}, "2026_03_NE_JAX": {"w": "JAX", "m": "JAX", "v": "JAX"}, "2026_03_NYJ_DET": {"w": "DET", "m": "DET", "v": "DET"}, "2026_03_SEA_WAS": {"w": "WAS", "m": "SEA", "v": "SEA"}, "2026_03_TEN_NYG": {"w": "NYG", "m": "NYG", "v": "NYG"}, "2026_03_PHI_CHI": {"w": "CHI", "m": "PHI", "v": "PHI"}},URL="https://script.google.com/macros/s/AKfycbwawGsOPSGeivlnrFeKD3w7xXxMWDvG7lFHvghQkknXJnBGKSvI9jloq3wfPL8Lcoezmw/exec";let P={},NAME='';
+try{P=JSON.parse(localStorage.getItem('nflgp-picks')||'{}');NAME=localStorage.getItem('nflgp-name')||''}catch(e){}
+function save(){try{localStorage.setItem('nflgp-picks',JSON.stringify(P));localStorage.setItem('nflgp-name',NAME)}catch(e){}}
+function rec(a,b){return a+'-'+(b-a)+(b?' ('+Math.round(100*a/b)+'%)':'')}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function isLocked(el){return R[el.dataset.g]||Date.now()>=Date.parse(el.dataset.k)}
+function send(g,team,el){
+ if(!URL||!NAME)return;const s=el&&el.querySelector('.res');if(s)s.textContent='Saving…';
+ fetch(URL,{method:'POST',body:JSON.stringify({name:NAME,game:g,team:team||''})}).then(r=>r.json()).then(j=>{
+  if(s)s.innerHTML=j.ok?'<span class="ok">Saved ✓</span>':'<span class="no">'+esc(j.error||'Not saved')+'</span>';
+ }).catch(()=>{if(s)s.innerHTML='<span class="no">Not saved (offline?)</span>'});}
+function render(){
+ document.querySelectorAll('.mypick').forEach(el=>{const g=el.dataset.g,done=R[g],locked=isLocked(el);
+  el.querySelectorAll('button').forEach(b=>{b.classList.toggle('on',P[g]===b.dataset.t);b.disabled=!!locked;});
+  const s=el.querySelector('.res');
+  if(done&&P[g])s.innerHTML=done.w===P[g]?'<span class="ok">✓ Right</span>':(done.w==='TIE'?'Tie':'<span class="no">✗ Wrong</span>');
+  else if(locked&&!P[g])s.textContent='Locked (kicked off)';});
+ let n=0,y=0,m=0,v=0,vn=0,open=0;
+ for(const g in P){const r=R[g];if(!r){open++;continue}if(r.w==='TIE')continue;n++;if(P[g]===r.w)y++;if(r.m===r.w)m++;
+  if(r.v){vn++;if(r.v===r.w)v++}}
+ const box=document.getElementById('myrec');if(!box)return;
+ box.innerHTML=n?'<div class="stat"><b>'+rec(y,n)+'</b><span>Your picks</span></div><div class="stat"><b>'+rec(m,n)+
+  '</b><span>Model on the same games</span></div><div class="stat"><b>'+rec(v,vn)+'</b><span>Vegas on the same games</span></div>'+
+  (open?'<div class="stat"><b>'+open+'</b><span>Picks waiting on results</span></div>':'')
+  :'<p class="note">'+(open?'You have '+open+' pick(s) waiting on results. ':'')+'Tap a team under any game below to make your pick. '+
+  'Picks lock at kickoff, and your record vs the model shows up here once games finish.</p>';}
+document.addEventListener('click',ev=>{const b=ev.target.closest('.mypick button');if(!b)return;ev.preventDefault();ev.stopPropagation();
+ if(b.disabled)return;const el=b.closest('.mypick'),g=el.dataset.g;if(P[g]===b.dataset.t)delete P[g];else P[g]=b.dataset.t;
+ save();render();send(g,P[g],el);});
+// name box: saving a name also sends any picks already made for games that haven't kicked off
+const ni=document.getElementById('myname'),sb=document.getElementById('savename'),ns=document.getElementById('namestatus');
+if(ni){ni.value=NAME;if(NAME)ns.textContent='Picks are going to the leaderboard as '+NAME+'.';
+ sb.addEventListener('click',()=>{NAME=ni.value.replace(/\s+/g,' ').trim().slice(0,24);save();
+  ns.textContent=NAME?'Saved. Picks are going to the leaderboard as '+NAME+'.':'No name: picks stay in this browser only.';
+  document.querySelectorAll('.mypick').forEach(el=>{const g=el.dataset.g;if(P[g]&&!isLocked(el))send(g,P[g],el)});});}
+// leaderboard
+function leaderboard(){const lb=document.getElementById('lb');if(!lb||!URL)return;
+ fetch(URL).then(r=>r.json()).then(d=>{const ppl={};
+  (d.picks||[]).forEach(p=>{const k=String(p.n).toLowerCase();const o=ppl[k]||(ppl[k]={name:p.n,w:0,n:0,open:0});
+   const r=R[p.g];if(!r){o.open++;return}if(r.w==='TIE')return;o.n++;if(p.t===r.w)o.w++;});
+  let mw=0,mn=0,vw=0,vn=0;for(const g in R){const r=R[g];if(r.w==='TIE')continue;mn++;if(r.m===r.w)mw++;if(r.v){vn++;if(r.v===r.w)vw++}}
+  const rows=Object.values(ppl).sort((a,b)=>b.w-a.w||(b.w/Math.max(b.n,1))-(a.w/Math.max(a.n,1)));
+  if(!rows.length){lb.innerHTML='<p class="note">No locked picks yet. Names show up here once their picked games kick off.</p>';return}
+  lb.innerHTML='<div class="wrap"><table><tr><th class="n">#</th><th>Name</th><th class="n">Record</th><th class="n">Pending</th></tr>'+
+   rows.map((o,i)=>'<tr'+(o.name.toLowerCase()===NAME.toLowerCase()?' class="me"':'')+'><td class="n">'+(i+1)+'</td><td><b>'+esc(o.name)+
+   '</b></td><td class="n">'+rec(o.w,o.n)+'</td><td class="n">'+o.open+'</td></tr>').join('')+
+   '<tr class="bench"><td></td><td>Model (every game)</td><td class="n">'+rec(mw,mn)+'</td><td></td></tr>'+
+   '<tr class="bench"><td></td><td>Vegas favorite (every game)</td><td class="n">'+rec(vw,vn)+'</td><td></td></tr></table></div>'+
+   '<p class="note">Ranked by wins. Only picks made on this site after the leaderboard started count.</p>';
+ }).catch(()=>{lb.innerHTML='<p class="note">Couldn\'t load the leaderboard right now.</p>'});}
+render();leaderboard();})();
+</script></body></html>
