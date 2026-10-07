@@ -1,6 +1,19 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>LV · NFL Game Predictor</title>
-<meta name="theme-color" content="#C85000"><style>
+<meta name="theme-color" content="#C85000"><link rel="manifest" href="../manifest.json">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="NFL Picks">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta property="og:title" content="NFL Game Predictor">
+<meta property="og:description" content="Free machine learning picks, predicted scores and playoff odds for every NFL game.">
+<meta property="og:image" content="https://zacharyivezi08.github.io/nfl-game-predictor/icons/og-default.png">
+<meta property="og:url" content="https://zacharyivezi08.github.io/nfl-game-predictor/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js').catch(()=>{})</script><style>
 :root{--bg:#f3f5f9;--card:#fff;--card2:#f7f8fb;--ink:#0f141c;--muted:#5b6472;--line:#e2e6ec;--grid:#e9ecf1;
 --s1:#2a78d6;--s2:#eb6834;--good:#1a7f37;--bad:#c2255c;--warn:#9a6700;--warnbg:#fff4d6;
 --hero1:#0b1a33;--hero2:#123a73;--glow:rgba(42,120,214,.18);--shadow:0 1px 2px rgba(15,20,28,.06),0 4px 16px rgba(15,20,28,.05)}
@@ -248,9 +261,44 @@ table.cmpt td.good{background:#d6f5cd!important;color:#0b3d17;border-radius:8px}
 table.cmpt td.ct .tb{color:#14171c}
 .glist{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}.gl{padding:12px 14px;border-radius:14px}
 .gl p{margin:6px 0 0;font-size:14.5px}.chip{font-size:12px;font-weight:800;padding:2px 10px;border-radius:999px;background:#fff;color:#a84400}
+/* tab icons; on phones the tabs become an app-style bar at the bottom of the screen */
+.tabs a{display:inline-flex;align-items:center;gap:6px}.tabs svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;
+stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:700px){
+ .tabs{position:fixed;left:0;right:0;bottom:0;z-index:60;margin:0;display:grid;grid-template-columns:repeat(5,1fr);gap:0;
+  background:#fff;border-top:1px solid #e7e9ee;padding:6px 4px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,.08)}
+ .tabs a{flex-direction:column;gap:2px;border:0;border-radius:12px;padding:5px 2px;color:#4b5563;font-size:11.5px;font-weight:800;justify-content:center}
+ .tabs a svg{width:22px;height:22px}.tabs a.on{background:#fbe6d6;color:#a84400}.tabs a:hover{background:#f6f7f9}
+ body{padding-bottom:84px}}
+.hidden{display:none!important}
+.favbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:14px 0 4px}.favbar label{font-weight:800}
+.favbar select{font:inherit;font-weight:700;padding:7px 10px;border-radius:10px;border:1.5px solid #f3c9a3;background:#fff;color:#14171c}
+.fav{outline:3px solid #1f8a3b;outline-offset:2px}tr.fav td{background:#d6f5cd!important;color:#0b3d17}
+tr.fav td .tb{color:#0b3d17}
+.weeks{display:flex;align-items:center;gap:6px;overflow-x:auto;padding:12px 0 6px;scrollbar-width:none}.weeks::-webkit-scrollbar{display:none}
+.weeks span{font-weight:800;margin-right:4px}.weeks a.wk{flex:none;min-width:38px;text-align:center;padding:7px 0;border-radius:10px;
+border:1.5px solid #f3c9a3;color:#a84400;font-weight:800;text-decoration:none;background:#fff}.weeks a.wk.on{background:#C85000;color:#fff;border-color:#C85000}
+.recap{padding:14px 16px;border-radius:16px;margin:10px 0}.rgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0}
+.rgrid div{background:rgba(0,0,0,.16);border-radius:12px;padding:8px;text-align:center}.rgrid b{display:block;font-size:24px;font-weight:900}
+.recap ul{margin:8px 0 0;padding-left:18px}.recap li{margin:4px 0}
+.glink.nolink{cursor:default}
+.tag.split{background:#374151!important;color:#fff!important}
+/* quick picks */
+.qpbox{margin:6px 0 10px}.qphead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+#qpfill{font:inherit;font-weight:800;font-size:14px;padding:8px 14px;border-radius:999px;border:2px solid #C85000;background:#fff;color:#a84400;cursor:pointer}
+.qplist{display:flex;flex-direction:column;gap:8px}
+.qp{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;margin:0;padding:8px;border-radius:16px;
+background:#fff;border:1px solid #ecd9c9;box-shadow:0 1px 4px rgba(20,23,28,.06)}
+.qp button{display:flex;align-items:center;gap:8px;justify-content:center;font:inherit;padding:10px 8px;border-radius:12px;
+border:2px solid #ecd9c9;background:#fbf4ee;color:#14171c;cursor:pointer;min-height:52px}
+.qp button b{font-size:17px}.qp button small{font-size:13px;color:#4b5563}.qp .qlg{width:28px;height:28px;object-fit:contain}
+.qp button.on{background:#C85000;border-color:#C85000;color:#fff}.qp button.on small{color:#fff}
+.qp button:disabled{opacity:1;border-style:dashed;cursor:default}
+.qp .qat{color:#6b7280;font-weight:700}.qp .qk,.qp .res{grid-column:1/-1;text-align:center;font-size:13px;color:#4b5563;margin-top:-2px}
+.qp .res:empty{display:none}.qp .res .ok{background:#d6f5cd;color:#0b3d17}.qp .res .no{background:#fde2e2;color:#7f1d1d}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style></head><body>
-<header class="hero thero" style="--tc:#A5ACAF"><div class="in"><div class="tabs"><a href="../index.html">Picks</a><a href="../rankings.html">Rankings</a><a href="../players.html">Players</a><a href="../results.html">Results</a><a href="../leaderboard.html">Leaderboard</a></div><img class="hlogo" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/lv.png&h=176&w=176" alt="" width="88" height="88" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/lv.png'"><div class="kicker">AFC West · 2026</div><h1>LV <span style="opacity:.6">3-1</span></h1>
+<header class="hero thero" style="--tc:#A5ACAF"><div class="in"><div class="tabs"><a href="../index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Picks</span></a><a href="../rankings.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20V10M12 20V4M18 20v-7"/></svg><span>Rankings</span></a><a href="../players.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span>Players</span></a><a href="../results.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13l5 5L20 7"/></svg><span>Results</span></a><a href="../leaderboard.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0V4zM5 4h2M17 4h2M12 14v4M8 21h8"/></svg><span>Leaderboard</span></a></div><img class="hlogo" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/lv.png&h=176&w=176" alt="" width="88" height="88" loading="lazy" decoding="async" onerror="this.onerror=()=>this.remove();this.src='https://a.espncdn.com/i/teamlogos/nfl/500/lv.png'"><div class="kicker">AFC West · 2026</div><h1>LV <span style="opacity:.6">3-1</span></h1>
 <p class="sub">Model ratings, schedule picks and playoff odds.</p>
 <div class="stats">
 <div class="stat"><b>#21</b><span>Power ranking (▲ 3 this week)</span></div>
