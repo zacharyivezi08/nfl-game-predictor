@@ -278,6 +278,41 @@ table.cmpt td.good{background:#d6f5cd!important;color:#0b3d17;border-radius:8px}
 table.cmpt td.ct .tb{color:#14171c}
 .glist{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}.gl{padding:12px 14px;border-radius:14px}
 .gl p{margin:6px 0 0;font-size:14.5px}.chip{font-size:12px;font-weight:800;padding:2px 10px;border-radius:999px;background:#fff;color:#a84400}
+/* tab icons; on phones the tabs become an app-style bar at the bottom of the screen */
+.tabs a{display:inline-flex;align-items:center;gap:6px}.tabs svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;
+stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:700px){
+ .tabs{position:fixed;left:0;right:0;bottom:0;z-index:60;margin:0;display:grid;grid-template-columns:repeat(5,1fr);gap:0;
+  background:#fff;border-top:1px solid #e7e9ee;padding:6px 4px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,.08)}
+ .tabs a{flex-direction:column;gap:2px;border:0;border-radius:12px;padding:5px 2px;color:#4b5563;font-size:11.5px;font-weight:800;justify-content:center}
+ .tabs a svg{width:22px;height:22px}.tabs a.on{background:#fbe6d6;color:#a84400}.tabs a:hover{background:#f6f7f9}
+ body{padding-bottom:84px}}
+.hidden{display:none!important}
+.favbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:14px 0 4px}.favbar label{font-weight:800}
+.favbar select{font:inherit;font-weight:700;padding:7px 10px;border-radius:10px;border:1.5px solid #f3c9a3;background:#fff;color:#14171c}
+.fav{outline:3px solid #1f8a3b;outline-offset:2px}tr.fav td{background:#d6f5cd!important;color:#0b3d17}
+tr.fav td .tb{color:#0b3d17}
+.weeks{display:flex;align-items:center;gap:6px;overflow-x:auto;padding:12px 0 6px;scrollbar-width:none}.weeks::-webkit-scrollbar{display:none}
+.weeks span{font-weight:800;margin-right:4px}.weeks a.wk{flex:none;min-width:38px;text-align:center;padding:7px 0;border-radius:10px;
+border:1.5px solid #f3c9a3;color:#a84400;font-weight:800;text-decoration:none;background:#fff}.weeks a.wk.on{background:#C85000;color:#fff;border-color:#C85000}
+.recap{padding:14px 16px;border-radius:16px;margin:10px 0}.rgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0}
+.rgrid div{background:rgba(0,0,0,.16);border-radius:12px;padding:8px;text-align:center}.rgrid b{display:block;font-size:24px;font-weight:900}
+.recap ul{margin:8px 0 0;padding-left:18px}.recap li{margin:4px 0}
+.glink.nolink{cursor:default}
+.tag.split{background:#374151!important;color:#fff!important}
+/* quick picks */
+.qpbox{margin:6px 0 10px}.qphead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+#qpfill{font:inherit;font-weight:800;font-size:14px;padding:8px 14px;border-radius:999px;border:2px solid #C85000;background:#fff;color:#a84400;cursor:pointer}
+.qplist{display:flex;flex-direction:column;gap:8px}
+.qp{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;margin:0;padding:8px;border-radius:16px;
+background:#fff;border:1px solid #ecd9c9;box-shadow:0 1px 4px rgba(20,23,28,.06)}
+.qp button{display:flex;align-items:center;gap:8px;justify-content:center;font:inherit;padding:10px 8px;border-radius:12px;
+border:2px solid #ecd9c9;background:#fbf4ee;color:#14171c;cursor:pointer;min-height:52px}
+.qp button b{font-size:17px}.qp button small{font-size:13px;color:#4b5563}.qp .qlg{width:28px;height:28px;object-fit:contain}
+.qp button.on{background:#C85000;border-color:#C85000;color:#fff}.qp button.on small{color:#fff}
+.qp button:disabled{opacity:1;border-style:dashed;cursor:default}
+.qp .qat{color:#6b7280;font-weight:700}.qp .qk,.qp .res{grid-column:1/-1;text-align:center;font-size:13px;color:#4b5563;margin-top:-2px}
+.qp .res:empty{display:none}.qp .res .ok{background:#d6f5cd;color:#0b3d17}.qp .res .no{background:#fde2e2;color:#7f1d1d}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 """
 
@@ -482,6 +517,29 @@ def pick_buttons(r):
             f'<span class="res"></span></div>')
 
 
+def quick_picks(week_preds, picks_url):
+    """Every game this week in one list with two big team buttons: pick the whole week without opening each game."""
+    from history import kickoff
+    if week_preds is None or week_preds.empty:
+        return ""
+    rows = []
+    for r in week_preds.sort_values(["gameday", "gametime", "game_id"]).itertuples():
+        pa, ph = 1 - r.blend_prob, r.blend_prob
+        rows.append(
+            f'<div class="qp mypick" data-g="{e(r.game_id)}" data-k="{kickoff(r).isoformat()}" data-m="{e(r.blend_pick)}">'
+            f'<button type="button" data-t="{e(r.away_team)}">{logo(r.away_team, 64, "qlg")}<b>{e(r.away_team)}</b>'
+            f'<small>{pa:.0%}</small></button><span class="qat">@</span>'
+            f'<button type="button" data-t="{e(r.home_team)}">{logo(r.home_team, 64, "qlg")}<b>{e(r.home_team)}</b>'
+            f'<small>{ph:.0%}</small></button>'
+            f'<span class="qk">{e(kick_text(r))}</span><span class="res"></span></div>')
+    name_note = ('<p class="note hidden" id="qpname"><b>Want to be on the leaderboard?</b> '
+                 '<a href="leaderboard.html">Add your name</a> first, then your picks count.</p>') if picks_url else ""
+    return f"""<div class="qpbox">
+<div class="qphead"><span id="qpcount"></span><button type="button" id="qpfill">Fill the rest with the model's picks</button></div>
+{name_note}<div class="qplist">{''.join(rows)}</div>
+<p class="note">Tap a team to pick it, tap again to undo. % = each team's chance (best estimate). Picks lock at kickoff.</p></div>"""
+
+
 def load_site_config():
     """site_config.json at the repo root: {"picks_url": "<Google Apps Script web app URL>"} ("" = picks stay local)."""
     try:
@@ -513,16 +571,16 @@ leaderboard</b> once each game kicks off. Leave the name blank to keep your pick
 <div id="lb"><p class="note">Loading…</p></div>"""
 
 
-def my_picks_script(all_preds, url=""):
+def my_picks_script(all_preds, url="", crown_week=0):
     """Results for every finished game this season, so records can be scored in the browser. If a picks URL is set,
     picks are also sent to the Google Sheet and everyone's locked picks come back for the leaderboard."""
     res = {}
     for r in all_preds.itertuples():
         if r.played:
-            res[r.game_id] = {"w": r.winner if isinstance(r.winner, str) else "TIE", "m": r.pick,
+            res[r.game_id] = {"w": r.winner if isinstance(r.winner, str) else "TIE", "m": r.pick, "wk": int(r.week),
                               "v": r.vegas_pick if isinstance(r.vegas_pick, str) else None}
     return """<script>
-(function(){const R=%s,URL=%s;let P={},NAME='';
+(function(){const R=%s,URL=%s,CROWNWK=%d;let P={},NAME='';
 try{P=JSON.parse(localStorage.getItem('nflgp-picks')||'{}');NAME=localStorage.getItem('nflgp-name')||''}catch(e){}
 function save(){try{localStorage.setItem('nflgp-picks',JSON.stringify(P));localStorage.setItem('nflgp-name',NAME)}catch(e){}}
 function rec(a,b){return a+'-'+(b-a)+(b?' ('+Math.round(100*a/b)+'%%)':'')}
@@ -548,9 +606,17 @@ function render(){
   (open?'<div class="stat"><b>'+open+'</b><span>Picks waiting on results</span></div>':'')
   :'<p class="note">'+(open?'You have '+open+' pick(s) waiting on results. ':'')+'Tap a team under any game below to make your pick. '+
   'Picks lock at kickoff, and your record vs the model shows up here once games finish.</p>';}
+function qpCount(){const c=document.getElementById('qpcount');if(!c)return;const els=[...document.querySelectorAll('.qp')];
+ const open=els.filter(el=>!isLocked(el)),done=open.filter(el=>P[el.dataset.g]).length;
+ c.innerHTML=open.length?'<b>'+done+' of '+open.length+'</b> open games picked':'All games this week have kicked off';
+ const f=document.getElementById('qpfill');if(f)f.hidden=!open.length||done===open.length;
+ const n=document.getElementById('qpname');if(n)n.classList.toggle('hidden',!!NAME||!URL);}
+document.addEventListener('click',ev=>{if(ev.target.id!=='qpfill')return;
+ document.querySelectorAll('.qp').forEach(el=>{const g=el.dataset.g;if(isLocked(el)||P[g])return;P[g]=el.dataset.m;send(g,P[g],el);});
+ save();render();qpCount();});
 document.addEventListener('click',ev=>{const b=ev.target.closest('.mypick button');if(!b)return;ev.preventDefault();ev.stopPropagation();
  if(b.disabled)return;const el=b.closest('.mypick'),g=el.dataset.g;if(P[g]===b.dataset.t)delete P[g];else P[g]=b.dataset.t;
- save();render();send(g,P[g],el);});
+ save();render();send(g,P[g],el);qpCount();});
 // name box: saving a name also sends any picks already made for games that haven't kicked off
 const ni=document.getElementById('myname'),sb=document.getElementById('savename'),ns=document.getElementById('namestatus');
 if(ni){ni.value=NAME;if(NAME)ns.textContent='Picks are going to the leaderboard as '+NAME+'.';
@@ -562,18 +628,28 @@ function leaderboard(){const lb=document.getElementById('lb');if(!lb||!URL)retur
  fetch(URL).then(r=>r.json()).then(d=>{const ppl={};
   (d.picks||[]).forEach(p=>{const k=String(p.n).toLowerCase();const o=ppl[k]||(ppl[k]={name:p.n,w:0,n:0,open:0});
    const r=R[p.g];if(!r){o.open++;return}if(r.w==='TIE')return;o.n++;if(p.t===r.w)o.w++;});
+  const crown=weekWinner(d.picks||[]);
   let mw=0,mn=0,vw=0,vn=0;for(const g in R){const r=R[g];if(r.w==='TIE')continue;mn++;if(r.m===r.w)mw++;if(r.v){vn++;if(r.v===r.w)vw++}}
   const rows=Object.values(ppl).sort((a,b)=>b.w-a.w||(b.w/Math.max(b.n,1))-(a.w/Math.max(a.n,1)));
   if(!rows.length){lb.innerHTML='<p class="note">No locked picks yet. Names show up here once their picked games kick off.</p>';return}
   lb.innerHTML='<div class="wrap"><table><tr><th class="n">#</th><th>Name</th><th class="n">Record</th><th class="n">Pending</th></tr>'+
    rows.map((o,i)=>'<tr'+(o.name.toLowerCase()===NAME.toLowerCase()?' class="me"':'')+'><td class="n">'+(i+1)+'</td><td><b>'+esc(o.name)+
-   '</b></td><td class="n">'+rec(o.w,o.n)+'</td><td class="n">'+o.open+'</td></tr>').join('')+
+   '</b>'+(crown&&crown.names.includes(o.name.toLowerCase())?' <span title="Week '+crown.wk+' winner">👑</span>':'')+'</td><td class="n">'+rec(o.w,o.n)+'</td><td class="n">'+o.open+'</td></tr>').join('')+
    '<tr class="bench"><td></td><td>Model (every game)</td><td class="n">'+rec(mw,mn)+'</td><td></td></tr>'+
    '<tr class="bench"><td></td><td>Vegas favorite (every game)</td><td class="n">'+rec(vw,vn)+'</td><td></td></tr></table></div>'+
-   '<p class="note">Ranked by wins. Only picks made on this site after the leaderboard started count.</p>';
+   '<p class="note">Ranked by wins. 👑 = best record last week'+(crown?' (Week '+crown.wk+')':'')+'. Only picks made on this site after the leaderboard started count.</p>';
  }).catch(()=>{lb.innerHTML='<p class="note">Couldn\\'t load the leaderboard right now.</p>'});}
-render();leaderboard();})();
-</script>""" % (json.dumps(res), json.dumps(url or ""))
+// weekly winner: best record in the most recent week with results (at least 3 picks), ties share the crown
+function weekWinner(picks){const wk=CROWNWK;if(!wk)return null;
+ const by={};picks.forEach(p=>{const r=R[p.g];if(!r||r.wk!==wk||r.w==='TIE')return;const k=String(p.n).toLowerCase();
+  const o=by[k]||(by[k]={name:p.n,w:0,n:0});o.n++;if(p.t===r.w)o.w++;});
+ const c=Object.values(by).filter(o=>o.n>=3);if(!c.length)return null;const best=Math.max(...c.map(o=>o.w));
+ const win=c.filter(o=>o.w===best);return {wk:wk,names:win.map(o=>o.name.toLowerCase()),label:win.map(o=>esc(o.name)).join(', '),rec:best+'-'+(win[0].n-best)};}
+function recapWinner(){const li=document.getElementById('lbwinner');if(!li||!URL)return;
+ fetch(URL).then(r=>r.json()).then(d=>{const c=weekWinner(d.picks||[]);if(!c)return;
+  li.innerHTML='<b>👑 Leaderboard winner:</b> '+c.label+' ('+c.rec+' in Week '+c.wk+')';li.classList.remove('hidden');}).catch(()=>{});}
+render();qpCount();leaderboard();recapWinner();})();
+</script>""" % (json.dumps(res), json.dumps(url or ""), int(crown_week))
 
 
 # ---------- plain-English matchup edges ----------
@@ -744,6 +820,129 @@ def points_rating(p):
     """Chance to beat an average team (neutral field) -> points better/worse than average."""
     p = min(max(float(p), 0.01), 0.99)
     return 6.5 * np.log(p / (1 - p))
+
+
+# ---------- app features: install, favorite team, week picker, link previews, recap ----------
+
+SITE_URL = "https://zacharyivezi08.github.io/nfl-game-predictor/"
+
+TAB_ICONS = {  # simple outline icons (24x24)
+    "picks": '<path d="M4 6h16M4 12h16M4 18h10"/>',
+    "rankings": '<path d="M6 20V10M12 20V4M18 20v-7"/>',
+    "players": '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+    "results": '<path d="M4 13l5 5L20 7"/>',
+    "leaderboard": '<path d="M7 4h10v5a5 5 0 0 1-10 0V4zM5 4h2M17 4h2M12 14v4M8 21h8"/>',
+}
+
+
+def head_extra(prefix="", og=None):
+    """Install-as-app tags (home screen icon, full screen) + link preview tags."""
+    tags = [f'<link rel="manifest" href="{prefix}manifest.json">',
+            f'<link rel="icon" href="{prefix}icons/icon-192.png">',
+            f'<link rel="apple-touch-icon" href="{prefix}icons/icon-192.png">',
+            '<meta name="apple-mobile-web-app-capable" content="yes">',
+            '<meta name="mobile-web-app-capable" content="yes">',
+            '<meta name="apple-mobile-web-app-title" content="NFL Picks">',
+            '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">']
+    og = og or {"title": "NFL Game Predictor", "desc": "Free machine learning picks, predicted scores and playoff odds for every NFL game.",
+                "image": SITE_URL + "icons/og-default.png", "url": SITE_URL}
+    tags += [f'<meta property="og:title" content="{e(og["title"])}">',
+             f'<meta property="og:description" content="{e(og["desc"])}">',
+             f'<meta property="og:image" content="{e(og["image"])}">',
+             f'<meta property="og:url" content="{e(og["url"])}">',
+             '<meta property="og:type" content="website">',
+             '<meta name="twitter:card" content="summary_large_image">']
+    tags.append(f"<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('{prefix}sw.js').catch(()=>{{}})</script>")
+    return "\n".join(tags)
+
+
+FAV_JS = """<script>
+(function(){let F='';try{F=localStorage.getItem('nflgp-fav')||''}catch(e){}
+const sel=document.getElementById('favsel');
+function apply(){
+ document.querySelectorAll('[data-teams]').forEach(el=>el.classList.toggle('fav',!!F&&el.dataset.teams.split(' ').includes(F)));
+ const slot=document.getElementById('favslot');
+ if(slot){slot.innerHTML='';const g=F&&document.querySelector('#games [data-teams~="'+F+'"]');
+  if(g){const c=g.cloneNode(true);slot.innerHTML='<h2>Your team</h2>';slot.appendChild(c);}
+  else if(F){slot.innerHTML='<p class="note">'+F+' doesn\\'t play this week.</p>';}}
+}
+if(sel){sel.value=F;sel.addEventListener('change',()=>{F=sel.value;try{localStorage.setItem('nflgp-fav',F)}catch(e){};apply();});}
+apply();})();
+</script>"""
+
+
+def fav_picker():
+    opts = "".join(f'<option value="{t}">{t}</option>' for t in TEAMS)
+    return (f'<div class="favbar"><label for="favsel">Your team</label><select id="favsel"><option value="">— pick a team —</option>'
+            f'{opts}</select><span class="meta">Saved on this device. Its game shows first.</span></div><div id="favslot"></div>')
+
+
+def week_picker(weeks, current, prefix=""):
+    chips = []
+    for w in weeks:
+        href = f"{prefix}index.html" if w == current else f"{prefix}weeks/week-{w}.html"
+        chips.append(f'<a href="{href}" class="wk{" on" if w == current else ""}">{w}</a>')
+    return f'<div class="weeks"><span>Week</span>{"".join(chips)}</div>'
+
+
+def og_image(r, path):
+    """1200x630 link preview card for a game (team colors, predicted score, the pick)."""
+    from PIL import Image, ImageDraw, ImageFont
+
+    def font(size):
+        for f in ("DejaVuSans-Bold.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"):
+            try:
+                return ImageFont.truetype(f, size)
+            except OSError:
+                pass
+        return ImageFont.load_default(size=size)
+    away, home = r.away_team, r.home_team
+    hpts, apts = (r.pred_total + r.pred_margin) / 2, (r.pred_total - r.pred_margin) / 2
+    img = Image.new("RGB", (1200, 630), "#C85000")
+    d = ImageDraw.Draw(img)
+    for x in range(1200):  # left-to-right fade between the two teams' colors, darkened so white text reads
+        t = x / 1199
+        ca, ch = _rgb(TEAM_COLORS.get(away, "#C85000")), _rgb(TEAM_COLORS.get(home, "#C85000"))
+        c = tuple(int((ca[i] * (1 - t) + ch[i] * t) * 0.55) for i in range(3))
+        d.line([(x, 0), (x, 630)], fill=c)
+    d.rectangle([0, 520, 1200, 630], fill="#C85000")
+    W = lambda txt, f: d.textlength(txt, font=f)
+    big, mid, small = font(150), font(64), font(40)
+    for txt, cx, pts in ((away, 300, apts), (home, 900, hpts)):
+        d.text((cx - W(txt, mid) / 2, 70), txt, font=mid, fill="white")
+        s = f"{pts:.0f}"
+        d.text((cx - W(s, big) / 2, 160), s, font=big, fill="white")
+    d.text((600 - W("@", mid) / 2, 200), "@", font=mid, fill="white")
+    line = f"Pick: {r.blend_pick} {r.blend_conf:.0%}  ·  Week {r.week}"
+    d.text((600 - W(line, small) / 2, 400), line, font=small, fill="white")
+    foot = "NFL Game Predictor · free ML picks"
+    d.text((600 - W(foot, small) / 2, 552), foot, font=small, fill="white")
+    img.save(path, optimize=True)
+
+
+def recap_box(last_week, picks, week):
+    """Last week in one box: model vs Vegas vs blend, the biggest upset, and the model's best call."""
+    done = last_week[last_week["correct"].isin([True, False])] if len(last_week) else last_week
+    if done.empty:
+        return ""
+    rec = lambda col: f"{int((done[col] == True).sum())}-{int(done[col].isin([True, False]).sum() - (done[col] == True).sum())}"  # noqa: E712
+    ups = done[done["winner"] != done["blend_pick"]].copy()
+    big = ""
+    if len(ups):
+        ups["dog_p"] = 1 - ups["blend_conf"]
+        u = ups.sort_values("dog_p").iloc[0]
+        loser = u.home_team if u.winner == u.away_team else u.away_team
+        big = (f"<li><b>Biggest upset:</b> {tl(u.winner)} beat {tl(loser)} "
+               f"<span class='meta'>(had a {u.dog_p:.0%} chance)</span></li>")
+    calls = done[(done["correct"] == True) & done["vegas_pick"].notna() & (done["pick"] != done["vegas_pick"])]  # noqa: E712
+    call = ""
+    if len(calls):
+        c = calls.iloc[0]
+        call = f"<li><b>Model's best call:</b> picked {tl(c.pick)} against the Vegas favorite, and was right</li>"
+    return f"""<div class="recap card"><h3 class="ch">Week {week - 1} recap</h3><div class="rgrid">
+<div><b>{rec('correct')}</b><span>Model</span></div><div><b>{rec('vegas_correct')}</b><span>Vegas</span></div>
+<div><b>{rec('blend_correct')}</b><span>Best estimate</span></div></div><ul>{big}{call}
+<li id="lbwinner" class="hidden"></li></ul></div>"""
 
 
 # ---------- season box-score stats (for game pages) ----------
@@ -993,7 +1192,12 @@ def game_page(r, stats, box, saved, proj, gaps, all_preds, picks_url):
     script = """<script>document.querySelectorAll('.gtabs button').forEach(b=>b.addEventListener('click',()=>{
 document.querySelectorAll('.gtabs button').forEach(x=>x.classList.toggle('on',x===b));
 document.querySelectorAll('.gtab').forEach(s=>s.hidden=s.id!==b.dataset.tab);}));</script>"""
-    return page(f"{away} @ {home} · Week {r.week}", hero, sim + cmp, "../", active="picks",
+    ca, ch = TEAM_COLORS.get(away, "#C85000"), TEAM_COLORS.get(home, "#C85000")
+    bg = f"linear-gradient(rgba(0,0,0,.5),rgba(0,0,0,.5)),linear-gradient(120deg,{ca},{ch})"
+    og = {"title": f"{away} @ {home}: predicted {away} {apts:.0f}, {home} {hpts:.0f}",
+          "desc": f"Pick: {r.blend_pick} {r.blend_conf:.0%} · Week {r.week} · free ML picks, simulation and team comparison",
+          "image": f"{SITE_URL}og/{r.game_id}.png", "url": f"{SITE_URL}games/{r.game_id}.html"}
+    return page(f"{away} @ {home} · Week {r.week}", hero, sim + cmp, "../", active="picks", bg=bg, og=og,
                 extra=script + my_picks_script(all_preds, picks_url))
 
 
@@ -1006,16 +1210,18 @@ def glossary_page():
     return page("Stats glossary", hero, f'<div class="glist">{items}</div>', active=None)
 
 
-def game_row(r):
+def game_row(r, prefix="", link=True):
     """Compact game card on the Picks page that opens the game's own page."""
     hpts, apts = (r.pred_total + r.pred_margin) / 2, (r.pred_total - r.pred_margin) / 2
     hw = hpts >= apts
     venue = e(str(r.stadium)) if isinstance(getattr(r, "stadium", None), str) else ""
-    return f"""<a class="glink game" href="games/{e(r.game_id)}.html">
+    tag_open = (f'<a class="glink game" data-teams="{e(r.away_team)} {e(r.home_team)}" href="{prefix}games/{e(r.game_id)}.html">'
+                if link else f'<div class="glink game nolink" data-teams="{e(r.away_team)} {e(r.home_team)}">')
+    return f"""{tag_open}
 <div class="gteams"><div class="gt">{logo(r.away_team, 64, "clg")}<span>{e(r.away_team)}</span><b class="{'cw' if not hw else ''}">{apts:.0f}</b></div>
 <div class="gt">{logo(r.home_team, 64, "clg")}<span>{e(r.home_team)}</span><b class="{'cw' if hw else ''}">{hpts:.0f}</b></div></div>
 <div class="gmeta"><span class="pick">{e(r.blend_pick)} {r.blend_conf:.0%}</span><span>{e(kick_text(r))}</span>
-{'<span class="venue">' + venue + '</span>' if venue else ''}</div><div class="cchev">›</div></a>"""
+{'<span class="venue">' + venue + '</span>' if venue else ''}</div><div class="cchev">{'›' if link else ''}</div>{'</a>' if link else '</div>'}"""
 
 
 # ---------- click-to-compare team stats ----------
@@ -1317,7 +1523,7 @@ def rankings_table(pr, extras=None):
         pts = points_rating(r.rating)
         luck = extras.get(r.team, {}).get("luck", 0.0)
         luck_txt = f"{luck:+.1f}" if abs(luck) >= 0.05 else "0.0"
-        rows.append(f"<tr><td class='n'>{r.rank}</td><td>{mv}</td><td><b>{tl(r.team)}</b></td><td class='n'>{r.record}</td>"
+        rows.append(f"<tr data-teams='{r.team}'><td class='n'>{r.rank}</td><td>{mv}</td><td><b>{tl(r.team)}</b></td><td class='n'>{r.record}</td>"
                     f"<td class='n'><b>{pts:+.1f}</b></td><td class='n'>{r.rating:.0%}</td>"
                     f"<td class='n'>{r.off_rank}</td><td class='n'>{r.def_rank}</td><td class='n'>{luck_txt}</td></tr>")
     return ('<div class="wrap"><table><tr><th class="n">#</th><th>Move</th><th>Team</th><th class="n">Record</th>'
@@ -1418,17 +1624,20 @@ def tabs(active, prefix=""):
              ("players", "players.html", "Players"), ("results", "results.html", "Results"),
              ("leaderboard", "leaderboard.html", "Leaderboard"))
     return '<div class="tabs">' + "".join(
-        f'<a href="{prefix}{href}"{" class=on aria-current=page" if key == active else ""}>{label}</a>'
+        f'<a href="{prefix}{href}"{" class=on aria-current=page" if key == active else ""}>'
+        f'<svg viewBox="0 0 24 24" aria-hidden="true">{TAB_ICONS[key]}</svg><span>{label}</span></a>'
         for key, href, label in items) + "</div>"
 
 
-def page(title, hero, body, prefix="", color=None, active=None, extra=""):
+def page(title, hero, body, prefix="", color=None, active=None, extra="", bg=None, og=None):
     """Sub-page shell: colored header + content + team links."""
     style = f' style="--tc:{color}"' if color else ""
+    if bg:
+        style = f' style="background:{bg}"'
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>{e(title)}</title>
-<meta name="theme-color" content="#C85000"><style>{CSS}</style></head><body>
-<header class="hero{' thero' if color else ''}"{style}><div class="in">{tabs(active, prefix)}{hero}</div></header>
+<meta name="theme-color" content="#C85000">{head_extra(prefix, og)}<style>{CSS}</style></head><body>
+<header class="hero{' thero' if color and not bg else ''}"{style}><div class="in">{tabs(active, prefix)}{hero}</div></header>
 <main>{body}
 <footer><b>Teams</b><div class="teamnav">{''.join(tl(t, prefix) for t in TEAMS)}</div><br><b>Not betting advice.</b>
 Data from <a href="https://github.com/nflverse">nflverse</a>.<br><br>© 2026 Zachary Ivezi. All rights reserved.</footer></main>{extra}</body></html>"""
@@ -1577,6 +1786,7 @@ def main():
     stats = team_stats(df, season, ranks, odds)
     extras = season_extras(df, season)
     box = team_box(df, season)
+    all_weeks = sorted(int(w) for w in all_preds[all_preds["game_type"] == "REG"]["week"].unique())
     for t in TEAMS:
         stats[t]["ats"] = extras[t]["ats"]
         stats[t]["ou"] = extras[t]["ou"]
@@ -1623,15 +1833,19 @@ money wagered. Vegas is more accurate than this model.<br><br>© 2026 Zachary Iv
     html_page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>NFL Game Predictor</title>
 <meta name="description" content="Machine learning picks, predicted scores, power rankings and playoff odds for every NFL game.">
-<meta name="theme-color" content="#C85000"><style>{CSS}</style></head><body>
+<meta name="theme-color" content="#C85000">{head_extra()}<style>{CSS}</style></head><body>
 <header class="hero"><div class="in">{tabs("picks")}
 <div class="kicker">Week {week} · {season} season · updated {datetime.now():%b %-d, %Y}</div>
 <h1>Week {week} picks</h1>
 <p class="sub">Predicted scores and picks for every game. Tap a game for more details.</p>
 {hero_stats}</div></header>
 <main>
-<nav><a href="#glance">At a glance</a><a href="#slots">Top picks</a><a href="#upsets">Upset watch</a><a href="#games">All games</a></nav>
-<div class="namehint card" id="namehint"></div>
+<nav><a href="#make">Make picks</a><a href="#glance">At a glance</a><a href="#slots">Top picks</a><a href="#upsets">Upset watch</a><a href="#games">All games</a></nav>
+{week_picker(all_weeks, week)}
+{recap_box(last_week, picks, week)}
+<h2 id="make">Make your picks</h2>
+{quick_picks(this_week, picks_url)}
+{fav_picker()}
 <h2 id="glance">At a glance</h2>
 {glance_card(this_week)}
 <h2 id="slots">Most confident pick of each time slot</h2>
@@ -1639,19 +1853,37 @@ money wagered. Vegas is more accurate than this model.<br><br>© 2026 Zachary Iv
 <h2 id="upsets">Upset watch</h2>
 <p class="note">Underdogs with at least a 35% chance. The bar is full at 50% (a coin flip).</p>
 {upset_watch(this_week, saved.get("calibration"))}
-<h2 id="games">All games</h2>
+<h2>All games</h2>
 <p class="note">Tap a game for the full simulation and team comparison. The % is the <b>best estimate</b>
 (the model blended with the Vegas line, the most accurate forecast here).</p>
-{''.join(cards)}
+<div id="games">{''.join(cards)}</div>
 {footer}
-</main>{my_picks_script(all_preds, picks_url)}</body></html>"""
+</main>{my_picks_script(all_preds, picks_url, week - 1)}{FAV_JS}</body></html>"""
 
     DOCS.mkdir(exist_ok=True)
     (DOCS / "index.html").write_text(html_page)
     (DOCS / "games").mkdir(exist_ok=True)
-    for r in this_week.itertuples():
-        (DOCS / "games" / f"{r.game_id}.html").write_text(
-            game_page(r, stats, box, saved, proj, saved.get("line_gaps"), all_preds, picks_url))
+    (DOCS / "og").mkdir(exist_ok=True)
+    for r in all_preds[all_preds["week"] <= week].itertuples():
+        path = DOCS / "games" / f"{r.game_id}.html"
+        if r.week == week or not path.exists():
+            path.write_text(game_page(r, stats, box, saved, proj if r.week == week else None,
+                                      saved.get("line_gaps"), all_preds, picks_url))
+            try:
+                og_image(r, DOCS / "og" / f"{r.game_id}.png")
+            except Exception as err:  # noqa: BLE001
+                print(f"(preview image skipped: {err})")
+    (DOCS / "weeks").mkdir(exist_ok=True)
+    for w in all_weeks:
+        wg = all_preds[all_preds["week"] == w].sort_values(["gameday", "gametime", "game_id"])
+        rows = "".join(game_row(r, "../", link=w <= week) for r in wg.itertuples())
+        wrec = wg[wg["correct"].isin([True, False])]
+        sub = (f"Model {int((wrec['correct'] == True).sum())}-{int((wrec['correct'] == False).sum())} this week · "  # noqa: E712
+               if len(wrec) else "") + ("Tap a game for its page." if w <= week else "Predictions so far; game pages open the week of the game.")
+        whero = f"<div class='kicker'>{season} season</div><h1>Week {w}</h1><p class='sub'>{sub}</p>"
+        wbody = week_picker(all_weeks, week, "../") + f'<div id="games">{rows}</div>'
+        (DOCS / "weeks" / f"week-{w}.html").write_text(page(f"Week {w} · {season}", whero, wbody, "../", active="picks",
+                                                             extra=FAV_JS))
     (DOCS / "glossary.html").write_text(glossary_page())
 
     # ---------- Rankings: power rankings + playoff odds ----------
@@ -1666,7 +1898,7 @@ points scored and allowed would normally produce (+ = winning more than its play
 {playoff_tables(odds, records)}"""
     rank_hero = (f"<div class='kicker'>Week {week} · {season}</div><h1>Rankings &amp; playoff odds</h1>"
                  "<p class='sub'>Every team ranked by the model, plus each team's chances to make the playoffs and win it all.</p>")
-    (DOCS / "rankings.html").write_text(page(f"Rankings · Week {week}", rank_hero, rank_body, active="rankings"))
+    (DOCS / "rankings.html").write_text(page(f"Rankings · Week {week}", rank_hero, rank_body, active="rankings", extra=FAV_JS))
 
     # ---------- Results: accuracy, honesty check, tracker, last week, every pick ----------
     res_body = f"""<nav><a href="#accuracy">Accuracy</a><a href="#honest">Honest %</a><a href="#tracker">Tracker</a>
@@ -1695,7 +1927,7 @@ seasons. Dots on the dashed line = when it says 70%, the favorite really wins ab
     lb_hero = ("<div class='kicker'>Pick'em</div><h1>Leaderboard</h1>"
                "<p class='sub'>Make picks on the Picks page. See how you stack up against friends, the model and Vegas.</p>")
     (DOCS / "leaderboard.html").write_text(page("Leaderboard", lb_hero, my_picks_section(picks_url, standalone=True),
-                                                active="leaderboard", extra=my_picks_script(all_preds, picks_url)))
+                                                active="leaderboard", extra=my_picks_script(all_preds, picks_url, week - 1)))
 
     ev = None
     try:

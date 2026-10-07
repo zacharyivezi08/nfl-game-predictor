@@ -8,6 +8,9 @@ Built with Python, pandas and scikit-learn on free data from [nflverse](https://
 
 ## What's on the site
 
+Works as a phone app: "Add to Home Screen" gives it an icon and full-screen view, with tabs along the bottom. Pick a
+favorite team to see its game first, flip between weeks, and game links show a preview card (predicted score) in texts.
+
 Tabs: **Picks** (this week's games as compact cards; tap one for its own page), **Rankings**, **Players**, **Results**,
 **Leaderboard**, plus a **Stats glossary**. Each game page has a **Simulation** tab (predicted final score, win probability
 chart, fair moneyline odds, projected team stats) and a **Team comparison** tab (overall, defense, advanced and betting
@@ -188,6 +191,9 @@ It now ties Vegas in the final week. The 7 games with a "locked" team went from 
 
 - **Tuning the settings overfit.** Grid-searching Elo, EPA and QB settings (about 200 combinations) improved the validation score but made the untouched test *worse*. Re-tuning across 12 rolling seasons gained only about 0.001, which is noise, so the standard settings were kept.
 - **Travel hurt because home-field advantage has shrunk.** Home teams won 57.6% of games in 1999–2009, 50.4% in 2020 (no fans), and 54.5% in 2021–2026. Travel features mostly acted like extra home-field advantage, which older seasons overstated.
+- **Box-score stats didn't improve the model.** Turnover margin, giveaways, third-down rate, big plays and yards per play
+  (recent-game averages) were tested. Yards per play and big plays improved validation but not the untouched test
+  (log loss 0.6220 vs 0.6218), so the model doesn't use them; they're shown on the game pages instead.
 - **Situational underdog spots didn't hold up.** Division games, home underdogs, teams off a bye, night games and high wind were
   each tested against the blend (learned 2012–2021, checked 2022–2025). High wind looked great at first (underdogs won 38% vs
   33% expected) and then flipped in the test (23% vs 32%); together they made predictions slightly worse (0.6105 vs 0.6071).
