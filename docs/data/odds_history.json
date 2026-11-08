@@ -984,14 +984,14 @@
     "super_bowl": 0.0035
    },
    "BAL": {
-    "playoffs": 0.0674,
+    "playoffs": 0.0676,
     "proj_wins": 7.27,
     "super_bowl": 0.0001
    },
    "BUF": {
-    "playoffs": 0.9781,
+    "playoffs": 0.9783,
     "proj_wins": 12.75,
-    "super_bowl": 0.155
+    "super_bowl": 0.1552
    },
    "CAR": {
     "playoffs": 0.3033,
@@ -1001,70 +1001,70 @@
    "CHI": {
     "playoffs": 0.8673,
     "proj_wins": 11.37,
-    "super_bowl": 0.0826
+    "super_bowl": 0.0824
    },
    "CIN": {
     "playoffs": 0.9318,
     "proj_wins": 11.92,
-    "super_bowl": 0.0747
+    "super_bowl": 0.0745
    },
    "CLE": {
-    "playoffs": 0.3457,
+    "playoffs": 0.3461,
     "proj_wins": 8.92,
     "super_bowl": 0.0015
    },
    "DAL": {
-    "playoffs": 0.3063,
-    "proj_wins": 7.69,
+    "playoffs": 0.3099,
+    "proj_wins": 7.71,
     "super_bowl": 0.0064
    },
    "DEN": {
     "playoffs": 0.9319,
     "proj_wins": 11.75,
-    "super_bowl": 0.0595
+    "super_bowl": 0.0594
    },
    "DET": {
-    "playoffs": 0.8272,
+    "playoffs": 0.8271,
     "proj_wins": 11.13,
-    "super_bowl": 0.0738
+    "super_bowl": 0.0741
    },
    "GB": {
-    "playoffs": 0.4388,
+    "playoffs": 0.439,
     "proj_wins": 9.49,
     "super_bowl": 0.0174
    },
    "HOU": {
-    "playoffs": 0.1572,
-    "proj_wins": 7.85,
+    "playoffs": 0.155,
+    "proj_wins": 7.84,
     "super_bowl": 0.0024
    },
    "IND": {
-    "playoffs": 0.0176,
-    "proj_wins": 5.94,
+    "playoffs": 0.0174,
+    "proj_wins": 5.92,
     "super_bowl": 0.0
    },
    "JAX": {
-    "playoffs": 0.9871,
+    "playoffs": 0.9872,
     "proj_wins": 12.35,
     "super_bowl": 0.1399
    },
    "KC": {
-    "playoffs": 0.7924,
+    "playoffs": 0.7929,
     "proj_wins": 10.65,
-    "super_bowl": 0.0293
+    "super_bowl": 0.0292
    },
    "LA": {
-    "playoffs": 0.5204,
+    "playoffs": 0.5203,
     "proj_wins": 9.67,
-    "super_bowl": 0.0421
+    "super_bowl": 0.0422
    },
    "LAC": {
     "playoffs": 0.0001,
-    "proj_wins": 3.0,
+    "proj_wins": 3.01,
     "super_bowl": 0.0
    },
    "LV": {
-    "playoffs": 0.1078,
+    "playoffs": 0.1082,
     "proj_wins": 7.59,
     "super_bowl": 0.0006
    },
@@ -1074,12 +1074,12 @@
     "super_bowl": 0.0
    },
    "MIN": {
-    "playoffs": 0.8865,
+    "playoffs": 0.8863,
     "proj_wins": 11.61,
     "super_bowl": 0.0625
    },
    "NE": {
-    "playoffs": 0.8085,
+    "playoffs": 0.8089,
     "proj_wins": 10.67,
     "super_bowl": 0.0426
    },
@@ -1089,7 +1089,7 @@
     "super_bowl": 0.0014
    },
    "NYG": {
-    "playoffs": 0.5604,
+    "playoffs": 0.5579,
     "proj_wins": 8.6,
     "super_bowl": 0.0054
    },
@@ -1099,12 +1099,12 @@
     "super_bowl": 0.0
    },
    "PHI": {
-    "playoffs": 0.0423,
+    "playoffs": 0.0422,
     "proj_wins": 5.58,
     "super_bowl": 0.0004
    },
    "PIT": {
-    "playoffs": 0.8717,
+    "playoffs": 0.8719,
     "proj_wins": 11.15,
     "super_bowl": 0.0262
    },
@@ -1129,7 +1129,7 @@
     "super_bowl": 0.0
    },
    "WAS": {
-    "playoffs": 0.1286,
+    "playoffs": 0.1278,
     "proj_wins": 6.64,
     "super_bowl": 0.0019
    }
