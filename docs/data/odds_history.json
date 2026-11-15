@@ -12,8 +12,8 @@
     "super_bowl": 0.0024
    },
    "BAL": {
-    "playoffs": 0.0814,
-    "proj_wins": 7.3,
+    "playoffs": 0.0815,
+    "proj_wins": 7.31,
     "super_bowl": 0.0001
    },
    "BUF": {
@@ -107,7 +107,7 @@
     "super_bowl": 0.0194
    },
    "NE": {
-    "playoffs": 0.6327,
+    "playoffs": 0.6326,
     "proj_wins": 9.74,
     "super_bowl": 0.0158
    },
