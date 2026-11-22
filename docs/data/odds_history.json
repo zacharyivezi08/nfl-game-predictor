@@ -165,7 +165,7 @@
   "11": {
    "ARI": {
     "playoffs": 0.0009,
-    "proj_wins": 5.93,
+    "proj_wins": 5.95,
     "super_bowl": 0.0
    },
    "ATL": {
@@ -181,7 +181,7 @@
    "BUF": {
     "playoffs": 0.9995,
     "proj_wins": 13.88,
-    "super_bowl": 0.1936
+    "super_bowl": 0.1934
    },
    "CAR": {
     "playoffs": 0.4101,
@@ -191,15 +191,15 @@
    "CHI": {
     "playoffs": 0.8342,
     "proj_wins": 11.5,
-    "super_bowl": 0.0536
+    "super_bowl": 0.0537
    },
    "CIN": {
-    "playoffs": 0.9961,
+    "playoffs": 0.9962,
     "proj_wins": 13.14,
-    "super_bowl": 0.1286
+    "super_bowl": 0.1283
    },
    "CLE": {
-    "playoffs": 0.581,
+    "playoffs": 0.5814,
     "proj_wins": 9.35,
     "super_bowl": 0.0015
    },
@@ -209,9 +209,9 @@
     "super_bowl": 0.0045
    },
    "DEN": {
-    "playoffs": 0.9913,
+    "playoffs": 0.9914,
     "proj_wins": 12.59,
-    "super_bowl": 0.0549
+    "super_bowl": 0.0552
    },
    "DET": {
     "playoffs": 0.9371,
@@ -224,9 +224,9 @@
     "super_bowl": 0.0074
    },
    "HOU": {
-    "playoffs": 0.2229,
+    "playoffs": 0.2231,
     "proj_wins": 8.13,
-    "super_bowl": 0.0034
+    "super_bowl": 0.0035
    },
    "IND": {
     "playoffs": 0.0018,
@@ -236,12 +236,12 @@
    "JAX": {
     "playoffs": 0.9962,
     "proj_wins": 12.78,
-    "super_bowl": 0.127
+    "super_bowl": 0.1272
    },
    "KC": {
-    "playoffs": 0.9587,
-    "proj_wins": 11.56,
-    "super_bowl": 0.0327
+    "playoffs": 0.9571,
+    "proj_wins": 11.55,
+    "super_bowl": 0.0326
    },
    "LA": {
     "playoffs": 0.5704,
@@ -269,7 +269,7 @@
     "super_bowl": 0.0457
    },
    "NE": {
-    "playoffs": 0.3709,
+    "playoffs": 0.3713,
     "proj_wins": 8.71,
     "super_bowl": 0.0035
    },
@@ -294,14 +294,14 @@
     "super_bowl": 0.0001
    },
    "PIT": {
-    "playoffs": 0.8093,
+    "playoffs": 0.8097,
     "proj_wins": 10.33,
     "super_bowl": 0.0061
    },
    "SEA": {
     "playoffs": 0.4811,
     "proj_wins": 10.13,
-    "super_bowl": 0.0233
+    "super_bowl": 0.0232
    },
    "SF": {
     "playoffs": 0.9822,
